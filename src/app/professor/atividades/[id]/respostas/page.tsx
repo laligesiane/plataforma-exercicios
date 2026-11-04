@@ -4,6 +4,7 @@ import { Cabecalho } from "@/components/Cabecalho";
 import { normalizarBasico } from "@/lib/correcao/normalizar";
 import { carregarAtividade } from "@/lib/atividades/carregar";
 import { ehUuid, type Exercicio } from "@/lib/atividades/modelo";
+import { textoDoItem } from "@/lib/atividades/resumo";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
@@ -16,11 +17,18 @@ export default async function RespostasAtividade({ params }: { params: Promise<{
   if (!ehUuid(id)) notFound();
 
   const supabase = await criarClienteServidor();
-  const [carregada, { data: respostas }, { data: atribuicoes }] = await Promise.all([
+  const [carregada, { data: respostas }, { data: atribuicoes }, { data: envios }] = await Promise.all([
     carregarAtividade(id),
     supabase.from("resposta").select("aluno_id, item_id, valor, status").eq("atividade_id", id).order("criada_em"),
     supabase.from("atividade_turma").select("turma(nome, turma_aluno(perfil(id, nome, email)))").eq("atividade_id", id),
+    supabase.from("envio").select("aluno_id, enviado_em").eq("atividade_id", id).order("enviado_em"),
   ]);
+
+  // Último envio de cada aluno (fica vazio se a tabela ainda não existir).
+  const ultimoEnvio = new Map<string, string>();
+  for (const e of envios ?? []) ultimoEnvio.set(e.aluno_id, e.enviado_em);
+  const quando = (iso: string) =>
+    new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" });
   if (!carregada || carregada.atividade.professor_id !== professor.id) notFound();
 
   const { atividade, exercicios } = carregada;
@@ -75,7 +83,8 @@ export default async function RespostasAtividade({ params }: { params: Promise<{
                     <th className="py-2 pr-3 font-semibold">Aluno</th>
                     <th className="py-2 pr-3 font-semibold tabular-nums">Respondidos</th>
                     <th className="py-2 pr-3 font-semibold tabular-nums">Certos</th>
-                    <th className="py-2 font-semibold tabular-nums">Tentativas</th>
+                    <th className="py-2 pr-3 font-semibold tabular-nums">Tentativas</th>
+                    <th className="py-2 font-semibold">Enviou</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-linha">
@@ -91,7 +100,10 @@ export default async function RespostasAtividade({ params }: { params: Promise<{
                       <td className="py-2.5 pr-3 font-bold tabular-nums">
                         {respondidos > 0 ? <span className={certos === respondidos ? "text-certo" : ""}>{certos}</span> : "–"}
                       </td>
-                      <td className="py-2.5 tabular-nums">{tentativas}</td>
+                      <td className="py-2.5 pr-3 tabular-nums">{tentativas}</td>
+                      <td className="py-2.5 text-tinta-suave tabular-nums">
+                        {ultimoEnvio.has(aluno.id) ? quando(ultimoEnvio.get(aluno.id)!) : "–"}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -167,17 +179,6 @@ function ErrosDoExercicio({ numero, exercicio, respostas }: { numero: number; ex
 }
 
 type ItemQualquer = Exercicio["itens"][number];
-
-function textoDoItem(item: ItemQualquer) {
-  switch (item.tipo) {
-    case "classificar":
-      return item.texto;
-    case "relacionar":
-      return `${item.esquerda} → ${item.direita}`;
-    default:
-      return item.enunciado;
-  }
-}
 
 /** Como mostrar uma resposta errada e se ela já tem explicação própria. */
 function descreverErro(exercicio: Exercicio, item: ItemQualquer, valor: string) {

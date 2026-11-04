@@ -34,14 +34,18 @@ export default async function PaginaAtividade({ params }: Params) {
   // Só salva respostas de quem é aluno de uma turma que recebeu a atividade.
   let salvar = false;
   const anteriores: Record<string, string> = {};
+  const primeiras: Record<string, boolean> = {};
   if (perfil?.papel === "aluno") {
     const supabase = await criarClienteServidor();
     const [{ count }, { data: respostas }] = await Promise.all([
       supabase.from("atividade_turma").select("turma_id", { count: "exact", head: true }).eq("atividade_id", id),
-      supabase.from("resposta").select("item_id, valor").eq("atividade_id", id).eq("aluno_id", perfil.id).order("criada_em"),
+      supabase.from("resposta").select("item_id, valor, status").eq("atividade_id", id).eq("aluno_id", perfil.id).order("criada_em"),
     ]);
     salvar = (count ?? 0) > 0;
-    for (const r of respostas ?? []) anteriores[r.item_id] = r.valor;
+    for (const r of respostas ?? []) {
+      anteriores[r.item_id] = r.valor;
+      if (!(r.item_id in primeiras)) primeiras[r.item_id] = r.status !== "errado";
+    }
   }
 
   return (
@@ -66,7 +70,13 @@ export default async function PaginaAtividade({ params }: Params) {
           </p>
         )}
         <div className="mt-6">
-          <ResolverAtividade atividadeId={id} exercicios={exercicios} respostasAnteriores={anteriores} salvar={salvar} />
+          <ResolverAtividade
+            atividadeId={id}
+            exercicios={exercicios}
+            respostasAnteriores={anteriores}
+            primeirasAnteriores={primeiras}
+            salvar={salvar}
+          />
         </div>
       </main>
     </>
