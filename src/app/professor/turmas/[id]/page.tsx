@@ -4,7 +4,10 @@ import { Cabecalho } from "@/components/Cabecalho";
 import { nomeIdioma } from "@/lib/idiomas";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
+import { HorariosTurma } from "@/components/HorariosTurma";
+import { removerHorario } from "../../actions";
 import { FormularioConvite } from "./FormularioConvite";
+import { FormularioHorario } from "./FormularioHorario";
 
 type Aluno = { id: string; nome: string | null; email: string };
 
@@ -13,7 +16,7 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
   const perfil = await exigirPapel("professor");
   const supabase = await criarClienteServidor();
 
-  const [{ data: turma }, { data: plano }, { data: atribuicoes }] = await Promise.all([
+  const [{ data: turma }, { data: plano }, { data: atribuicoes }, { data: horarios }] = await Promise.all([
     supabase
       .from("turma")
       .select("id, nome, idioma_ensinado, idioma_instrucao, turma_aluno(perfil(id, nome, email))")
@@ -21,6 +24,7 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
       .maybeSingle(),
     supabase.from("plano").select("max_alunos_por_turma").eq("id", perfil.plano_id).single(),
     supabase.from("atividade_turma").select("atividade(id, titulo, nivel, publicada)").eq("turma_id", id),
+    supabase.from("turma_horario").select("id, dia_semana, hora_inicio, duracao_min, fuso").eq("turma_id", id),
   ]);
   if (!turma) notFound();
 
@@ -45,6 +49,17 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
         </p>
 
         <section className="mt-8 rounded-2xl border border-linha p-5 sm:p-6">
+          <h2 className="text-lg font-bold">Dias e horários das aulas</h2>
+          <p className="mt-1 mb-4 text-sm text-tinta-suave">
+            Os alunos veem os horários e podem colocar as aulas no Google Agenda deles.
+          </p>
+          <div className="space-y-5">
+            <HorariosTurma horarios={horarios ?? []} nomeTurma={turma.nome} acaoRemover={removerHorario} turmaId={turma.id} />
+            <FormularioHorario turmaId={turma.id} />
+          </div>
+        </section>
+
+        <section className="mt-6 rounded-2xl border border-linha p-5 sm:p-6">
           <h2 className="mb-4 text-lg font-bold">Convidar aluno</h2>
           {cheia ? (
             <p className="rounded-xl bg-suave px-3.5 py-2.5 text-sm text-tinta-suave">

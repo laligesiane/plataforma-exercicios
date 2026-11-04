@@ -72,3 +72,36 @@ export async function convidarAluno(_estado: EstadoFormulario, formData: FormDat
     sucesso: existente ? `${nome} já tinha conta e foi adicionado à turma.` : `Convite enviado para ${email}.`,
   };
 }
+
+export async function adicionarHorario(_estado: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
+  await exigirPapel("professor");
+
+  const turmaId = String(formData.get("turma_id") ?? "");
+  const dia = Number(formData.get("dia_semana"));
+  const hora = String(formData.get("hora_inicio") ?? "");
+  const duracao = Number(formData.get("duracao_min"));
+  if (!Number.isInteger(dia) || dia < 0 || dia > 6) return { erro: "Escolha o dia da semana." };
+  if (!/^\d{2}:\d{2}$/.test(hora)) return { erro: "Informe o horário de início." };
+  if (!Number.isInteger(duracao) || duracao < 15 || duracao > 480) return { erro: "A duração vai de 15 a 480 minutos." };
+
+  const supabase = await criarClienteServidor();
+  const { error } = await supabase
+    .from("turma_horario")
+    .insert({ turma_id: turmaId, dia_semana: dia, hora_inicio: hora, duracao_min: duracao });
+  if (error) {
+    if (error.code === "23505") return { erro: "Esse horário já está cadastrado." };
+    return { erro: "Não foi possível salvar o horário." };
+  }
+
+  revalidatePath(`/professor/turmas/${turmaId}`);
+  return { sucesso: "Horário adicionado." };
+}
+
+export async function removerHorario(formData: FormData) {
+  await exigirPapel("professor");
+  const id = String(formData.get("id") ?? "");
+  const turmaId = String(formData.get("turma_id") ?? "");
+  const supabase = await criarClienteServidor();
+  await supabase.from("turma_horario").delete().eq("id", id);
+  revalidatePath(`/professor/turmas/${turmaId}`);
+}
