@@ -6,6 +6,7 @@ import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { CartaoAula } from "@/components/CartaoAula";
 import { HorariosTurma } from "@/components/HorariosTurma";
+import { camposResumo, tituloResumo, type Resumo } from "@/lib/resumos";
 import { camposAula, formatarData, hojeNoFuso, tituloAula, ultimaAula, type Aula } from "@/lib/aulas";
 import { removerHorario } from "../../actions";
 import { apagarAula } from "./actions-aulas";
@@ -20,7 +21,7 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
   const perfil = await exigirPapel("professor");
   const supabase = await criarClienteServidor();
 
-  const [{ data: turma }, { data: plano }, { data: atribuicoes }, { data: horarios }, { data: aulasDb }] =
+  const [{ data: turma }, { data: plano }, { data: atribuicoes }, { data: horarios }, { data: aulasDb }, { data: resumosDb }] =
     await Promise.all([
     supabase
       .from("turma")
@@ -31,6 +32,7 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
     supabase.from("atividade_turma").select("atividade(id, titulo, nivel, publicada)").eq("turma_id", id),
     supabase.from("turma_horario").select("id, dia_semana, hora_inicio, duracao_min, fuso").eq("turma_id", id),
     supabase.from("aula").select(camposAula).eq("turma_id", id).order("data", { ascending: false }),
+    supabase.from("resumo").select(camposResumo).eq("turma_id", id).order("atualizado_em", { ascending: false }),
   ]);
   if (!turma) notFound();
 
@@ -44,6 +46,11 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
   const aulas = (aulasDb ?? []) as Aula[];
   const hoje = hojeNoFuso();
   const ultima = ultimaAula(aulas, hoje);
+  const resumos = (resumosDb ?? []) as Resumo[];
+  const resumosDaAula = (aulaId: string) =>
+    resumos
+      .filter((r) => r.aula_id === aulaId)
+      .map((r) => ({ id: r.id, titulo: tituloResumo(r), href: `/professor/turmas/${id}/resumos/${r.id}` }));
 
   return (
     <>
@@ -87,7 +94,7 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
           </p>
           {ultima && (
             <div className="mb-5">
-              <CartaoAula aula={ultima} destaque="Última aula" />
+              <CartaoAula aula={ultima} destaque="Última aula" resumos={resumosDaAula(ultima.id)} />
             </div>
           )}
           <details className="rounded-xl bg-suave p-4" open={aulas.length === 0}>
@@ -106,7 +113,13 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
                       <span className="text-sm text-tinta-suave">{formatarData(a.data)}</span>
                     </summary>
                     <div className="mt-3 space-y-3">
-                      <CartaoAula aula={a} />
+                      <CartaoAula aula={a} resumos={resumosDaAula(a.id)} />
+                      <Link
+                        href={`/professor/turmas/${turma.id}/resumos/novo?aula=${a.id}`}
+                        className="inline-block text-sm font-bold text-primaria hover:underline"
+                      >
+                        + Resumo ou mapa mental desta aula
+                      </Link>
                       <details className="rounded-xl bg-suave p-4">
                         <summary className="cursor-pointer text-sm font-bold text-tinta-suave hover:text-tinta">
                           Editar
@@ -132,6 +145,42 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
                 </li>
               ))}
             </ul>
+          )}
+        </section>
+
+        <section className="mt-6 rounded-2xl border border-linha p-5 sm:p-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-lg font-bold">Resumos e mapas mentais</h2>
+            <Link
+              href={`/professor/turmas/${turma.id}/resumos/novo`}
+              className="text-sm font-bold text-primaria hover:underline"
+            >
+              + Novo resumo
+            </Link>
+          </div>
+          {resumos.length > 0 ? (
+            <ul className="mt-3 divide-y divide-linha">
+              {resumos.map((r) => {
+                const aula = aulas.find((a) => a.id === r.aula_id);
+                return (
+                  <li key={r.id} className="flex flex-wrap items-baseline justify-between gap-x-4 py-3">
+                    <Link
+                      href={`/professor/turmas/${turma.id}/resumos/${r.id}`}
+                      className="font-semibold hover:text-primaria"
+                    >
+                      {tituloResumo(r)}
+                    </Link>
+                    <span className="text-sm text-tinta-suave">
+                      {aula ? tituloAula(aula) : "Sem aula específica"}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p className="mt-2 text-sm text-tinta-suave">
+              Monte um mapa mental ou um resumo para os alunos revisarem o conteúdo.
+            </p>
           )}
         </section>
 
