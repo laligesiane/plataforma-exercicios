@@ -1,5 +1,5 @@
 -- Plano grátis: 3 turmas, 10 alunos por turma e 4 atividades por turma (decidido em 04/11/2026).
--- Rodar uma vez no SQL Editor do Supabase, depois da 0011.
+-- Rodar uma vez no SQL Editor do Supabase, depois da 0011_agenda.sql.
 
 alter table public.plano add column max_atividades_por_turma int not null default 4;
 
