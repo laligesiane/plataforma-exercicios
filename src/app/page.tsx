@@ -30,7 +30,7 @@ const recursos = [
   {
     icone: "✍️",
     titulo: "Resumos do seu jeito",
-    texto: "Escreva com títulos, negrito, marca-texto, listas e notas. O sumário fica do lado, para achar tudo rápido.",
+    texto: "Escreva com títulos, negrito, marca-texto, listas e notas. O sumário fica do lado, e dá para exportar em PDF.",
   },
   {
     icone: "🧠",
