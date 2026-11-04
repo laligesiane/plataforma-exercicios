@@ -1,0 +1,28 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Cabecalho } from "@/components/Cabecalho";
+import { EditorResumo } from "@/components/EditorResumo";
+import { exigirPapel } from "@/lib/perfil";
+import { criarClienteServidor } from "@/lib/supabase/servidor";
+import { salvarResumoAluno } from "../../../actions";
+
+export default async function NovoResumoAluno({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  await exigirPapel("aluno");
+  const supabase = await criarClienteServidor();
+  const { data: materia } = await supabase.from("materia").select("id, nome").eq("id", id).maybeSingle();
+  if (!materia) notFound();
+
+  return (
+    <>
+      <Cabecalho />
+      <main className="mx-auto w-full max-w-4xl px-4 pt-8 pb-16">
+        <Link href={`/aluno/materias/${materia.id}`} className="text-sm font-bold text-primaria hover:underline">
+          ← {materia.nome}
+        </Link>
+        <h1 className="mt-3 mb-6 text-3xl font-extrabold tracking-tight">Novo resumo</h1>
+        <EditorResumo salvar={salvarResumoAluno} ocultos={{ materia_id: materia.id }} />
+      </main>
+    </>
+  );
+}

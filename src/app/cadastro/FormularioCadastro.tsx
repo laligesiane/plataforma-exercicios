@@ -3,15 +3,16 @@
 import { useActionState } from "react";
 import { Mensagem } from "@/components/ui/Mensagem";
 import { botaoPrimario, campo, rotulo } from "@/components/ui/estilos";
-import { cadastrarProfessor } from "./actions";
+import { cadastrar } from "./actions";
 
-export function FormularioCadastro() {
-  const [estado, acao, enviando] = useActionState(cadastrarProfessor, null);
+export function FormularioCadastro({ papel }: { papel: "professor" | "aluno" }) {
+  const [estado, acao, enviando] = useActionState(cadastrar, null);
 
   if (estado?.sucesso) return <Mensagem estado={estado} />;
 
   return (
     <form action={acao} className="space-y-4">
+      <input type="hidden" name="papel" value={papel} />
       <div>
         <label htmlFor="nome" className={rotulo}>
           Seu nome

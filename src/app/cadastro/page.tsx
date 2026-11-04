@@ -5,7 +5,8 @@ import { obterPerfil, paginaInicial } from "@/lib/perfil";
 import { supabaseConfigurado } from "@/lib/supabase/config";
 import { FormularioCadastro } from "./FormularioCadastro";
 
-export default async function PaginaCadastro() {
+export default async function PaginaCadastro({ searchParams }: { searchParams: Promise<{ papel?: string }> }) {
+  const papel = (await searchParams).papel === "aluno" ? "aluno" : "professor";
   const perfil = await obterPerfil();
   if (perfil) redirect(paginaInicial(perfil.papel));
 
@@ -13,13 +14,34 @@ export default async function PaginaCadastro() {
     <>
       <Cabecalho />
       <main className="mx-auto w-full max-w-sm px-4 pt-12 pb-16">
-        <h1 className="text-3xl font-extrabold tracking-tight">Conta de professor</h1>
+        <div role="tablist" aria-label="Tipo de conta" className="mb-6 grid grid-cols-2 gap-1 rounded-full bg-suave p-1">
+          {(
+            [
+              ["professor", "Sou professor"],
+              ["aluno", "Sou aluno"],
+            ] as const
+          ).map(([valor, texto]) => (
+            <Link
+              key={valor}
+              href={valor === "aluno" ? "/cadastro?papel=aluno" : "/cadastro"}
+              role="tab"
+              aria-selected={papel === valor}
+              className={`rounded-full px-4 py-2 text-center text-sm font-bold transition-colors ${papel === valor ? "bg-fundo text-tinta shadow-sm" : "text-tinta-suave hover:text-tinta"}`}
+            >
+              {texto}
+            </Link>
+          ))}
+        </div>
+        <h1 className="text-3xl font-extrabold tracking-tight">
+          {papel === "aluno" ? "Conta de aluno" : "Conta de professor"}
+        </h1>
         <p className="mt-2 mb-6 text-tinta-suave">
-          Crie turmas, monte exercícios com explicação de cada erro e convide seus alunos. O plano grátis inclui 1 turma
-          com até 10 alunos.
+          {papel === "aluno"
+            ? "Organize seus estudos por matéria, com resumos e mapas mentais. Não precisa de professor: se um professor te convidar depois, as turmas dele aparecem aqui também. O plano grátis inclui 3 matérias."
+            : "Crie turmas de qualquer matéria, registre as aulas, monte exercícios com explicação de cada erro e convide seus alunos. O plano grátis inclui 3 turmas com até 10 alunos."}
         </p>
         {supabaseConfigurado ? (
-          <FormularioCadastro />
+          <FormularioCadastro papel={papel} />
         ) : (
           <p className="rounded-xl bg-aviso-fundo px-3.5 py-2.5 text-sm text-aviso">O cadastro ainda não foi configurado.</p>
         )}
