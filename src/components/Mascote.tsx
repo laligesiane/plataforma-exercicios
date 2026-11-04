@@ -69,24 +69,16 @@ export function Mascote({
   );
 }
 
-/** Ícone do logo e do favicon: o rostinho do Brotinho, piscando e balançando as folhinhas. */
+/** Ícone do logo e do favicon: só o brotinho, em branco sobre o verde, com as folhinhas balançando devagar. */
 export function IconeLogo({ tamanho = 34 }: { tamanho?: number }) {
   return (
     <svg width={tamanho} height={tamanho} viewBox="0 0 64 64" className="brotinho-ocioso shrink-0" aria-hidden>
-      <rect width="64" height="64" rx="16" fill="#e3f6ee" />
+      <rect width="64" height="64" rx="16" fill="#0f9d6b" />
+      <path d="M32 50 V28" stroke="#fff" strokeWidth="5" strokeLinecap="round" />
       <g className="brotinho-folhas brotinho-folhas-icone">
-        <path d="M32 21 V13" stroke="#1f7a45" strokeWidth="3.5" strokeLinecap="round" />
-        <path d="M32 14 C26 5 15 6 13 12 C19 18 28 18 32 14Z" fill="#34c38f" />
-        <path d="M32 14 C38 4 50 5 52 11 C46 18 36 18 32 14Z" fill="#0f9d6b" />
+        <path d="M32 31 C26 17 12 17 9 25 C17 34 27 35 32 31Z" fill="#fff" />
+        <path d="M32 31 C38 15 53 15 56 23 C48 33 37 35 32 31Z" fill="#e3f6ee" />
       </g>
-      <circle cx="32" cy="40" r="20" fill="#0f9d6b" />
-      <g className="brotinho-olhos brotinho-olhos-icone">
-        <circle cx="24.5" cy="37" r="5.2" fill="#fff" />
-        <circle cx="39.5" cy="37" r="5.2" fill="#fff" />
-        <circle cx="25.5" cy="37.6" r="2.8" fill="#10233a" />
-        <circle cx="40.5" cy="37.6" r="2.8" fill="#10233a" />
-      </g>
-      <path d="M27 47 Q32 51.5 37 47" stroke="#fff" strokeWidth="3" strokeLinecap="round" fill="none" />
     </svg>
   );
 }
