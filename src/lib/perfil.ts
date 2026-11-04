@@ -11,6 +11,9 @@ export type Perfil = {
   email: string;
   papel: Papel;
   plano_id: string;
+  criado_em: string;
+  /** false só para quem entrou pela primeira vez com o Google e ainda não disse se é professor ou aluno. */
+  papel_escolhido: boolean;
 };
 
 /** Perfil de quem está logado, ou null. */
@@ -23,8 +26,10 @@ export async function obterPerfil(): Promise<Perfil | null> {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data } = await supabase.from("perfil").select("id, nome, email, papel, plano_id").eq("id", user.id).single();
-  return data;
+  // "*" para não quebrar se a coluna papel_escolhido (0019) ainda não existir.
+  const { data } = await supabase.from("perfil").select("*").eq("id", user.id).single();
+  if (!data) return null;
+  return { ...data, papel_escolhido: data.papel_escolhido !== false } as Perfil;
 }
 
 export function paginaInicial(papel: Papel) {
@@ -35,6 +40,14 @@ export function paginaInicial(papel: Papel) {
 export async function exigirPapel(papel: Papel): Promise<Perfil> {
   const perfil = await obterPerfil();
   if (!perfil) redirect("/entrar");
+  if (!perfil.papel_escolhido) redirect("/bem-vindo");
   if (perfil.papel !== papel) redirect(paginaInicial(perfil.papel));
+  return perfil;
+}
+
+/** Para páginas de qualquer pessoa logada. */
+export async function exigirLogin(): Promise<Perfil> {
+  const perfil = await obterPerfil();
+  if (!perfil) redirect("/entrar?proximo=/perfil");
   return perfil;
 }

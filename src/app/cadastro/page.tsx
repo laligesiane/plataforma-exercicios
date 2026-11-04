@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { BotaoGoogle, Divisor } from "@/components/auth/BotaoGoogle";
 import { Cabecalho } from "@/components/Cabecalho";
 import { obterPerfil, paginaInicial } from "@/lib/perfil";
 import { supabaseConfigurado } from "@/lib/supabase/config";
@@ -8,7 +9,7 @@ import { FormularioCadastro } from "./FormularioCadastro";
 export default async function PaginaCadastro({ searchParams }: { searchParams: Promise<{ papel?: string }> }) {
   const papel = (await searchParams).papel === "aluno" ? "aluno" : "professor";
   const perfil = await obterPerfil();
-  if (perfil) redirect(paginaInicial(perfil.papel));
+  if (perfil) redirect(perfil.papel_escolhido ? paginaInicial(perfil.papel) : "/bem-vindo");
 
   return (
     <>
@@ -41,7 +42,11 @@ export default async function PaginaCadastro({ searchParams }: { searchParams: P
             : "Crie turmas de qualquer matéria, registre as aulas, monte exercícios com explicação de cada erro e convide seus alunos. O plano grátis inclui 3 turmas com até 10 alunos."}
         </p>
         {supabaseConfigurado ? (
-          <FormularioCadastro papel={papel} />
+          <>
+            <BotaoGoogle />
+            <Divisor />
+            <FormularioCadastro papel={papel} />
+          </>
         ) : (
           <p className="rounded-xl bg-aviso-fundo px-3.5 py-2.5 text-sm text-aviso">O cadastro ainda não foi configurado.</p>
         )}
