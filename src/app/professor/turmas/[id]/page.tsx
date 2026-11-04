@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Cabecalho } from "@/components/Cabecalho";
-import { nomeIdioma } from "@/lib/idiomas";
+import { descreverTurma } from "@/lib/turmas";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { CartaoAula } from "@/components/CartaoAula";
@@ -25,7 +25,7 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
     await Promise.all([
     supabase
       .from("turma")
-      .select("id, nome, idioma_ensinado, idioma_instrucao, turma_aluno(perfil(id, nome, email))")
+      .select("id, nome, materia, idioma_ensinado, idioma_instrucao, turma_aluno(perfil(id, nome, email))")
       .eq("id", id)
       .maybeSingle(),
     supabase.from("plano").select("max_alunos_por_turma").eq("id", perfil.plano_id).single(),
@@ -61,7 +61,7 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
         </Link>
         <h1 className="mt-3 text-3xl font-extrabold tracking-tight">{turma.nome}</h1>
         <p className="mt-2 text-tinta-suave">
-          {nomeIdioma(turma.idioma_ensinado)} explicado em {nomeIdioma(turma.idioma_instrucao).toLowerCase()}
+          {descreverTurma(turma)}
         </p>
 
         <section className="mt-8 rounded-2xl border border-linha p-5 sm:p-6">

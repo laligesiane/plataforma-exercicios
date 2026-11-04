@@ -14,15 +14,25 @@ export async function criarTurma(_estado: EstadoFormulario, formData: FormData):
   const professor = await exigirPapel("professor");
 
   const nome = String(formData.get("nome") ?? "").trim();
+  const tipo = String(formData.get("tipo") ?? "idioma");
   const idiomaEnsinado = String(formData.get("idioma_ensinado") ?? "");
   const idiomaInstrucao = String(formData.get("idioma_instrucao") ?? "");
+  const materia = String(formData.get("materia") ?? "").trim().slice(0, 80);
   if (!nome) return { erro: "Dê um nome para a turma." };
-  if (!ehIdioma(idiomaEnsinado) || !ehIdioma(idiomaInstrucao)) return { erro: "Escolha os dois idiomas." };
+  if (tipo === "materia") {
+    if (!materia) return { erro: "Escreva a matéria da turma." };
+  } else if (!ehIdioma(idiomaEnsinado) || !ehIdioma(idiomaInstrucao)) {
+    return { erro: "Escolha os dois idiomas." };
+  }
+  const assunto =
+    tipo === "materia"
+      ? { materia, idioma_ensinado: null, idioma_instrucao: null }
+      : { materia: "", idioma_ensinado: idiomaEnsinado, idioma_instrucao: idiomaInstrucao };
 
   const supabase = await criarClienteServidor();
   const { data, error } = await supabase
     .from("turma")
-    .insert({ professor_id: professor.id, nome, idioma_ensinado: idiomaEnsinado, idioma_instrucao: idiomaInstrucao })
+    .insert({ professor_id: professor.id, nome, ...assunto })
     .select("id")
     .single();
 
