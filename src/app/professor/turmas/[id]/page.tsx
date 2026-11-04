@@ -13,18 +13,22 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
   const perfil = await exigirPapel("professor");
   const supabase = await criarClienteServidor();
 
-  const [{ data: turma }, { data: plano }] = await Promise.all([
+  const [{ data: turma }, { data: plano }, { data: atribuicoes }] = await Promise.all([
     supabase
       .from("turma")
       .select("id, nome, idioma_ensinado, idioma_instrucao, turma_aluno(perfil(id, nome, email))")
       .eq("id", id)
       .maybeSingle(),
     supabase.from("plano").select("max_alunos_por_turma").eq("id", perfil.plano_id).single(),
+    supabase.from("atividade_turma").select("atividade(id, titulo, nivel, publicada)").eq("turma_id", id),
   ]);
   if (!turma) notFound();
 
   // Relação muitos-para-um: o Supabase devolve um objeto, mas sem tipos gerados o cliente a tipa como lista.
   const alunos = turma.turma_aluno.flatMap((m) => (m.perfil ? [m.perfil as unknown as Aluno] : []));
+  const atividades = (atribuicoes ?? []).flatMap((a) =>
+    a.atividade ? [a.atividade as unknown as { id: string; titulo: string; nivel: string; publicada: boolean }] : [],
+  );
   const limite = plano?.max_alunos_por_turma ?? 0;
   const cheia = alunos.length >= limite;
 
@@ -48,6 +52,33 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
             </p>
           ) : (
             <FormularioConvite turmaId={turma.id} />
+          )}
+        </section>
+
+        <section className="mt-6 rounded-2xl border border-linha p-5 sm:p-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-lg font-bold">Atividades da turma</h2>
+            <Link href="/professor/atividades" className="text-sm font-bold text-primaria hover:underline">
+              Todas as atividades
+            </Link>
+          </div>
+          {atividades.length > 0 ? (
+            <ul className="mt-3 divide-y divide-linha">
+              {atividades.map((a) => (
+                <li key={a.id} className="flex flex-wrap items-baseline justify-between gap-x-4 py-3">
+                  <Link href={`/professor/atividades/${a.id}`} className="font-semibold hover:text-primaria">
+                    {a.titulo}
+                  </Link>
+                  <span className="text-sm text-tinta-suave">
+                    {a.nivel} · {a.publicada ? "Publicada" : "Rascunho"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-sm text-tinta-suave">
+              Nenhuma atividade ainda. Crie uma em Atividades e marque esta turma.
+            </p>
           )}
         </section>
 

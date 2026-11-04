@@ -35,6 +35,17 @@ export default async function PainelProfessor() {
           </p>
         )}
 
+        <Link
+          href="/professor/atividades"
+          className="mt-6 flex items-center justify-between gap-4 rounded-2xl bg-primaria-suave p-5 transition-opacity hover:opacity-90"
+        >
+          <span>
+            <span className="block font-bold text-primaria">Atividades</span>
+            <span className="mt-0.5 block text-sm">Crie aulas com explicação e exercícios corrigidos na hora.</span>
+          </span>
+          <span aria-hidden className="text-xl font-bold text-primaria">→</span>
+        </Link>
+
         <section className="mt-8 space-y-3">
           <h2 className="text-lg font-bold">Suas turmas</h2>
           {turmas && turmas.length > 0 ? (

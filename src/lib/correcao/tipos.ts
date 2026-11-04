@@ -4,6 +4,8 @@ export type ErroPrevisto = {
 };
 
 export type ItemLacuna = {
+  /** Identifica o item para salvar respostas. */
+  id?: string;
   tipo: "lacuna";
   enunciado: string;
   aceitas: string[];
@@ -21,6 +23,7 @@ export type Alternativa = {
 };
 
 export type ItemMultiplaEscolha = {
+  id?: string;
   tipo: "multipla_escolha";
   enunciado: string;
   alternativas: Alternativa[];

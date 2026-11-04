@@ -21,6 +21,10 @@ No Supabase, abra **SQL Editor → New query**, cole todo o conteúdo de
 Isso cria o plano grátis (1 turma, 10 alunos), os perfis, as turmas e as regras de acesso.
 Para mudar os limites depois, edite a linha `gratis` na tabela **plano** (Table Editor).
 
+Depois, numa nova query, cole e rode
+[`supabase/migrations/0002_atividades.sql`](../supabase/migrations/0002_atividades.sql).
+Ela cria as atividades, os exercícios e as respostas dos alunos. Rode cada arquivo uma vez só, na ordem.
+
 ## 2. Endereços do site
 
 Em **Authentication → URL Configuration**:

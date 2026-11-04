@@ -17,9 +17,20 @@ export async function Cabecalho() {
         <nav className="flex items-center gap-4 text-sm font-semibold text-tinta-suave">
           {perfil ? (
             <>
-              <Link href={paginaInicial(perfil.papel)} className="hidden hover:text-tinta sm:inline">
-                {perfil.papel === "professor" ? "Minhas turmas" : "Minhas atividades"}
-              </Link>
+              {perfil.papel === "professor" ? (
+                <>
+                  <Link href="/professor" className="hover:text-tinta">
+                    Turmas
+                  </Link>
+                  <Link href="/professor/atividades" className="hover:text-tinta">
+                    Atividades
+                  </Link>
+                </>
+              ) : (
+                <Link href={paginaInicial(perfil.papel)} className="hover:text-tinta">
+                  Minhas atividades
+                </Link>
+              )}
               <form action={sair}>
                 <button className="rounded-full border-2 border-linha px-4 py-1 font-bold text-tinta hover:border-tinta">
                   Sair

@@ -5,10 +5,10 @@ import { obterPerfil, paginaInicial } from "@/lib/perfil";
 import { supabaseConfigurado } from "@/lib/supabase/config";
 import { FormularioEntrar } from "./FormularioEntrar";
 
-export default async function PaginaEntrar({ searchParams }: { searchParams: Promise<{ erro?: string }> }) {
-  const { erro } = await searchParams;
+export default async function PaginaEntrar({ searchParams }: { searchParams: Promise<{ erro?: string; proximo?: string }> }) {
+  const { erro, proximo } = await searchParams;
   const perfil = await obterPerfil();
-  if (perfil) redirect(paginaInicial(perfil.papel));
+  if (perfil) redirect(proximo?.match(/^\/(?![/\\])/) ? proximo : paginaInicial(perfil.papel));
 
   return (
     <>
@@ -22,7 +22,7 @@ export default async function PaginaEntrar({ searchParams }: { searchParams: Pro
           </p>
         )}
         {supabaseConfigurado ? (
-          <FormularioEntrar />
+          <FormularioEntrar proximo={proximo} />
         ) : (
           <p className="rounded-xl bg-aviso-fundo px-3.5 py-2.5 text-sm text-aviso">O login ainda não foi configurado.</p>
         )}
