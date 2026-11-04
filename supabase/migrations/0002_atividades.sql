@@ -113,8 +113,12 @@ $$;
 
 -- ---------- Regras de acesso ----------
 -- Atividade
-create policy "ver atividade" on public.atividade for select
-  using (public.pode_ver_atividade(id));
+-- O dono vê direto: assim a linha recém-criada já pode ser lida de volta.
+create policy "professor vê suas atividades" on public.atividade for select
+  using (professor_id = (select auth.uid()));
+
+create policy "ver atividade publicada" on public.atividade for select
+  using (publicada and public.pode_ver_atividade(id));
 
 create policy "professor cria atividade" on public.atividade for insert
   with check (professor_id = (select auth.uid()) and public.eh_professor());

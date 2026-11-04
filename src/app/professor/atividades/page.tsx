@@ -6,10 +6,11 @@ import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { BotaoNovaAtividade } from "./novo-botao";
 
-export default async function AtividadesProfessor() {
+export default async function AtividadesProfessor({ searchParams }: { searchParams: Promise<{ erro?: string }> }) {
+  const { erro } = await searchParams;
   const professor = await exigirPapel("professor");
   const supabase = await criarClienteServidor();
-  const { data: atividades } = await supabase
+  const { data: atividades, error } = await supabase
     .from("atividade")
     .select("id, titulo, nivel, categoria, idioma_ensinado, publicada, publica, exercicio(count), atividade_turma(turma(nome))")
     .eq("professor_id", professor.id)
@@ -23,6 +24,17 @@ export default async function AtividadesProfessor() {
           <h1 className="text-3xl font-extrabold tracking-tight">Atividades</h1>
           <BotaoNovaAtividade />
         </div>
+
+        {error ? (
+          <p role="alert" className="mt-8 rounded-xl bg-aviso-fundo px-3.5 py-2.5 text-sm text-aviso">
+            O banco ainda não tem as tabelas de atividades. No Supabase, abra o SQL Editor e rode o arquivo{" "}
+            <code className="font-bold">supabase/migrations/0002_atividades.sql</code>.
+          </p>
+        ) : erro === "criar" ? (
+          <p role="alert" className="mt-8 rounded-xl bg-erro-fundo px-3.5 py-2.5 text-sm text-erro">
+            Não foi possível criar a atividade. Tente de novo em instantes.
+          </p>
+        ) : null}
 
         {atividades && atividades.length > 0 ? (
           <ul className="mt-8 space-y-3">

@@ -39,7 +39,8 @@ export async function criarAtividade() {
     .select("id")
     .single();
 
-  if (error) throw new Error("Não foi possível criar a atividade.");
+  // Em vez de quebrar a página, volta para a lista com um aviso.
+  if (error) redirect("/professor/atividades?erro=criar");
   redirect(`/professor/atividades/${data.id}`);
 }
 
