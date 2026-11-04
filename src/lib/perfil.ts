@@ -3,13 +3,14 @@ import { redirect } from "next/navigation";
 import { supabaseConfigurado } from "./supabase/config";
 import { criarClienteServidor } from "./supabase/servidor";
 
-export type Papel = "professora" | "aluno";
+export type Papel = "professor" | "aluno";
 
 export type Perfil = {
   id: string;
   nome: string | null;
   email: string;
   papel: Papel;
+  plano_id: string;
 };
 
 /** Perfil de quem está logado, ou null. */
@@ -22,12 +23,12 @@ export async function obterPerfil(): Promise<Perfil | null> {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data } = await supabase.from("perfil").select("id, nome, email, papel").eq("id", user.id).single();
+  const { data } = await supabase.from("perfil").select("id, nome, email, papel, plano_id").eq("id", user.id).single();
   return data;
 }
 
 export function paginaInicial(papel: Papel) {
-  return papel === "professora" ? "/professora" : "/aluno";
+  return papel === "professor" ? "/professor" : "/aluno";
 }
 
 /** Para páginas restritas: manda para o login ou para a área certa. */

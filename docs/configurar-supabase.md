@@ -1,37 +1,41 @@
 # Configurar o Supabase
 
-Passo a passo para ligar o login, os papéis e os convites. Faça uma vez só, nesta ordem.
+Passo a passo para ligar o cadastro de professores, as turmas e os convites. Faça uma vez só, nesta ordem.
 
 ## 1. Criar as tabelas
 
 No Supabase, abra **SQL Editor → New query**, cole todo o conteúdo de
-[`supabase/migrations/0001_perfis.sql`](../supabase/migrations/0001_perfis.sql) e clique em **Run**.
+[`supabase/migrations/0001_inicial.sql`](../supabase/migrations/0001_inicial.sql) e clique em **Run**.
 
-## 2. Fechar o cadastro aberto
+Isso cria o plano grátis (1 turma, 10 alunos), os perfis, as turmas e as regras de acesso.
+Para mudar os limites depois, edite a linha `gratis` na tabela **plano** (Table Editor).
 
-Em **Authentication → Sign In / Providers**, desligue **Allow new users to sign up**.
-Assim só entra quem recebeu convite.
-
-## 3. Endereços do site
+## 2. Endereços do site
 
 Em **Authentication → URL Configuration**:
 
 - **Site URL:** `https://plataforma-exercicios.vercel.app`
 - **Redirect URLs:** adicione `https://*-lavnia-gesianes-projects.vercel.app/**` e `http://localhost:3000/**`
 
-## 4. E-mail de convite
+## 3. Modelos de e-mail
 
-Em **Authentication → Emails → Invite user**, troque o corpo do e-mail por:
+Em **Authentication → Emails**, troque o corpo destes dois modelos.
+
+**Confirm signup** (professor confirmando o cadastro):
 
 ```html
-<h2>Você foi convidado para a Plataforma de Exercícios</h2>
-<p>Clique no link abaixo para criar sua senha:</p>
+<h2>Confirme sua conta na Plataforma de Exercícios</h2>
+<p><a href="{{ .SiteURL }}/auth/confirmar?token_hash={{ .TokenHash }}&type=email">Confirmar meu e-mail</a></p>
+```
+
+**Invite user** (aluno convidado para uma turma):
+
+```html
+<h2>Você foi convidado para uma turma na Plataforma de Exercícios</h2>
 <p><a href="{{ .SiteURL }}/auth/confirmar?token_hash={{ .TokenHash }}&type=invite">Criar minha senha</a></p>
 ```
 
-O assunto pode ser "Seu convite para a Plataforma de Exercícios".
-
-## 5. Variáveis na Vercel
+## 4. Variáveis na Vercel
 
 Em **Vercel → plataforma-exercicios → Settings → Environment Variables**, adicione para todos os ambientes:
 
@@ -44,20 +48,14 @@ Em **Vercel → plataforma-exercicios → Settings → Environment Variables**, 
 A secret key dá acesso total ao banco: cole só na Vercel, nunca em chat, e-mail ou código.
 Depois de salvar, faça um **Redeploy** para valer.
 
-## 6. Criar a conta da professora
+## 5. Testar
 
-1. Em **Authentication → Users → Add user → Send invitation**, coloque o e-mail da professora.
-2. Ela abre o e-mail, cria a senha e entra (por enquanto como aluna).
-3. No **SQL Editor**, rode trocando o e-mail:
+1. Abra o site, clique em **Sou professor** e crie uma conta.
+2. Confirme pelo e-mail, entre e crie uma turma.
+3. Na turma, convide um aluno com outro e-mail seu.
 
-```sql
-update public.perfil set papel = 'professora' where email = 'email-da-professora@exemplo.com';
-```
+## 6. E-mails de verdade (antes de abrir para outros professores)
 
-Pronto: ao entrar de novo, ela vai para o painel e pode convidar os alunos.
-
-## 7. E-mails para os alunos (antes de convidar a turma)
-
-O e-mail embutido do Supabase só envia para quem é membro do projeto no Supabase e poucos por hora.
-Para convidar alunos de verdade, crie uma conta grátis no [Resend](https://resend.com) e configure em
+O e-mail embutido do Supabase só envia para membros do projeto no Supabase e poucos por hora.
+Para professores e alunos reais, crie uma conta grátis no [Resend](https://resend.com) e configure em
 **Authentication → Emails → SMTP Settings** com os dados de SMTP que o Resend mostra.

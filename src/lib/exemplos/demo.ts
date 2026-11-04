@@ -1,6 +1,6 @@
 import type { ItemLacuna, ItemMultiplaEscolha } from "@/lib/correcao";
 
-// Exemplos provisórios até termos exercícios reais da professora.
+// Exemplos provisórios até termos exercícios reais dos professores.
 export const lacunasDemo: ItemLacuna[] = [
   {
     tipo: "lacuna",

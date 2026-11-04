@@ -18,7 +18,7 @@ export async function Cabecalho() {
           {perfil ? (
             <>
               <Link href={paginaInicial(perfil.papel)} className="hidden hover:text-tinta sm:inline">
-                {perfil.papel === "professora" ? "Painel" : "Minhas atividades"}
+                {perfil.papel === "professor" ? "Minhas turmas" : "Minhas atividades"}
               </Link>
               <form action={sair}>
                 <button className="rounded-full border-2 border-linha px-4 py-1 font-bold text-tinta hover:border-tinta">
@@ -27,9 +27,14 @@ export async function Cabecalho() {
               </form>
             </>
           ) : (
-            <Link href="/entrar" className="rounded-full bg-tinta px-4 py-1.5 font-bold text-fundo">
-              Entrar
-            </Link>
+            <>
+              <Link href="/cadastro" className="hidden hover:text-tinta sm:inline">
+                Sou professor
+              </Link>
+              <Link href="/entrar" className="rounded-full bg-tinta px-4 py-1.5 font-bold text-fundo">
+                Entrar
+              </Link>
+            </>
           )}
         </nav>
       </div>
