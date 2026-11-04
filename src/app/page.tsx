@@ -151,28 +151,8 @@ export default async function Inicio() {
           </div>
         </section>
 
-        {/* A história */}
-        <section className="mx-auto w-full max-w-3xl px-4 py-16">
-          <h2 className="text-3xl font-extrabold tracking-tight">Como tudo começou</h2>
-          <div className="mt-5 space-y-4 text-lg text-tinta-suave">
-            <p>
-              A Repasa nasceu na sala de aula de uma professora de espanhol e inglês, por causa de uma pergunta que os
-              alunos faziam toda semana: <strong className="text-tinta">“mas por que eu errei?”</strong>
-            </p>
-            <p>
-              Os sites de exercício davam a nota e paravam ali. Sete de dez, tente de novo. Ninguém dizia o que tinha
-              faltado. Ela queria que cada erro viesse acompanhado da explicação, na hora, do jeito que ela faria se
-              estivesse sentada ao lado do aluno.
-            </p>
-            <p>
-              Foi isso que construímos: um lugar onde errar não é o fim do exercício, é o começo da explicação. E onde
-              voltar ao conteúdo, <em>repasar</em>, é o caminho natural, e não um castigo.
-            </p>
-          </div>
-        </section>
-
         {/* Como funciona */}
-        <section className="border-t border-linha">
+        <section>
           <div className="mx-auto w-full max-w-5xl px-4 py-16">
             <h2 className="text-3xl font-extrabold tracking-tight">Como funciona</h2>
             <ol className="mt-8 grid gap-4 md:grid-cols-3">
