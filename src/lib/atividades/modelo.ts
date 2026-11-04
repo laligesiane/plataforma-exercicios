@@ -1,4 +1,4 @@
-import type { ItemLacuna, ItemMultiplaEscolha } from "@/lib/correcao";
+import type { ItemArrastar, ItemClassificar, ItemLacuna, ItemMultiplaEscolha, ItemRelacionar } from "@/lib/correcao";
 
 export const niveis = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
 export type Nivel = (typeof niveis)[number];
@@ -15,6 +15,9 @@ export type Categoria = keyof typeof categorias;
 export const tiposExercicio = {
   lacuna: "Completar lacunas",
   multipla_escolha: "Múltipla escolha",
+  arrastar: "Arrastar palavras",
+  classificar: "Classificar em colunas",
+  relacionar: "Relacionar",
 } as const;
 export type TipoExercicio = keyof typeof tiposExercicio;
 
@@ -37,7 +40,48 @@ export type ExercicioMultiplaEscolha = {
   itens: (ItemMultiplaEscolha & { id: string })[];
 };
 
-export type Exercicio = ExercicioLacuna | ExercicioMultiplaEscolha;
+export type ExercicioArrastar = {
+  id: string;
+  tipo: "arrastar";
+  titulo: string;
+  instrucoes: string;
+  /** Palavras que entram no banco sem ser resposta de nenhum item, para despistar. */
+  palavrasExtras: string[];
+  itens: (ItemArrastar & { id: string })[];
+};
+
+export type Coluna = { id: string; nome: string };
+
+export type ExercicioClassificar = {
+  id: string;
+  tipo: "classificar";
+  titulo: string;
+  instrucoes: string;
+  colunas: Coluna[];
+  itens: (ItemClassificar & { id: string })[];
+};
+
+export type ExercicioRelacionar = {
+  id: string;
+  tipo: "relacionar";
+  titulo: string;
+  instrucoes: string;
+  itens: (ItemRelacionar & { id: string })[];
+};
+
+export type Exercicio =
+  | ExercicioLacuna
+  | ExercicioMultiplaEscolha
+  | ExercicioArrastar
+  | ExercicioClassificar
+  | ExercicioRelacionar;
+
+/** Campos do exercício que ficam na coluna "config" do banco, conforme o tipo. */
+export function configDoExercicio(e: Exercicio): Record<string, unknown> {
+  if (e.tipo === "arrastar") return { palavrasExtras: e.palavrasExtras };
+  if (e.tipo === "classificar") return { colunas: e.colunas };
+  return {};
+}
 
 export type Atividade = {
   id: string;
@@ -86,23 +130,69 @@ export function novoItemMultiplaEscolha(): ExercicioMultiplaEscolha["itens"][num
   };
 }
 
+export function novoItemArrastar(): ExercicioArrastar["itens"][number] {
+  return { id: novoId(), tipo: "arrastar", enunciado: "", resposta: "", errosPrevistos: [], explicacaoPadrao: "" };
+}
+
+export function novoItemClassificar(colunaId = ""): ExercicioClassificar["itens"][number] {
+  return { id: novoId(), tipo: "classificar", texto: "", colunaId, explicacao: "" };
+}
+
+export function novoItemRelacionar(): ExercicioRelacionar["itens"][number] {
+  return { id: novoId(), tipo: "relacionar", esquerda: "", direita: "", explicacao: "" };
+}
+
 export function novoExercicio(tipo: TipoExercicio): Exercicio {
-  if (tipo === "lacuna") {
-    return {
-      id: novoId(),
-      tipo,
-      titulo: "Complete as frases",
-      instrucoes: "Escreva a palavra que falta e aperte Enter.",
-      itens: [novoItemLacuna()],
-    };
+  const id = novoId();
+  switch (tipo) {
+    case "lacuna":
+      return {
+        id,
+        tipo,
+        titulo: "Complete as frases",
+        instrucoes: "Escreva a palavra que falta e aperte Enter.",
+        itens: [novoItemLacuna()],
+      };
+    case "multipla_escolha":
+      return {
+        id,
+        tipo,
+        titulo: "Escolha a resposta certa",
+        instrucoes: "Clique na alternativa correta.",
+        itens: [novoItemMultiplaEscolha()],
+      };
+    case "arrastar":
+      return {
+        id,
+        tipo,
+        titulo: "Complete com as palavras",
+        instrucoes: "Arraste cada palavra para a lacuna certa, ou toque na palavra e depois na lacuna.",
+        palavrasExtras: [],
+        itens: [novoItemArrastar(), novoItemArrastar()],
+      };
+    case "classificar": {
+      const colunas = [
+        { id: novoId(), nome: "" },
+        { id: novoId(), nome: "" },
+      ];
+      return {
+        id,
+        tipo,
+        titulo: "Classifique",
+        instrucoes: "Arraste cada cartão para a coluna certa, ou toque no cartão e depois na coluna.",
+        colunas,
+        itens: [novoItemClassificar(colunas[0].id), novoItemClassificar(colunas[1].id)],
+      };
+    }
+    case "relacionar":
+      return {
+        id,
+        tipo,
+        titulo: "Relacione",
+        instrucoes: "Toque num item da esquerda e depois no par dele à direita.",
+        itens: [novoItemRelacionar(), novoItemRelacionar(), novoItemRelacionar()],
+      };
   }
-  return {
-    id: novoId(),
-    tipo,
-    titulo: "Escolha a resposta certa",
-    instrucoes: "Clique na alternativa correta.",
-    itens: [novoItemMultiplaEscolha()],
-  };
 }
 
 const limpar = (texto: string) => texto.trim();
@@ -110,41 +200,83 @@ const limpar = (texto: string) => texto.trim();
 /** Tira espaços sobrando e linhas vazias antes de salvar. */
 export function limparExercicio(exercicio: Exercicio): Exercicio {
   const base = { id: exercicio.id, titulo: limpar(exercicio.titulo), instrucoes: limpar(exercicio.instrucoes) };
-  if (exercicio.tipo === "lacuna") {
-    return {
-      ...base,
-      tipo: "lacuna",
-      itens: exercicio.itens.map((item) => ({
-        id: item.id,
+  const limparErros = (erros: { valor: string; explicacao: string }[]) =>
+    erros.map((e) => ({ valor: limpar(e.valor), explicacao: limpar(e.explicacao) })).filter((e) => e.valor);
+
+  switch (exercicio.tipo) {
+    case "lacuna":
+      return {
+        ...base,
         tipo: "lacuna",
-        enunciado: limpar(item.enunciado),
-        aceitas: item.aceitas.map(limpar).filter(Boolean),
-        errosPrevistos: item.errosPrevistos
-          .map((e) => ({ valor: limpar(e.valor), explicacao: limpar(e.explicacao) }))
-          .filter((e) => e.valor),
-        explicacaoPadrao: limpar(item.explicacaoPadrao),
-        grafiaExata: Boolean(item.grafiaExata),
-      })),
-    };
+        itens: exercicio.itens.map((item) => ({
+          id: item.id,
+          tipo: "lacuna",
+          enunciado: limpar(item.enunciado),
+          aceitas: item.aceitas.map(limpar).filter(Boolean),
+          errosPrevistos: limparErros(item.errosPrevistos),
+          explicacaoPadrao: limpar(item.explicacaoPadrao),
+          grafiaExata: Boolean(item.grafiaExata),
+        })),
+      };
+    case "multipla_escolha":
+      return {
+        ...base,
+        tipo: "multipla_escolha",
+        itens: exercicio.itens.map((item) => ({
+          id: item.id,
+          tipo: "multipla_escolha",
+          enunciado: limpar(item.enunciado),
+          alternativas: item.alternativas
+            .map((a) => ({
+              id: a.id,
+              texto: limpar(a.texto),
+              correta: Boolean(a.correta),
+              ...(a.explicacao?.trim() ? { explicacao: limpar(a.explicacao) } : {}),
+            }))
+            .filter((a) => a.texto),
+          explicacaoPadrao: limpar(item.explicacaoPadrao),
+        })),
+      };
+    case "arrastar":
+      return {
+        ...base,
+        tipo: "arrastar",
+        palavrasExtras: exercicio.palavrasExtras.map(limpar).filter(Boolean),
+        itens: exercicio.itens.map((item) => ({
+          id: item.id,
+          tipo: "arrastar",
+          enunciado: limpar(item.enunciado),
+          resposta: limpar(item.resposta),
+          errosPrevistos: limparErros(item.errosPrevistos),
+          explicacaoPadrao: limpar(item.explicacaoPadrao),
+        })),
+      };
+    case "classificar":
+      return {
+        ...base,
+        tipo: "classificar",
+        colunas: exercicio.colunas.map((c) => ({ id: c.id, nome: limpar(c.nome) })),
+        itens: exercicio.itens.map((item) => ({
+          id: item.id,
+          tipo: "classificar",
+          texto: limpar(item.texto),
+          colunaId: item.colunaId,
+          explicacao: limpar(item.explicacao),
+        })),
+      };
+    case "relacionar":
+      return {
+        ...base,
+        tipo: "relacionar",
+        itens: exercicio.itens.map((item) => ({
+          id: item.id,
+          tipo: "relacionar",
+          esquerda: limpar(item.esquerda),
+          direita: limpar(item.direita),
+          explicacao: limpar(item.explicacao),
+        })),
+      };
   }
-  return {
-    ...base,
-    tipo: "multipla_escolha",
-    itens: exercicio.itens.map((item) => ({
-      id: item.id,
-      tipo: "multipla_escolha",
-      enunciado: limpar(item.enunciado),
-      alternativas: item.alternativas
-        .map((a) => ({
-          id: a.id,
-          texto: limpar(a.texto),
-          correta: Boolean(a.correta),
-          ...(a.explicacao?.trim() ? { explicacao: limpar(a.explicacao) } : {}),
-        }))
-        .filter((a) => a.texto),
-      explicacaoPadrao: limpar(item.explicacaoPadrao),
-    })),
-  };
 }
 
 /** Problemas que impedem publicar. Lista vazia = pronto. Espera exercícios já limpos. */
@@ -156,10 +288,35 @@ export function problemasDaAtividade(titulo: string, exercicios: Exercicio[]): s
   exercicios.forEach((exercicio, i) => {
     const ex = `Exercício ${i + 1}`;
     if (exercicio.itens.length === 0) problemas.push(`${ex}: adicione pelo menos um item.`);
+    if (exercicio.tipo === "classificar") {
+      if (exercicio.colunas.length < 2) problemas.push(`${ex}: crie pelo menos duas colunas.`);
+      if (exercicio.colunas.some((c) => !c.nome)) problemas.push(`${ex}: dê nome a todas as colunas.`);
+    }
+    if (exercicio.tipo === "relacionar" && exercicio.itens.length < 2) {
+      problemas.push(`${ex}: crie pelo menos dois pares.`);
+    }
 
     exercicio.itens.forEach((item, j) => {
       const onde = `${ex}, item ${j + 1}`;
-      if (item.tipo === "lacuna") {
+      if (item.tipo === "arrastar") {
+        if (item.enunciado.split(LACUNA).length - 1 !== 1) {
+          problemas.push(`${onde}: a frase precisa ter exatamente uma lacuna (${LACUNA}).`);
+        }
+        if (!item.resposta) problemas.push(`${onde}: escreva a palavra certa.`);
+        if (!item.explicacaoPadrao) problemas.push(`${onde}: escreva a explicação para quando o aluno errar.`);
+        if (item.errosPrevistos.some((e) => !e.explicacao)) {
+          problemas.push(`${onde}: todo erro previsto precisa de explicação.`);
+        }
+      } else if (item.tipo === "classificar") {
+        if (!item.texto) problemas.push(`${onde}: escreva o texto do cartão.`);
+        if (exercicio.tipo === "classificar" && !exercicio.colunas.some((c) => c.id === item.colunaId)) {
+          problemas.push(`${onde}: escolha a coluna certa do cartão.`);
+        }
+        if (!item.explicacao) problemas.push(`${onde}: explique por que o cartão vai nessa coluna.`);
+      } else if (item.tipo === "relacionar") {
+        if (!item.esquerda || !item.direita) problemas.push(`${onde}: preencha os dois lados do par.`);
+        if (!item.explicacao) problemas.push(`${onde}: escreva a explicação para quando o aluno errar o par.`);
+      } else if (item.tipo === "lacuna") {
         const lacunas = item.enunciado.split(LACUNA).length - 1;
         if (lacunas !== 1) problemas.push(`${onde}: a frase precisa ter exatamente uma lacuna (${LACUNA}).`);
         if (item.aceitas.length === 0) problemas.push(`${onde}: escreva a resposta certa.`);
@@ -188,40 +345,52 @@ export function problemasDaAtividade(titulo: string, exercicios: Exercicio[]): s
 export function ehExercicio(valor: unknown): valor is Exercicio {
   if (!valor || typeof valor !== "object") return false;
   const e = valor as Record<string, unknown>;
-  if (!ehUuid(e.id) || typeof e.titulo !== "string" || typeof e.instrucoes !== "string") return false;
+  if (!ehUuid(e.id) || !texto(e.titulo) || !texto(e.instrucoes)) return false;
   if (!Array.isArray(e.itens)) return false;
-  if (e.tipo === "lacuna") {
-    return e.itens.every((i) => {
-      const it = i as Record<string, unknown>;
-      return (
-        typeof it?.id === "string" &&
-        it.tipo === "lacuna" &&
-        typeof it.enunciado === "string" &&
-        Array.isArray(it.aceitas) &&
-        it.aceitas.every((a) => typeof a === "string") &&
-        Array.isArray(it.errosPrevistos) &&
-        it.errosPrevistos.every(
-          (x) => typeof (x as ErroLike)?.valor === "string" && typeof (x as ErroLike)?.explicacao === "string",
-        ) &&
-        typeof it.explicacaoPadrao === "string"
+  const itens = e.itens as Record<string, unknown>[];
+  const cada = (tipo: string, regra: (it: Record<string, unknown>) => boolean) =>
+    itens.every((it) => it && typeof it === "object" && texto(it.id) && it.tipo === tipo && regra(it));
+
+  switch (e.tipo) {
+    case "lacuna":
+      return cada(
+        "lacuna",
+        (it) => texto(it.enunciado) && listaDeTextos(it.aceitas) && errosValidos(it.errosPrevistos) && texto(it.explicacaoPadrao),
       );
-    });
-  }
-  if (e.tipo === "multipla_escolha") {
-    return e.itens.every((i) => {
-      const it = i as Record<string, unknown>;
-      return (
-        typeof it?.id === "string" &&
-        it.tipo === "multipla_escolha" &&
-        typeof it.enunciado === "string" &&
-        Array.isArray(it.alternativas) &&
-        it.alternativas.every((a) => typeof (a as AltLike)?.id === "string" && typeof (a as AltLike)?.texto === "string") &&
-        typeof it.explicacaoPadrao === "string"
+    case "multipla_escolha":
+      return cada(
+        "multipla_escolha",
+        (it) =>
+          texto(it.enunciado) &&
+          Array.isArray(it.alternativas) &&
+          it.alternativas.every((a) => texto((a as AltLike)?.id) && texto((a as AltLike)?.texto)) &&
+          texto(it.explicacaoPadrao),
       );
-    });
+    case "arrastar":
+      return (
+        listaDeTextos(e.palavrasExtras) &&
+        cada(
+          "arrastar",
+          (it) => texto(it.enunciado) && texto(it.resposta) && errosValidos(it.errosPrevistos) && texto(it.explicacaoPadrao),
+        )
+      );
+    case "classificar":
+      return (
+        Array.isArray(e.colunas) &&
+        e.colunas.every((c) => texto((c as AltLike)?.id) && texto((c as { nome?: unknown })?.nome)) &&
+        cada("classificar", (it) => texto(it.texto) && texto(it.colunaId) && texto(it.explicacao))
+      );
+    case "relacionar":
+      return cada("relacionar", (it) => texto(it.esquerda) && texto(it.direita) && texto(it.explicacao));
+    default:
+      return false;
   }
-  return false;
 }
+
+const texto = (v: unknown): v is string => typeof v === "string";
+const listaDeTextos = (v: unknown) => Array.isArray(v) && v.every(texto);
+const errosValidos = (v: unknown) =>
+  Array.isArray(v) && v.every((x) => texto((x as ErroLike)?.valor) && texto((x as ErroLike)?.explicacao));
 
 type ErroLike = { valor?: unknown; explicacao?: unknown };
 type AltLike = { id?: unknown; texto?: unknown };

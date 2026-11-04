@@ -6,6 +6,9 @@ import type { Exercicio } from "@/lib/atividades/modelo";
 import { CartaoExercicio } from "./CartaoExercicio";
 import { Lacuna } from "./Lacuna";
 import { MultiplaEscolha } from "./MultiplaEscolha";
+import { ExercicioArrastar } from "./arrastar/ExercicioArrastar";
+import { ExercicioClassificar } from "./arrastar/ExercicioClassificar";
+import { ExercicioRelacionar } from "./arrastar/ExercicioRelacionar";
 
 export type RespostaDada = { exercicioId: string; itemId: string; valor: string; status: Resultado["status"] };
 
@@ -48,27 +51,58 @@ export function AulaAtividade({ exercicios, respostasAnteriores = {}, onResposta
 
       {exercicios.map((exercicio, i) => (
         <CartaoExercicio key={exercicio.id} numero={i + 1} titulo={exercicio.titulo} instrucoes={exercicio.instrucoes}>
-          {exercicio.tipo === "lacuna"
-            ? exercicio.itens.map((item) => (
-                <Lacuna
-                  key={item.id}
-                  item={item}
-                  valorInicial={respostasAnteriores[item.id]}
-                  onResultado={registrar(exercicio.id, item.id)}
-                />
-              ))
-            : exercicio.itens.map((item) => (
-                <MultiplaEscolha
-                  key={item.id}
-                  item={item}
-                  valorInicial={respostasAnteriores[item.id]}
-                  onResultado={registrar(exercicio.id, item.id)}
-                />
-              ))}
+          <ConteudoExercicio
+            exercicio={exercicio}
+            anteriores={respostasAnteriores}
+            registrar={(itemId) => registrar(exercicio.id, itemId)}
+          />
         </CartaoExercicio>
       ))}
     </div>
   );
+}
+
+type Registrar = (itemId: string) => (resultado: Resultado, valor: string) => void;
+
+function ConteudoExercicio({
+  exercicio,
+  anteriores,
+  registrar,
+}: {
+  exercicio: Exercicio;
+  anteriores: Record<string, string>;
+  registrar: Registrar;
+}) {
+  const aoResultado = (itemId: string, resultado: Resultado, valor: string) => registrar(itemId)(resultado, valor);
+
+  switch (exercicio.tipo) {
+    case "lacuna":
+      return exercicio.itens.map((item) => (
+        <Lacuna key={item.id} item={item} valorInicial={anteriores[item.id]} onResultado={registrar(item.id)} />
+      ));
+    case "multipla_escolha":
+      return exercicio.itens.map((item) => (
+        <MultiplaEscolha key={item.id} item={item} valorInicial={anteriores[item.id]} onResultado={registrar(item.id)} />
+      ));
+    case "arrastar":
+      return (
+        <div>
+          <ExercicioArrastar exercicio={exercicio} anteriores={anteriores} onResultado={aoResultado} />
+        </div>
+      );
+    case "classificar":
+      return (
+        <div>
+          <ExercicioClassificar exercicio={exercicio} anteriores={anteriores} onResultado={aoResultado} />
+        </div>
+      );
+    case "relacionar":
+      return (
+        <div>
+          <ExercicioRelacionar exercicio={exercicio} anteriores={anteriores} onResultado={aoResultado} />
+        </div>
+      );
+  }
 }
 
 /** Acertos das respostas que vieram do banco, sem gravá-las de novo. */

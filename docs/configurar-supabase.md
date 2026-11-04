@@ -23,7 +23,9 @@ Para mudar os limites depois, edite a linha `gratis` na tabela **plano** (Table 
 
 Depois, numa nova query, cole e rode
 [`supabase/migrations/0002_atividades.sql`](../supabase/migrations/0002_atividades.sql).
-Ela cria as atividades, os exercícios e as respostas dos alunos. Rode cada arquivo uma vez só, na ordem.
+Ela cria as atividades, os exercícios e as respostas dos alunos. Em seguida rode
+[`supabase/migrations/0003_tipos_arrastar.sql`](../supabase/migrations/0003_tipos_arrastar.sql),
+que libera os exercícios de arrastar, classificar e relacionar. Rode cada arquivo uma vez só, na ordem.
 
 ## 2. Endereços do site
 
