@@ -8,7 +8,7 @@ export type Horario = {
 };
 
 export const diasDaSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"] as const;
-const diasRRule = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"] as const;
+export const diasRRule = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"] as const;
 
 /** Data e hora "de parede" no fuso indicado. */
 function agoraNoFuso(agora: Date, fuso: string) {

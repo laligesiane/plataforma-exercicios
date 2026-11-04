@@ -1,4 +1,4 @@
--- Horário das aulas de cada turma (um registro por dia da semana).
+-- Agenda: horário das aulas de cada turma (um registro por dia da semana) e link de assinatura.
 -- Rodar uma vez no SQL Editor do Supabase, depois da 0004.
 
 create table public.turma_horario (
@@ -28,3 +28,6 @@ create policy "professor cria horários" on public.turma_horario for insert
 
 create policy "professor apaga horários" on public.turma_horario for delete
   using (public.eh_professor_da_turma(turma_id));
+
+-- Link secreto de assinatura da agenda (.ics). Quem tem o link vê só os horários das turmas da pessoa.
+alter table public.perfil add column agenda_token uuid not null default gen_random_uuid() unique;
