@@ -74,7 +74,7 @@ export function AulaAtividade({ exercicios, respostasAnteriores = {}, primeirasA
       </div>
 
       {exercicios.map((exercicio, i) => (
-        <CartaoExercicio key={exercicio.id} numero={i + 1} titulo={exercicio.titulo} instrucoes={exercicio.instrucoes}>
+        <CartaoExercicio key={exercicio.id} numero={i + 1} titulo={exercicio.titulo} instrucoes={exercicio.instrucoes} midia={exercicio.midia}>
           <ConteudoExercicio
             exercicio={exercicio}
             anteriores={respostasAnteriores}

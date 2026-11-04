@@ -1,3 +1,4 @@
+import { ehLinkDeArquivo, ehMidia, type Midia } from "./midia";
 import type { ItemArrastar, ItemClassificar, ItemLacuna, ItemMultiplaEscolha, ItemRelacionar } from "@/lib/correcao";
 
 export const niveis = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
@@ -29,6 +30,8 @@ export type ExercicioLacuna = {
   tipo: "lacuna";
   titulo: string;
   instrucoes: string;
+  /** Imagem, áudio ou vídeo mostrado no topo do exercício. */
+  midia?: Midia;
   itens: (ItemLacuna & { id: string })[];
 };
 
@@ -37,6 +40,8 @@ export type ExercicioMultiplaEscolha = {
   tipo: "multipla_escolha";
   titulo: string;
   instrucoes: string;
+  /** Imagem, áudio ou vídeo mostrado no topo do exercício. */
+  midia?: Midia;
   itens: (ItemMultiplaEscolha & { id: string })[];
 };
 
@@ -45,6 +50,8 @@ export type ExercicioArrastar = {
   tipo: "arrastar";
   titulo: string;
   instrucoes: string;
+  /** Imagem, áudio ou vídeo mostrado no topo do exercício. */
+  midia?: Midia;
   /** Palavras que entram no banco sem ser resposta de nenhum item, para despistar. */
   palavrasExtras: string[];
   itens: (ItemArrastar & { id: string })[];
@@ -57,6 +64,8 @@ export type ExercicioClassificar = {
   tipo: "classificar";
   titulo: string;
   instrucoes: string;
+  /** Imagem, áudio ou vídeo mostrado no topo do exercício. */
+  midia?: Midia;
   colunas: Coluna[];
   itens: (ItemClassificar & { id: string })[];
 };
@@ -66,6 +75,8 @@ export type ExercicioRelacionar = {
   tipo: "relacionar";
   titulo: string;
   instrucoes: string;
+  /** Imagem, áudio ou vídeo mostrado no topo do exercício. */
+  midia?: Midia;
   itens: (ItemRelacionar & { id: string })[];
 };
 
@@ -78,9 +89,10 @@ export type Exercicio =
 
 /** Campos do exercício que ficam na coluna "config" do banco, conforme o tipo. */
 export function configDoExercicio(e: Exercicio): Record<string, unknown> {
-  if (e.tipo === "arrastar") return { palavrasExtras: e.palavrasExtras };
-  if (e.tipo === "classificar") return { colunas: e.colunas };
-  return {};
+  const config: Record<string, unknown> = e.midia ? { midia: e.midia } : {};
+  if (e.tipo === "arrastar") config.palavrasExtras = e.palavrasExtras;
+  if (e.tipo === "classificar") config.colunas = e.colunas;
+  return config;
 }
 
 export type Atividade = {
@@ -197,9 +209,22 @@ export function novoExercicio(tipo: TipoExercicio): Exercicio {
 
 const limpar = (texto: string) => texto.trim();
 
+/** Mídia sem link vira "sem mídia"; legenda vazia some. */
+function limparMidia(midia: Midia | undefined): Midia | undefined {
+  if (!midia || !midia.url.trim()) return undefined;
+  const legenda = midia.legenda?.trim();
+  return { tipo: midia.tipo, url: midia.url.trim(), ...(legenda ? { legenda } : {}) };
+}
+
 /** Tira espaços sobrando e linhas vazias antes de salvar. */
 export function limparExercicio(exercicio: Exercicio): Exercicio {
-  const base = { id: exercicio.id, titulo: limpar(exercicio.titulo), instrucoes: limpar(exercicio.instrucoes) };
+  const midia = limparMidia(exercicio.midia);
+  const base = {
+    id: exercicio.id,
+    titulo: limpar(exercicio.titulo),
+    instrucoes: limpar(exercicio.instrucoes),
+    ...(midia ? { midia } : {}),
+  };
   const limparErros = (erros: { valor: string; explicacao: string }[]) =>
     erros.map((e) => ({ valor: limpar(e.valor), explicacao: limpar(e.explicacao) })).filter((e) => e.valor);
 
@@ -262,6 +287,7 @@ export function limparExercicio(exercicio: Exercicio): Exercicio {
           texto: limpar(item.texto),
           colunaId: item.colunaId,
           explicacao: limpar(item.explicacao),
+          ...(item.imagem?.trim() ? { imagem: item.imagem.trim() } : {}),
         })),
       };
     case "relacionar":
@@ -288,6 +314,14 @@ export function problemasDaAtividade(titulo: string, exercicios: Exercicio[]): s
   exercicios.forEach((exercicio, i) => {
     const ex = `Exercício ${i + 1}`;
     if (exercicio.itens.length === 0) problemas.push(`${ex}: adicione pelo menos um item.`);
+    const midia: Midia | undefined = exercicio.midia;
+    if (midia && !ehMidia(midia)) {
+      problemas.push(
+        (midia as Midia).tipo === "video"
+          ? `${ex}: o vídeo precisa ser um link do YouTube ou do Vimeo.`
+          : `${ex}: o link da mídia precisa começar com https://.`,
+      );
+    }
     if (exercicio.tipo === "classificar") {
       if (exercicio.colunas.length < 2) problemas.push(`${ex}: crie pelo menos duas colunas.`);
       if (exercicio.colunas.some((c) => !c.nome)) problemas.push(`${ex}: dê nome a todas as colunas.`);
@@ -347,6 +381,7 @@ export function ehExercicio(valor: unknown): valor is Exercicio {
   const e = valor as Record<string, unknown>;
   if (!ehUuid(e.id) || !texto(e.titulo) || !texto(e.instrucoes)) return false;
   if (!Array.isArray(e.itens)) return false;
+  if (e.midia !== undefined && !midiaRascunho(e.midia)) return false;
   const itens = e.itens as Record<string, unknown>[];
   const cada = (tipo: string, regra: (it: Record<string, unknown>) => boolean) =>
     itens.every((it) => it && typeof it === "object" && texto(it.id) && it.tipo === tipo && regra(it));
@@ -378,7 +413,14 @@ export function ehExercicio(valor: unknown): valor is Exercicio {
       return (
         Array.isArray(e.colunas) &&
         e.colunas.every((c) => texto((c as AltLike)?.id) && texto((c as { nome?: unknown })?.nome)) &&
-        cada("classificar", (it) => texto(it.texto) && texto(it.colunaId) && texto(it.explicacao))
+        cada(
+          "classificar",
+          (it) =>
+            texto(it.texto) &&
+            texto(it.colunaId) &&
+            texto(it.explicacao) &&
+            (it.imagem === undefined || ehLinkDeArquivo(it.imagem)),
+        )
       );
     case "relacionar":
       return cada("relacionar", (it) => texto(it.esquerda) && texto(it.direita) && texto(it.explicacao));
@@ -388,6 +430,18 @@ export function ehExercicio(valor: unknown): valor is Exercicio {
 }
 
 const texto = (v: unknown): v is string => typeof v === "string";
+/** Forma da mídia num rascunho: o link pode estar errado (aí não publica), mas tem de ser texto curto. */
+const midiaRascunho = (v: unknown) => {
+  const m = v as Record<string, unknown> | null;
+  return (
+    !!m &&
+    typeof m === "object" &&
+    (m.tipo === "imagem" || m.tipo === "audio" || m.tipo === "video") &&
+    texto(m.url) &&
+    m.url.length <= 2000 &&
+    (m.legenda === undefined || (texto(m.legenda) && m.legenda.length <= 300))
+  );
+};
 const listaDeTextos = (v: unknown) => Array.isArray(v) && v.every(texto);
 const errosValidos = (v: unknown) =>
   Array.isArray(v) && v.every((x) => texto((x as ErroLike)?.valor) && texto((x as ErroLike)?.explicacao));

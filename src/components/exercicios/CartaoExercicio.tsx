@@ -1,11 +1,15 @@
+import type { Midia } from "@/lib/atividades/midia";
+import { MidiaExercicio } from "./MidiaExercicio";
+
 type Props = {
   numero: number;
   titulo: string;
   instrucoes: string;
+  midia?: Midia;
   children: React.ReactNode;
 };
 
-export function CartaoExercicio({ numero, titulo, instrucoes, children }: Props) {
+export function CartaoExercicio({ numero, titulo, instrucoes, midia, children }: Props) {
   return (
     <section className="rounded-2xl border border-linha bg-fundo p-5 sm:p-6">
       <header className="mb-4 flex items-center gap-3">
@@ -17,6 +21,7 @@ export function CartaoExercicio({ numero, titulo, instrucoes, children }: Props)
           <p className="text-sm text-tinta-suave">{instrucoes}</p>
         </div>
       </header>
+      <MidiaExercicio midia={midia} />
       <div className="divide-y divide-linha">{children}</div>
     </section>
   );

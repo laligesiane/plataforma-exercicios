@@ -28,6 +28,8 @@ Ela cria as atividades, os exercícios e as respostas dos alunos. Em seguida rod
 que libera os exercícios de arrastar, classificar e relacionar, e depois
 [`supabase/migrations/0004_corrige_criar_atividade.sql`](../supabase/migrations/0004_corrige_criar_atividade.sql)
 e [`supabase/migrations/0005_envio.sql`](../supabase/migrations/0005_envio.sql) (botão "Enviar respostas").
+Por fim, [`supabase/migrations/0006_midia.sql`](../supabase/migrations/0006_midia.sql) cria a pasta
+"midia" no Storage, onde ficam as imagens e os áudios que o professor envia (até 20 MB cada).
 Rode cada arquivo uma vez só, na ordem.
 
 ## 2. Endereços do site
