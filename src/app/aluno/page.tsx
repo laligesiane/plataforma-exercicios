@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { AssinarAgenda } from "@/components/AssinarAgenda";
+import { CartaoAula } from "@/components/CartaoAula";
 import { Cabecalho } from "@/components/Cabecalho";
 import { HorariosTurma } from "@/components/HorariosTurma";
 import type { Horario } from "@/lib/agenda";
 import { categorias, type Categoria } from "@/lib/atividades/modelo";
+import { camposAula, hojeNoFuso, ultimaAula, type Aula } from "@/lib/aulas";
 import { nomeIdioma } from "@/lib/idiomas";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
@@ -14,12 +16,18 @@ export default async function AreaAluno() {
   const perfil = await exigirPapel("aluno");
   const supabase = await criarClienteServidor();
 
-  const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }] = await Promise.all([
+  const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }, { data: aulasDb }] =
+    await Promise.all([
     supabase.from("turma").select("id, nome, idioma_ensinado, idioma_instrucao").order("nome"),
     supabase.from("atividade_turma").select("turma_id, atividade(id, titulo, nivel, categoria, atualizada_em)"),
     supabase.from("resposta").select("atividade_id, item_id").eq("aluno_id", perfil.id),
     supabase.from("turma_horario").select("id, turma_id, dia_semana, hora_inicio, duracao_min, fuso"),
+    supabase.from("aula").select(camposAula).order("data", { ascending: false }),
   ]);
+
+  const hoje = hojeNoFuso();
+  const aulasPorTurma = new Map<string, Aula[]>();
+  for (const a of (aulasDb ?? []) as Aula[]) aulasPorTurma.set(a.turma_id, [...(aulasPorTurma.get(a.turma_id) ?? []), a]);
 
   const horariosPorTurma = new Map<string, (Horario & { id: string })[]>();
   for (const h of horarios ?? []) horariosPorTurma.set(h.turma_id, [...(horariosPorTurma.get(h.turma_id) ?? []), h]);
@@ -62,6 +70,24 @@ export default async function AreaAluno() {
               <div className="mt-3">
                 <HorariosTurma horarios={horariosPorTurma.get(turma.id) ?? []} nomeTurma={turma.nome} />
               </div>
+              {(() => {
+                const aulas = aulasPorTurma.get(turma.id) ?? [];
+                const ultima = ultimaAula(aulas, hoje);
+                if (!ultima) return null;
+                return (
+                  <div className="mt-3">
+                    <CartaoAula aula={ultima} destaque="Última aula" />
+                    {aulas.length > 1 && (
+                      <Link
+                        href={`/aluno/turmas/${turma.id}`}
+                        className="mt-2 inline-block text-sm font-bold text-primaria hover:underline"
+                      >
+                        Ver todas as aulas ({aulas.length})
+                      </Link>
+                    )}
+                  </div>
+                );
+              })()}
               {atividades.length > 0 ? (
                 <ul className="mt-3 grid gap-3 sm:grid-cols-2">
                   {atividades.map((a) => {
