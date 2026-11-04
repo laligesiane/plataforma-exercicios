@@ -10,13 +10,16 @@ export default async function PainelProfessor() {
   const perfil = await exigirPapel("professor");
   const supabase = await criarClienteServidor();
 
-  const [{ data: plano }, { data: turmas }] = await Promise.all([
+  const [{ data: plano }, { data: turmas }, { data: pedidos }] = await Promise.all([
     supabase.from("plano").select("nome, max_turmas, max_alunos_por_turma, max_atividades_por_turma").eq("id", perfil.plano_id).single(),
     supabase
       .from("turma")
       .select("id, nome, materia, idioma_ensinado, idioma_instrucao, turma_aluno(count)")
       .order("criada_em"),
+    supabase.from("pedido_aula").select("turma_id").eq("status", "pendente"),
   ]);
+  const pedidosPorTurma = new Map<string, number>();
+  for (const p of pedidos ?? []) pedidosPorTurma.set(p.turma_id, (pedidosPorTurma.get(p.turma_id) ?? 0) + 1);
 
   const totalTurmas = turmas?.length ?? 0;
   const podeCriar = plano ? totalTurmas < plano.max_turmas : false;
@@ -68,6 +71,11 @@ export default async function PainelProfessor() {
                     <span className="mt-3 inline-block rounded-full bg-primaria-suave px-3 py-1 text-xs font-bold text-primaria tabular-nums">
                       {turma.turma_aluno[0]?.count ?? 0} alunos
                     </span>
+                    {(pedidosPorTurma.get(turma.id) ?? 0) > 0 && (
+                      <span className="mt-3 ml-2 inline-block rounded-full bg-tinta px-3 py-1 text-xs font-bold text-fundo tabular-nums">
+                        {pedidosPorTurma.get(turma.id)} {pedidosPorTurma.get(turma.id) === 1 ? "pedido de aula" : "pedidos de aula"}
+                      </span>
+                    )}
                   </Link>
                 </li>
               ))}

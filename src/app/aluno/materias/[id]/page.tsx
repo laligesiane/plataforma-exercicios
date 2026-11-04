@@ -27,8 +27,8 @@ export default async function PaginaMateria({ params }: { params: Promise<{ id: 
     <>
       <Cabecalho />
       <main className="mx-auto w-full max-w-3xl px-4 pt-8 pb-16">
-        <Link href="/aluno" className="text-sm font-bold text-primaria hover:underline">
-          ← Meu painel
+        <Link href="/aluno/materias" className="text-sm font-bold text-primaria hover:underline">
+          ← Minhas matérias
         </Link>
         <h1 className="mt-3 flex items-center gap-3 text-3xl font-extrabold tracking-tight">
           <span aria-hidden className="size-4 rounded-full" style={{ background: cor.traco }} />

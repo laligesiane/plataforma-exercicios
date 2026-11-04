@@ -16,6 +16,7 @@ import { apagarAula } from "./actions-aulas";
 import { FormularioAula } from "./FormularioAula";
 import { FormularioConvite } from "./FormularioConvite";
 import { FormularioHorario } from "./FormularioHorario";
+import { PedidosAula, type PedidoDaTurma } from "./PedidosAula";
 
 type Aluno = { id: string; nome: string | null; email: string };
 
@@ -24,7 +25,7 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
   const perfil = await exigirPapel("professor");
   const supabase = await criarClienteServidor();
 
-  const [{ data: turma }, { data: plano }, { data: atribuicoes }, { data: horarios }, { data: aulasDb }, { data: resumosDb }] =
+  const [{ data: turma }, { data: plano }, { data: atribuicoes }, { data: horarios }, { data: aulasDb }, { data: resumosDb }, { data: pedidosDb }] =
     await Promise.all([
     supabase
       .from("turma")
@@ -36,6 +37,12 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
     supabase.from("turma_horario").select("id, dia_semana, hora_inicio, duracao_min, fuso").eq("turma_id", id),
     supabase.from("aula").select(camposAula).eq("turma_id", id).order("data", { ascending: false }),
     supabase.from("resumo").select(camposResumo).eq("turma_id", id).order("atualizado_em", { ascending: false }),
+    supabase
+      .from("pedido_aula")
+      .select("id, data, hora, mensagem, perfil(nome, email)")
+      .eq("turma_id", id)
+      .eq("status", "pendente")
+      .order("data"),
   ]);
   if (!turma) notFound();
 
@@ -66,6 +73,8 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
         <p className="mt-2 text-tinta-suave">
           {descreverTurma(turma)}
         </p>
+
+        <PedidosAula pedidos={(pedidosDb ?? []) as unknown as PedidoDaTurma[]} turmaId={turma.id} />
 
         <section className="mt-8 rounded-2xl border border-linha p-5 sm:p-6">
           <h2 className="text-lg font-bold">Dias e horários das aulas</h2>

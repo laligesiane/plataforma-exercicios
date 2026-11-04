@@ -28,7 +28,7 @@ export async function Cabecalho() {
                 </>
               ) : (
                 <Link href={paginaInicial(perfil.papel)} className="hover:text-tinta">
-                  Minhas atividades
+                  Minha conta
                 </Link>
               )}
               <form action={sair}>
