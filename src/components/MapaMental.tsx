@@ -1,16 +1,16 @@
 import { caminhoLigacao, cores, desenharMapa, mapaEmTopicos, type Mapa } from "@/lib/mapas";
 
 /** Desenha o mapa mental em SVG. Funciona no servidor e no editor (pré-visualização). */
-export function MapaMental({ mapa, titulo }: { mapa: Mapa; titulo?: string }) {
+export function MapaMental({ mapa, titulo, impressao }: { mapa: Mapa; titulo?: string; impressao?: boolean }) {
   const d = desenharMapa(mapa);
   const porId = new Map(d.caixas.map((c) => [c.id, c]));
 
   return (
-    <figure className="overflow-x-auto rounded-2xl border border-linha bg-fundo p-2">
+    <figure className={impressao ? "" : "overflow-x-auto rounded-2xl border border-linha bg-fundo p-2"}>
       <svg
         viewBox={`0 0 ${d.largura} ${d.altura}`}
         width={d.largura}
-        className="mx-auto block h-auto max-w-full min-w-[36rem]"
+        className={`mx-auto block h-auto max-w-full ${impressao ? "" : "min-w-[36rem]"}`}
         role="img"
         aria-label={titulo ?? mapa.centro}
       >
