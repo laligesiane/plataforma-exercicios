@@ -16,7 +16,7 @@ export async function cadastrarProfessor(_estado: EstadoFormulario, formData: Fo
   const { error } = await supabase.auth.signUp({
     email,
     password: senha,
-    options: { data: { nome, papel: "professor" }, emailRedirectTo: `${origem}/professor` },
+    options: { data: { nome, papel: "professor" }, emailRedirectTo: `${origem}/auth/confirmar?next=/professor` },
   });
 
   if (error) {

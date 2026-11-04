@@ -28,25 +28,7 @@ Em **Authentication → URL Configuration**:
 - **Site URL:** `https://repasa.com.br`
 - **Redirect URLs:** adicione `https://www.repasa.com.br/**`, `https://plataforma-exercicios.vercel.app/**`, `https://*-lavnia-gesianes-projects.vercel.app/**` e `http://localhost:3000/**`
 
-## 3. Modelos de e-mail
-
-Em **Authentication → Emails**, troque o corpo destes dois modelos.
-
-**Confirm signup** (professor confirmando o cadastro):
-
-```html
-<h2>Confirme sua conta na Repasa</h2>
-<p><a href="{{ .SiteURL }}/auth/confirmar?token_hash={{ .TokenHash }}&type=email">Confirmar meu e-mail</a></p>
-```
-
-**Invite user** (aluno convidado para uma turma):
-
-```html
-<h2>Você foi convidado para uma turma na Repasa</h2>
-<p><a href="{{ .SiteURL }}/auth/confirmar?token_hash={{ .TokenHash }}&type=invite">Criar minha senha</a></p>
-```
-
-## 4. Variáveis na Vercel
+## 3. Variáveis na Vercel
 
 Em **Vercel → plataforma-exercicios → Settings → Environment Variables**, adicione para todos os ambientes:
 
@@ -59,14 +41,17 @@ Em **Vercel → plataforma-exercicios → Settings → Environment Variables**, 
 A secret key dá acesso total ao banco: cole só na Vercel, nunca em chat, e-mail ou código.
 Depois de salvar, faça um **Redeploy** para valer.
 
-## 5. Testar
+## 4. Testar
 
 1. Abra o site, clique em **Sou professor** e crie uma conta.
 2. Confirme pelo e-mail, entre e crie uma turma.
 3. Na turma, convide um aluno com outro e-mail seu.
 
-## 6. E-mails de verdade (antes de abrir para outros professores)
+## 5. E-mails de verdade (antes de abrir para outros professores)
 
 O e-mail embutido do Supabase só envia para membros do projeto no Supabase e poucos por hora.
 Para professores e alunos reais, crie uma conta grátis no [Resend](https://resend.com) e configure em
 **Authentication → Emails → SMTP Settings** com os dados de SMTP que o Resend mostra.
+
+Os modelos padrão de e-mail já funcionam com o site. Com o SMTP ligado, dá para personalizar o texto deles em
+**Authentication → Emails**, sem trocar o link `{{ .ConfirmationURL }}`.

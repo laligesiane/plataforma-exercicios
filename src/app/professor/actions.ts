@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { EstadoFormulario } from "@/components/ui/Mensagem";
 import { ehIdioma } from "@/lib/idiomas";
@@ -51,8 +52,11 @@ export async function convidarAluno(_estado: EstadoFormulario, formData: FormDat
   if (existente && existente.papel !== "aluno") return { erro: "Esse e-mail é de uma conta de professor." };
 
   if (!alunoId) {
-    // O link do e-mail aponta para /auth/confirmar (modelo "Invite user" configurado no Supabase).
-    const { data, error } = await admin.auth.admin.inviteUserByEmail(email, { data: { nome, papel: "aluno" } });
+    const origem = (await headers()).get("origin") ?? "";
+    const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
+      data: { nome, papel: "aluno" },
+      redirectTo: `${origem}/auth/convite`,
+    });
     if (error || !data.user) return { erro: `Não foi possível enviar o convite: ${error?.message ?? "erro desconhecido"}` };
     alunoId = data.user.id;
   }

@@ -2,20 +2,31 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
-// Links dos e-mails: /auth/confirmar?token_hash=...&type=invite (convite) ou type=email (cadastro)
+// Retorno dos e-mails do Supabase.
+// Modelo padrão: ?code=... (confirmação de cadastro). Modelo personalizado: ?token_hash=...&type=...
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
+  const codigo = searchParams.get("code");
   const tokenHash = searchParams.get("token_hash");
   const tipo = searchParams.get("type") as EmailOtpType | null;
+  const proximo = searchParams.get("next");
+  const supabase = await criarClienteServidor();
 
-  if (tokenHash && tipo) {
-    const supabase = await criarClienteServidor();
+  if (codigo) {
+    const { error } = await supabase.auth.exchangeCodeForSession(codigo);
+    if (!error) return NextResponse.redirect(`${origin}${destinoSeguro(proximo, "/entrar")}`);
+  } else if (tokenHash && tipo) {
     const { error } = await supabase.auth.verifyOtp({ type: tipo, token_hash: tokenHash });
     if (!error) {
-      const destino = tipo === "invite" || tipo === "recovery" ? "/definir-senha" : "/entrar";
-      return NextResponse.redirect(`${origin}${destino}`);
+      const padrao = tipo === "invite" || tipo === "recovery" ? "/definir-senha" : "/entrar";
+      return NextResponse.redirect(`${origin}${destinoSeguro(proximo, padrao)}`);
     }
   }
 
   return NextResponse.redirect(`${origin}/entrar?erro=link`);
+}
+
+/** Só aceita caminhos internos, para o link não virar um redirecionamento para outro site. */
+function destinoSeguro(caminho: string | null, padrao: string) {
+  return caminho && caminho.startsWith("/") && !caminho.startsWith("//") ? caminho : padrao;
 }
