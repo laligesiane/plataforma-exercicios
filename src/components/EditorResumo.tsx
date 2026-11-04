@@ -210,11 +210,26 @@ export function EditorResumo({
             </li>
           ))}
         </ul>
-        {mapa.ramos.length < LIMITES.ramos && (
-          <button type="button" onClick={adicionarRamo} className={`${botaoTexto} mt-4`}>
-            + Adicionar ramo
-          </button>
-        )}
+        <div className="mt-4 flex flex-wrap items-baseline gap-x-6 gap-y-2">
+          {mapa.ramos.length < LIMITES.ramos && (
+            <button type="button" onClick={adicionarRamo} className={botaoTexto}>
+              + Adicionar ramo
+            </button>
+          )}
+          {(mapa.centro || mapa.ramos.length > 0) && (
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm("Excluir o mapa mental deste resumo? O texto continua. Salve para confirmar.")) {
+                  setMapa({ centro: "", ramos: [] });
+                }
+              }}
+              className="text-sm font-bold text-erro underline-offset-4 hover:underline"
+            >
+              Excluir mapa mental
+            </button>
+          )}
+        </div>
         {(previa.centro || previa.ramos.length > 0) && (
           <div className="mt-6">
             <p className="mb-2 text-sm font-bold text-tinta-suave">{aulas ? "Como os alunos vão ver" : "Pré-visualização"}</p>

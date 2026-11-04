@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Cabecalho } from "@/components/Cabecalho";
+import { BotaoExcluir } from "@/components/BotaoExcluir";
 import { VerResumo } from "@/components/VerResumo";
+import { apagarResumoAluno } from "@/app/aluno/materias/actions";
 import { formatarData, tituloAula } from "@/lib/aulas";
 import { exigirPapel } from "@/lib/perfil";
 import { camposResumo, type Resumo } from "@/lib/resumos";
@@ -35,12 +37,20 @@ export default async function ResumoDoAluno({ params }: { params: Promise<{ id: 
             ← {materia ? materia.nome : "Meu painel"}
           </Link>
           {materia && (
-            <Link
-              href={`/aluno/materias/${materia.id}/resumos/${data.id}`}
-              className="text-sm font-bold text-primaria hover:underline"
-            >
-              Editar
-            </Link>
+            <span className="flex items-baseline gap-4">
+              <Link
+                href={`/aluno/materias/${materia.id}/resumos/${data.id}`}
+                className="text-sm font-bold text-primaria hover:underline"
+              >
+                Editar
+              </Link>
+              <BotaoExcluir
+                acao={apagarResumoAluno}
+                campos={{ id: data.id, materia_id: materia.id }}
+                pergunta="Excluir este resumo e o mapa mental dele? Não dá para desfazer."
+                discreto
+              />
+            </span>
           )}
         </div>
         <div className="mt-3">
