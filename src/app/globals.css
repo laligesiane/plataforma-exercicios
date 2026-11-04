@@ -187,10 +187,7 @@ body {
   animation: brotinho-pisca 4s infinite;
 }
 .brotinho-ocioso .brotinho-folhas-icone {
-  transform-origin: 32px 19px;
-}
-.brotinho-ocioso .brotinho-olhos-icone {
-  transform-origin: 32px 37px;
+  transform-origin: 32px 31px;
 }
 @media (prefers-reduced-motion: reduce) {
   .brotinho-animado .brotinho-folhas,
