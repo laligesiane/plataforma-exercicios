@@ -1,42 +1,42 @@
 import { Documento } from "@/components/Documento";
 import { MapaMental } from "@/components/MapaMental";
+import { Sumario } from "@/components/Sumario";
 import { documentoTemConteudo, secoesDoDocumento } from "@/lib/documento";
 import { validarMapa } from "@/lib/mapas";
 import { documentoDoResumo, tituloResumo, type Resumo } from "@/lib/resumos";
 
-/** Resumo como página: sumário das seções, o texto formatado e, se houver, o mapa mental. */
+/** Resumo como página: sumário fixo ao lado (no celular, em cima), o texto formatado e, se houver, o mapa mental. */
 export function VerResumo({ resumo, subtitulo }: { resumo: Resumo; subtitulo?: string }) {
   const mapa = validarMapa(resumo.mapa);
   const temMapa = mapa && (mapa.centro || mapa.ramos.length > 0);
   const doc = documentoDoResumo(resumo);
   const temTexto = documentoTemConteudo(doc);
   const secoes = temTexto ? secoesDoDocumento(doc) : [];
+  const temSumario = secoes.length >= 2;
 
   return (
     <article>
       <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{tituloResumo(resumo)}</h1>
       {subtitulo && <p className="mt-2 text-tinta-suave">{subtitulo}</p>}
 
-      {secoes.length >= 2 && (
-        <nav aria-label="Sumário" className="mt-6 rounded-2xl bg-suave p-5">
-          <h2 className="text-sm font-bold tracking-wide text-tinta-suave uppercase">Neste resumo</h2>
-          <ol className="mt-2 space-y-1">
-            {secoes.map((s) => (
-              <li key={s.id} className={s.nivel === 3 ? "pl-4 text-sm" : "font-bold"}>
-                <a href={`#${s.id}`} className="hover:text-primaria hover:underline">
-                  {s.texto}
-                </a>
-              </li>
-            ))}
-          </ol>
-        </nav>
-      )}
 
-      {temTexto && (
-        <div className="mt-8">
-          <Documento doc={doc} />
-        </div>
-      )}
+      {temTexto &&
+        (temSumario ? (
+          <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_16rem] lg:gap-10">
+            <aside className="mb-8 lg:order-2 lg:mb-0">
+              <div className="lg:sticky lg:top-6">
+                <Sumario secoes={secoes} />
+              </div>
+            </aside>
+            <div className="min-w-0 lg:order-1">
+              <Documento doc={doc} />
+            </div>
+          </div>
+        ) : (
+          <div className="mt-8">
+            <Documento doc={doc} />
+          </div>
+        ))}
 
       {temMapa && (
         <section className="mt-10">
