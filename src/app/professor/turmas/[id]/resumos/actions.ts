@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { EstadoFormulario } from "@/components/ui/Mensagem";
 import { validarMapa } from "@/lib/mapas";
+import { lerConteudo } from "@/lib/resumos";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
@@ -15,7 +16,7 @@ export async function salvarResumo(_estado: EstadoFormulario, formData: FormData
   const turmaId = String(formData.get("turma_id") ?? "");
   const aulaId = String(formData.get("aula_id") ?? "") || null;
   const titulo = String(formData.get("titulo") ?? "").trim().slice(0, 200);
-  const texto = String(formData.get("texto") ?? "").trim().slice(0, 10000);
+  const { conteudo, texto } = lerConteudo(formData.get("conteudo"));
 
   let mapa;
   try {
@@ -25,11 +26,11 @@ export async function salvarResumo(_estado: EstadoFormulario, formData: FormData
   }
   if (!mapa) return { erro: "Não foi possível ler o mapa mental." };
   if (!titulo && !texto && !mapa.centro && mapa.ramos.length === 0) {
-    return { erro: "Escreva um título, um texto ou monte o mapa." };
+    return { erro: "Escreva um título, o resumo ou monte o mapa." };
   }
 
   const supabase = await criarClienteServidor();
-  const valores = { aula_id: aulaId, titulo, texto, mapa };
+  const valores = { aula_id: aulaId, titulo, texto, conteudo, mapa };
   const { error } = id
     ? await supabase
         .from("resumo")

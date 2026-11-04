@@ -1,11 +1,12 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { EditorDocumento } from "@/components/EditorDocumento";
 import { MapaMental } from "@/components/MapaMental";
 import { Mensagem, type EstadoFormulario } from "@/components/ui/Mensagem";
 import { botaoIcone, botaoPrimario, botaoTexto, campo, rotulo } from "@/components/ui/estilos";
 import { cores, LIMITES, novoId, ordemCores, type Cor, type Mapa, type No } from "@/lib/mapas";
-import type { Resumo } from "@/lib/resumos";
+import { documentoDoResumo, type Resumo } from "@/lib/resumos";
 
 type AulaOpcao = { id: string; rotulo: string };
 
@@ -85,7 +86,7 @@ function EditorNo({
   );
 }
 
-/** Editor de resumo + mapa mental. Serve ao professor (turma, com aulas) e ao aluno (matéria, sem aulas). */
+/** Editor de resumo (página com títulos e destaques) + mapa mental opcional. Serve ao professor (turma, com aulas) e ao aluno (matéria, sem aulas). */
 export function EditorResumo({
   salvar,
   ocultos,
@@ -101,6 +102,7 @@ export function EditorResumo({
 }) {
   const [estado, acao, enviando] = useActionState(salvar, null);
   const [mapa, setMapa] = useState<Mapa>(resumo?.mapa ?? { centro: "", ramos: [] });
+  const temMapa = !!(resumo?.mapa?.centro || resumo?.mapa?.ramos?.length);
 
   const aoMudar = (caminho: number[], mudar: (n: No) => No | null) => setMapa((m) => atualizarNo(m, caminho, mudar));
   const adicionarRamo = () =>
@@ -156,8 +158,17 @@ export function EditorResumo({
         )}
       </div>
 
-      <section className="rounded-2xl border border-linha p-5">
-        <h2 className="text-lg font-bold">Mapa mental</h2>
+
+      <div>
+        <p className={rotulo}>Resumo</p>
+        <EditorDocumento nome="conteudo" inicial={documentoDoResumo(resumo ?? { conteudo: null, texto: "" })} />
+      </div>
+
+      <details open={temMapa} className="group rounded-2xl border border-linha p-5">
+        <summary className="cursor-pointer list-none text-lg font-bold">
+          <span className="mr-2 inline-block text-primaria transition-transform group-open:rotate-90">›</span>
+          Mapa mental <span className="text-sm font-normal text-tinta-suave">(opcional)</span>
+        </summary>
         <p className="mt-1 text-sm text-tinta-suave">
           Escreva o tema no centro e os ramos ao redor. Use + para acrescentar detalhes a um ramo. A Repasa desenha o
           mapa sozinha.
@@ -210,22 +221,7 @@ export function EditorResumo({
             <MapaMental mapa={previa} />
           </div>
         )}
-      </section>
-
-      <div>
-        <label htmlFor="texto" className={rotulo}>
-          Resumo em texto <span className="font-normal text-tinta-suave">(opcional)</span>
-        </label>
-        <textarea
-          id="texto"
-          name="texto"
-          rows={6}
-          maxLength={10000}
-          defaultValue={resumo?.texto}
-          placeholder="Os pontos para lembrar, um por linha."
-          className={campo}
-        />
-      </div>
+      </details>
 
       <Mensagem estado={estado} />
       <button type="submit" disabled={enviando} className={botaoPrimario}>
