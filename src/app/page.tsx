@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Cabecalho } from "@/components/Cabecalho";
+import { Mascote } from "@/components/Mascote";
 import { botaoPrimario } from "@/components/ui/estilos";
 import { obterPerfil, paginaInicial } from "@/lib/perfil";
 
@@ -125,9 +126,7 @@ export default async function Inicio() {
               <span className="rounded-2xl rounded-br-sm border border-linha bg-fundo px-3 py-1.5 text-sm font-bold shadow-sm">
                 Bora repassar?
               </span>
-              <span className="flex size-14 items-center justify-center rounded-full bg-primaria text-xl font-extrabold text-white shadow-md">
-                ¿?
-              </span>
+              <Mascote pose="feliz" tamanho={72} />
             </div>
           </div>
         </section>

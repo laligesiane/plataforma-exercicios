@@ -152,6 +152,32 @@ body {
   pointer-events: none;
 }
 
+/* Brotinho, o mascote: folhas balançando e corpinho respirando enquanto carrega. */
+@keyframes brotinho-folhas {
+  0%, 100% { transform: rotate(-7deg); }
+  50% { transform: rotate(7deg); }
+}
+@keyframes brotinho-respira {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  50% { transform: translateY(-3px) scale(1.02, 0.98); }
+}
+.brotinho-animado .brotinho-folhas {
+  transform-box: view-box;
+  transform-origin: 60px 40px;
+  animation: brotinho-folhas 1.4s ease-in-out infinite;
+}
+.brotinho-animado .brotinho-corpo {
+  transform-box: view-box;
+  transform-origin: 60px 115px;
+  animation: brotinho-respira 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .brotinho-animado .brotinho-folhas,
+  .brotinho-animado .brotinho-corpo {
+    animation: none;
+  }
+}
+
 /* Impressão e PDF: sempre com as cores claras, margens de folha e sem quebrar títulos e notas. */
 @media print {
   :root {
