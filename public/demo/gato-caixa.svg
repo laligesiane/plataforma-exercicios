@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 260" role="img" aria-label="Um gato sentado em cima de uma caixa">
+  <rect width="400" height="260" rx="20" fill="#eef8f3"/>
+  <rect x="0" y="222" width="400" height="38" fill="#d4ece0"/>
+  <rect x="130" y="140" width="140" height="90" rx="6" fill="#d9a066"/>
+  <path d="M130 160h140" stroke="#b07d48" stroke-width="4"/>
+  <path d="M200 140v30" stroke="#b07d48" stroke-width="4"/>
+  <ellipse cx="200" cy="118" rx="42" ry="30" fill="#5b5f6b"/>
+  <circle cx="200" cy="76" r="28" fill="#5b5f6b"/>
+  <path d="M176 60l-4-26 20 16zM224 60l4-26-20 16z" fill="#5b5f6b"/>
+  <circle cx="190" cy="74" r="4" fill="#fff"/>
+  <circle cx="210" cy="74" r="4" fill="#fff"/>
+  <path d="M196 86l4 4 4-4" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M240 126c30 0 34-30 22-40" stroke="#5b5f6b" stroke-width="9" fill="none" stroke-linecap="round"/>
+</svg>

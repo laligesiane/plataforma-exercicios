@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 260" role="img" aria-label="Uma pizza cortada em 8 fatias, com 3 fatias pintadas">
+  <rect width="400" height="260" rx="20" fill="#fff4e6"/>
+  <circle cx="200" cy="130" r="100" fill="#f7e2b5" stroke="#d99a4e" stroke-width="10"/>
+  <g fill="#e2574c">
+    <path d="M200 130L200 30A100 100 0 0 1 270.7 59.3Z"/>
+    <path d="M200 130L270.7 59.3A100 100 0 0 1 300 130Z"/>
+    <path d="M200 130L300 130A100 100 0 0 1 270.7 200.7Z"/>
+  </g>
+  <g stroke="#d99a4e" stroke-width="4">
+    <path d="M200 30v200M100 130h200M129.3 59.3l141.4 141.4M270.7 59.3L129.3 200.7"/>
+  </g>
+</svg>

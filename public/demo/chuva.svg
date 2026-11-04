@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 260" role="img" aria-label="Uma nuvem com chuva e uma pessoa de guarda-chuva">
+  <rect width="400" height="260" rx="20" fill="#e8eef5"/>
+  <g fill="#9aa7b8">
+    <circle cx="160" cy="80" r="40"/><circle cx="215" cy="64" r="48"/><circle cx="265" cy="88" r="34"/>
+    <rect x="120" y="80" width="180" height="42" rx="21"/>
+  </g>
+  <g stroke="#3d7fd6" stroke-width="5" stroke-linecap="round">
+    <path d="M140 142l-8 18M180 150l-8 18M220 142l-8 18M260 150l-8 18M160 184l-8 18M240 184l-8 18"/>
+  </g>
+  <path d="M290 190a40 40 0 0 1 80 0z" fill="#1f9d6b"/>
+  <path d="M330 190v42c0 8-12 8-12 0" stroke="#2b2f36" stroke-width="4" fill="none" stroke-linecap="round"/>
+</svg>
