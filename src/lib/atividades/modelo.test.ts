@@ -5,8 +5,11 @@ import {
   novoExercicio,
   novoItemLacuna,
   problemasDaAtividade,
+  type ExercicioArrastar,
+  type ExercicioClassificar,
   type ExercicioLacuna,
   type ExercicioMultiplaEscolha,
+  type ExercicioRelacionar,
 } from "./modelo";
 
 function lacunaPronta(): ExercicioLacuna {
@@ -123,5 +126,38 @@ describe("ehExercicio", () => {
     expect(ehExercicio({ ...novoExercicio("lacuna"), tipo: "outro" })).toBe(false);
     expect(ehExercicio({ ...novoExercicio("lacuna"), itens: [{ tipo: "lacuna" }] })).toBe(false);
     expect(ehExercicio({ ...novoExercicio("lacuna"), id: "1),(id.eq.x" })).toBe(false);
+  });
+});
+
+describe("tipos de arrastar", () => {
+  it("exercícios novos são reconhecidos, mas pedem conteúdo antes de publicar", () => {
+    for (const tipo of ["arrastar", "classificar", "relacionar"] as const) {
+      const ex = novoExercicio(tipo);
+      expect(ehExercicio(ex)).toBe(true);
+      expect(problemasDaAtividade("T", [limparExercicio(ex)]).length).toBeGreaterThan(0);
+    }
+  });
+
+  it("classificar pronto passa; cartão sem coluna válida não", () => {
+    const ex = novoExercicio("classificar") as ExercicioClassificar;
+    ex.colunas[0].nome = "EN";
+    ex.colunas[1].nome = "A";
+    ex.itens[0] = { ...ex.itens[0], texto: "Madrid", explicacao: "Lugar onde se está." };
+    ex.itens[1] = { ...ex.itens[1], texto: "voy", explicacao: "Movimento pede 'a'." };
+    expect(problemasDaAtividade("T", [limparExercicio(ex)])).toEqual([]);
+    ex.itens[1].colunaId = "sumiu";
+    expect(problemasDaAtividade("T", [limparExercicio(ex)])).toEqual(["Exercício 1, item 2: escolha a coluna certa do cartão."]);
+  });
+
+  it("arrastar guarda palavras extras limpas", () => {
+    const ex = novoExercicio("arrastar") as ExercicioArrastar;
+    ex.palavrasExtras = [" de ", ""];
+    expect((limparExercicio(ex) as ExercicioArrastar).palavrasExtras).toEqual(["de"]);
+  });
+
+  it("relacionar precisa de dois pares", () => {
+    const ex = novoExercicio("relacionar") as ExercicioRelacionar;
+    ex.itens = [{ ...ex.itens[0], esquerda: "perro", direita: "cachorro", explicacao: "x" }];
+    expect(problemasDaAtividade("T", [limparExercicio(ex)])).toEqual(["Exercício 1: crie pelo menos dois pares."]);
   });
 });

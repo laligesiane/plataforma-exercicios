@@ -11,11 +11,12 @@ export async function carregarAtividade(id: string) {
   const supabase = await criarClienteServidor();
   const [{ data: atividade }, { data: linhas }] = await Promise.all([
     supabase.from("atividade").select(camposAtividade).eq("id", id).maybeSingle(),
-    supabase.from("exercicio").select("id, tipo, titulo, instrucoes, itens").eq("atividade_id", id).order("ordem"),
+    supabase.from("exercicio").select("id, tipo, titulo, instrucoes, itens, config").eq("atividade_id", id).order("ordem"),
   ]);
   if (!atividade) return null;
   return {
     atividade: atividade as AtividadeCarregada,
-    exercicios: (linhas ?? []) as Exercicio[],
+    // Os campos de "config" (palavras extras, colunas) voltam para dentro do exercício.
+    exercicios: (linhas ?? []).map(({ config, ...resto }) => ({ ...(config ?? {}), ...resto })) as Exercicio[],
   };
 }

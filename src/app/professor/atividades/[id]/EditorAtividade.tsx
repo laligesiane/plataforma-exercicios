@@ -4,14 +4,18 @@ import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { AulaAtividade } from "@/components/exercicios/AulaAtividade";
 import { CabecalhoAtividade } from "@/components/exercicios/CabecalhoAtividade";
-import { botaoIcone, botaoPrimario, botaoSecundario, caixaMarcar, campo, rotulo } from "@/components/ui/estilos";
+import { botaoIcone, botaoPrimario, botaoSecundario, botaoTexto, caixaMarcar, campo, rotulo } from "@/components/ui/estilos";
 import {
   categorias,
   limparExercicio,
   niveis,
   novoExercicio,
+  novoId,
+  novoItemArrastar,
+  novoItemClassificar,
   novoItemLacuna,
   novoItemMultiplaEscolha,
+  novoItemRelacionar,
   problemasDaAtividade,
   tiposExercicio,
   type Atividade,
@@ -22,7 +26,16 @@ import {
 } from "@/lib/atividades/modelo";
 import { idiomas } from "@/lib/idiomas";
 import { apagarAtividade, salvarAtividade, type ResultadoSalvar } from "../actions";
-import { CabecalhoItem, EditorLacuna, EditorMultipla } from "./EditorItens";
+import {
+  CabecalhoItem,
+  EditorArrastar,
+  EditorClassificar,
+  EditorLacuna,
+  EditorMultipla,
+  EditorRelacionar,
+  ListaCurta,
+  trocar,
+} from "./EditorItens";
 
 type Turma = { id: string; nome: string };
 
@@ -250,7 +263,7 @@ export function EditorAtividade({ inicial, exerciciosIniciais, turmas, turmasIni
                 </button>
               ))}
             </div>
-            <p className="mt-3 text-xs text-tinta-suave">Arrastar, relacionar, áudio e vídeo chegam nas próximas etapas.</p>
+            <p className="mt-3 text-xs text-tinta-suave">Imagem, áudio e vídeo chegam na próxima etapa.</p>
           </section>
 
           <section className="space-y-4 rounded-2xl border border-linha p-5 sm:p-6">
@@ -401,43 +414,128 @@ function EditorExercicio({
         </div>
       </div>
 
+      <ExtrasDoExercicio exercicio={exercicio} onChange={onChange} />
+
       <div className="mt-5 space-y-4">
-        {exercicio.tipo === "lacuna"
-          ? exercicio.itens.map((item, i) => (
-              <div key={item.id} className="rounded-xl border border-linha p-4">
-                <CabecalhoItem numero={i + 1} total={exercicio.itens.length} onMover={(d) => moverItem(i, d)} onRemover={() => removerItem(i)} />
-                <EditorLacuna
-                  item={item}
-                  onChange={(novo) => onChange({ ...exercicio, itens: exercicio.itens.map((x, j) => (j === i ? novo : x)) })}
-                />
-              </div>
-            ))
-          : exercicio.itens.map((item, i) => (
-              <div key={item.id} className="rounded-xl border border-linha p-4">
-                <CabecalhoItem numero={i + 1} total={exercicio.itens.length} onMover={(d) => moverItem(i, d)} onRemover={() => removerItem(i)} />
-                <EditorMultipla
-                  item={item}
-                  onChange={(novo) => onChange({ ...exercicio, itens: exercicio.itens.map((x, j) => (j === i ? novo : x)) })}
-                />
-              </div>
-            ))}
+        {exercicio.itens.map((item, i) => (
+          <div key={item.id} className="rounded-xl border border-linha p-4">
+            <CabecalhoItem
+              numero={i + 1}
+              total={exercicio.itens.length}
+              rotulo={exercicio.tipo === "relacionar" ? "Par" : exercicio.tipo === "classificar" ? "Cartão" : "Item"}
+              onMover={(d) => moverItem(i, d)}
+              onRemover={() => removerItem(i)}
+            />
+            <EditorDoItem exercicio={exercicio} indice={i} onChange={onChange} />
+          </div>
+        ))}
       </div>
 
-      <button
-        type="button"
-        onClick={() =>
-          onChange(
-            exercicio.tipo === "lacuna"
-              ? { ...exercicio, itens: [...exercicio.itens, novoItemLacuna()] }
-              : { ...exercicio, itens: [...exercicio.itens, novoItemMultiplaEscolha()] },
-          )
-        }
-        className={`${botaoSecundario} mt-4`}
-      >
-        + Item
+      <button type="button" onClick={() => onChange(comItemNovo(exercicio))} className={`${botaoSecundario} mt-4`}>
+        {exercicio.tipo === "relacionar" ? "+ Par" : exercicio.tipo === "classificar" ? "+ Cartão" : "+ Item"}
       </button>
     </section>
   );
+}
+
+function comItemNovo(e: Exercicio): Exercicio {
+  switch (e.tipo) {
+    case "lacuna":
+      return { ...e, itens: [...e.itens, novoItemLacuna()] };
+    case "multipla_escolha":
+      return { ...e, itens: [...e.itens, novoItemMultiplaEscolha()] };
+    case "arrastar":
+      return { ...e, itens: [...e.itens, novoItemArrastar()] };
+    case "classificar":
+      return { ...e, itens: [...e.itens, novoItemClassificar()] };
+    case "relacionar":
+      return { ...e, itens: [...e.itens, novoItemRelacionar()] };
+  }
+}
+
+/** Troca o item na posição indicada, mantendo o tipo do exercício. */
+function EditorDoItem({ exercicio, indice, onChange }: { exercicio: Exercicio; indice: number; onChange: (e: Exercicio) => void }) {
+  switch (exercicio.tipo) {
+    case "lacuna":
+      return <EditorLacuna item={exercicio.itens[indice]} onChange={(novo) => onChange({ ...exercicio, itens: trocar(exercicio.itens, indice, novo) })} />;
+    case "multipla_escolha":
+      return <EditorMultipla item={exercicio.itens[indice]} onChange={(novo) => onChange({ ...exercicio, itens: trocar(exercicio.itens, indice, novo) })} />;
+    case "arrastar":
+      return <EditorArrastar item={exercicio.itens[indice]} onChange={(novo) => onChange({ ...exercicio, itens: trocar(exercicio.itens, indice, novo) })} />;
+    case "classificar":
+      return (
+        <EditorClassificar
+          item={exercicio.itens[indice]}
+          colunas={exercicio.colunas}
+          onChange={(novo) => onChange({ ...exercicio, itens: trocar(exercicio.itens, indice, novo) })}
+        />
+      );
+    case "relacionar":
+      return <EditorRelacionar item={exercicio.itens[indice]} onChange={(novo) => onChange({ ...exercicio, itens: trocar(exercicio.itens, indice, novo) })} />;
+  }
+}
+
+/** Partes do exercício que não são itens: palavras extras do banco e colunas. */
+function ExtrasDoExercicio({ exercicio, onChange }: { exercicio: Exercicio; onChange: (e: Exercicio) => void }) {
+  if (exercicio.tipo === "arrastar") {
+    return (
+      <div className="mt-5">
+        <ListaCurta
+          rotuloTexto="Palavras extras no banco"
+          dica="As palavras certas já entram no banco. Acrescente outras para o aluno ter que pensar (opcional)."
+          valores={exercicio.palavrasExtras}
+          onChange={(palavrasExtras) => onChange({ ...exercicio, palavrasExtras })}
+          exemplo="Ex.: fue"
+          textoAdicionar="+ Palavra extra"
+        />
+      </div>
+    );
+  }
+  if (exercicio.tipo === "classificar") {
+    return (
+      <div className="mt-5 rounded-xl bg-suave p-4">
+        <span className={rotulo}>Colunas</span>
+        <div className="flex flex-wrap gap-2">
+          {exercicio.colunas.map((coluna, i) => (
+            <div key={coluna.id} className="flex items-center gap-1">
+              <input
+                value={coluna.nome}
+                onChange={(e) => onChange({ ...exercicio, colunas: trocar(exercicio.colunas, i, { ...coluna, nome: e.target.value }) })}
+                placeholder={i === 0 ? "Ex.: Ser" : "Ex.: Estar"}
+                aria-label={`Nome da coluna ${i + 1}`}
+                className="w-40 rounded-xl border-2 border-linha bg-fundo px-3 py-1.5 font-bold outline-none focus:border-primaria"
+              />
+              <button
+                type="button"
+                disabled={exercicio.colunas.length <= 2}
+                onClick={() =>
+                  onChange({
+                    ...exercicio,
+                    colunas: exercicio.colunas.filter((c) => c.id !== coluna.id),
+                    itens: exercicio.itens.map((it) => (it.colunaId === coluna.id ? { ...it, colunaId: "" } : it)),
+                  })
+                }
+                aria-label="Remover coluna"
+                className={botaoIcone}
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+        {exercicio.colunas.length < 4 && (
+          <button
+            type="button"
+            onClick={() => onChange({ ...exercicio, colunas: [...exercicio.colunas, { id: novoId(), nome: "" }] })}
+            className={`${botaoTexto} mt-2`}
+          >
+            + Coluna
+          </button>
+        )}
+      </div>
+    );
+  }
+  return null;
 }
 
 function Previa({ atividade, exercicios }: { atividade: Atividade; exercicios: Exercicio[] }) {

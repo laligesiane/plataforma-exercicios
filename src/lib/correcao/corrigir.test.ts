@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { corrigir, podeVerResposta, respostaCorreta } from "./corrigir";
+import {
+  corrigir,
+  corrigirArrastar,
+  corrigirClassificar,
+  corrigirRelacionar,
+  podeVerResposta,
+  respostaCorreta,
+} from "./corrigir";
 import type { ItemLacuna, ItemMultiplaEscolha } from "./tipos";
 
 const iba: ItemLacuna = {
@@ -102,5 +109,38 @@ describe("ver resposta", () => {
   it("mostra a resposta correta", () => {
     expect(respostaCorreta(arcoIris(true))).toBe("arco-íris");
     expect(respostaCorreta(preposicao)).toBe("en");
+  });
+});
+
+describe("tipos de arrastar", () => {
+  const arrastar = {
+    tipo: "arrastar" as const,
+    enunciado: "Vivo ___ Madrid.",
+    resposta: "en",
+    errosPrevistos: [{ valor: "a", explicacao: "'A' indica direção." }],
+    explicacaoPadrao: "Lugar onde se está pede 'en'.",
+  };
+
+  it("arrastar: certo ignora maiúsculas, erro previsto explica, outro usa a padrão", () => {
+    expect(corrigirArrastar(arrastar, "En")).toEqual({ status: "certo" });
+    expect(corrigirArrastar(arrastar, "a")).toEqual({ status: "errado", explicacao: "'A' indica direção." });
+    expect(corrigirArrastar(arrastar, "de")).toEqual({ status: "errado", explicacao: "Lugar onde se está pede 'en'." });
+  });
+
+  it("classificar: compara a coluna e explica o erro", () => {
+    const item = { tipo: "classificar" as const, texto: "Madrid", colunaId: "en", explicacao: "Lugar onde se está." };
+    expect(corrigirClassificar(item, "en").status).toBe("certo");
+    expect(corrigirClassificar(item, "a")).toEqual({ status: "errado", explicacao: "Lugar onde se está." });
+  });
+
+  it("relacionar: compara o texto da direita, aceitando pares com a mesma direita", () => {
+    const item = { tipo: "relacionar" as const, esquerda: "perro", direita: "cachorro", explicacao: "Perro é cachorro." };
+    expect(corrigirRelacionar(item, " Cachorro ").status).toBe("certo");
+    expect(corrigirRelacionar(item, "gato")).toEqual({ status: "errado", explicacao: "Perro é cachorro." });
+  });
+
+  it("corrigir e respostaCorreta cobrem os tipos novos", () => {
+    expect(corrigir(arrastar, "en").status).toBe("certo");
+    expect(respostaCorreta(arrastar)).toBe("en");
   });
 });

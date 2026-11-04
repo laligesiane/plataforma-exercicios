@@ -30,7 +30,37 @@ export type ItemMultiplaEscolha = {
   explicacaoPadrao: string;
 };
 
-export type Item = ItemLacuna | ItemMultiplaEscolha;
+/** Lacuna preenchida arrastando uma palavra do banco do exercício. */
+export type ItemArrastar = {
+  id?: string;
+  tipo: "arrastar";
+  enunciado: string;
+  resposta: string;
+  errosPrevistos: ErroPrevisto[];
+  explicacaoPadrao: string;
+};
+
+/** Cartão que o aluno coloca numa das colunas do exercício. */
+export type ItemClassificar = {
+  id?: string;
+  tipo: "classificar";
+  texto: string;
+  colunaId: string;
+  /** Por que o cartão pertence à coluna certa. */
+  explicacao: string;
+};
+
+/** Par que o aluno liga: esquerda com direita. */
+export type ItemRelacionar = {
+  id?: string;
+  tipo: "relacionar";
+  esquerda: string;
+  direita: string;
+  /** Mostrada quando o aluno liga a esquerda ao par errado. */
+  explicacao: string;
+};
+
+export type Item = ItemLacuna | ItemMultiplaEscolha | ItemArrastar | ItemClassificar | ItemRelacionar;
 
 export type Resultado =
   | { status: "certo"; explicacao?: string }

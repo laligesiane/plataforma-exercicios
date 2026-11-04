@@ -2,35 +2,51 @@
 
 import { useRef } from "react";
 import { botaoIcone, botaoTexto, caixaMarcar, campo, rotulo } from "@/components/ui/estilos";
-import { LACUNA, novoId, type ExercicioLacuna, type ExercicioMultiplaEscolha } from "@/lib/atividades/modelo";
+import {
+  LACUNA,
+  novoId,
+  type Coluna,
+  type ExercicioArrastar,
+  type ExercicioClassificar,
+  type ExercicioLacuna,
+  type ExercicioMultiplaEscolha,
+  type ExercicioRelacionar,
+} from "@/lib/atividades/modelo";
 
 type ItemLacuna = ExercicioLacuna["itens"][number];
 type ItemMultipla = ExercicioMultiplaEscolha["itens"][number];
+type ItemArrastar = ExercicioArrastar["itens"][number];
+type ItemClassificar = ExercicioClassificar["itens"][number];
+type ItemRelacionar = ExercicioRelacionar["itens"][number];
 
 const campoPequeno = campo.replace("py-2.5", "py-2");
 
-function trocar<T>(lista: T[], indice: number, novo: T) {
+export function trocar<T>(lista: T[], indice: number, novo: T) {
   return lista.map((x, i) => (i === indice ? novo : x));
 }
 
-function semIndice<T>(lista: T[], indice: number) {
+export function semIndice<T>(lista: T[], indice: number) {
   return lista.filter((_, i) => i !== indice);
 }
 
 export function CabecalhoItem({
   numero,
   total,
+  rotulo: nome = "Item",
   onMover,
   onRemover,
 }: {
   numero: number;
   total: number;
+  rotulo?: string;
   onMover: (direcao: -1 | 1) => void;
   onRemover: () => void;
 }) {
   return (
     <div className="mb-3 flex items-center justify-between">
-      <span className="text-xs font-extrabold tracking-wide text-tinta-suave uppercase">Item {numero}</span>
+      <span className="text-xs font-extrabold tracking-wide text-tinta-suave uppercase">
+        {nome} {numero}
+      </span>
       <div className="flex items-center gap-1">
         <button type="button" onClick={() => onMover(-1)} disabled={numero === 1} aria-label="Subir item" className={botaoIcone}>
           ↑
@@ -46,16 +62,16 @@ export function CabecalhoItem({
   );
 }
 
-export function EditorLacuna({ item, onChange }: { item: ItemLacuna; onChange: (item: ItemLacuna) => void }) {
+/** Frase com o botão que insere a marca da lacuna onde está o cursor. */
+function CampoFrase({ id, valor, onChange }: { id: string; valor: string; onChange: (v: string) => void }) {
   const frase = useRef<HTMLInputElement>(null);
-  const temLacuna = item.enunciado.includes(LACUNA);
+  const temLacuna = valor.includes(LACUNA);
 
   function inserirLacuna() {
     const campoFrase = frase.current;
-    const inicio = campoFrase?.selectionStart ?? item.enunciado.length;
+    const inicio = campoFrase?.selectionStart ?? valor.length;
     const fim = campoFrase?.selectionEnd ?? inicio;
-    const novo = item.enunciado.slice(0, inicio) + LACUNA + item.enunciado.slice(fim);
-    onChange({ ...item, enunciado: novo });
+    onChange(valor.slice(0, inicio) + LACUNA + valor.slice(fim));
     requestAnimationFrame(() => {
       campoFrase?.focus();
       campoFrase?.setSelectionRange(inicio + LACUNA.length, inicio + LACUNA.length);
@@ -63,30 +79,99 @@ export function EditorLacuna({ item, onChange }: { item: ItemLacuna; onChange: (
   }
 
   return (
-    <div className="space-y-4">
-      <div>
-        <div className="mb-1.5 flex items-baseline justify-between gap-3">
-          <label htmlFor={`frase-${item.id}`} className="text-sm font-bold">
-            Frase
-          </label>
-          <button type="button" onClick={inserirLacuna} disabled={temLacuna} className={`${botaoTexto} disabled:opacity-40`}>
-            + Inserir lacuna
-          </button>
-        </div>
-        <input
-          ref={frase}
-          id={`frase-${item.id}`}
-          value={item.enunciado}
-          onChange={(e) => onChange({ ...item, enunciado: e.target.value })}
-          placeholder="Ex.: Cuando era niño, ___ al parque todos los días."
-          className={campo}
-        />
-        {!temLacuna && (
-          <p className="mt-1.5 text-xs text-tinta-suave">
-            Escreva a frase e marque o lugar da palavra que falta com {LACUNA} (três sublinhados).
-          </p>
-        )}
+    <div>
+      <div className="mb-1.5 flex items-baseline justify-between gap-3">
+        <label htmlFor={`frase-${id}`} className="text-sm font-bold">
+          Frase
+        </label>
+        <button type="button" onClick={inserirLacuna} disabled={temLacuna} className={`${botaoTexto} disabled:opacity-40`}>
+          + Inserir lacuna
+        </button>
       </div>
+      <input
+        ref={frase}
+        id={`frase-${id}`}
+        value={valor}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Ex.: Cuando era niño, ___ al parque todos los días."
+        className={campo}
+      />
+      {!temLacuna && (
+        <p className="mt-1.5 text-xs text-tinta-suave">
+          Escreva a frase e marque o lugar da palavra que falta com {LACUNA} (três sublinhados).
+        </p>
+      )}
+    </div>
+  );
+}
+
+type Erro = { valor: string; explicacao: string };
+
+/** Respostas erradas comuns, cada uma com a explicação que o aluno vê. */
+function ListaErros({ erros, onChange, exemplo }: { erros: Erro[]; onChange: (e: Erro[]) => void; exemplo: string }) {
+  return (
+    <div>
+      <span className={rotulo}>Erros previstos</span>
+      <p className="-mt-1 mb-2 text-xs text-tinta-suave">Respostas erradas comuns e a explicação que o aluno vê quando der cada uma.</p>
+      <div className="space-y-2">
+        {erros.map((erro, i) => (
+          <div key={i} className="flex items-start gap-2">
+            <div className="grid flex-1 gap-2 sm:grid-cols-[10rem_1fr]">
+              <input
+                value={erro.valor}
+                onChange={(e) => onChange(trocar(erros, i, { ...erro, valor: e.target.value }))}
+                placeholder={`Ex.: ${exemplo}`}
+                aria-label={`Erro previsto ${i + 1}`}
+                className={campoPequeno}
+              />
+              <input
+                value={erro.explicacao}
+                onChange={(e) => onChange(trocar(erros, i, { ...erro, explicacao: e.target.value }))}
+                placeholder="Por que está errado"
+                aria-label={`Explicação do erro ${i + 1}`}
+                className={campoPequeno}
+              />
+            </div>
+            <button type="button" onClick={() => onChange(semIndice(erros, i))} aria-label="Remover erro previsto" className={`${botaoIcone} mt-1`}>
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
+      <button type="button" onClick={() => onChange([...erros, { valor: "", explicacao: "" }])} className={`${botaoTexto} mt-2`}>
+        + Erro previsto
+      </button>
+    </div>
+  );
+}
+
+function CampoExplicacao({
+  id,
+  rotuloTexto,
+  valor,
+  onChange,
+  exemplo,
+}: {
+  id: string;
+  rotuloTexto: string;
+  valor: string;
+  onChange: (v: string) => void;
+  exemplo: string;
+}) {
+  return (
+    <div>
+      <label htmlFor={`explicacao-${id}`} className={rotulo}>
+        {rotuloTexto}
+      </label>
+      <textarea id={`explicacao-${id}`} value={valor} onChange={(e) => onChange(e.target.value)} rows={2} placeholder={exemplo} className={campo} />
+    </div>
+  );
+}
+
+export function EditorLacuna({ item, onChange }: { item: ItemLacuna; onChange: (item: ItemLacuna) => void }) {
+  return (
+    <div className="space-y-4">
+      <CampoFrase id={item.id} valor={item.enunciado} onChange={(enunciado) => onChange({ ...item, enunciado })} />
 
       <div>
         <span className={rotulo}>Resposta certa</span>
@@ -133,70 +218,15 @@ export function EditorLacuna({ item, onChange }: { item: ItemLacuna; onChange: (
         </span>
       </label>
 
-      <div>
-        <span className={rotulo}>Erros previstos</span>
-        <p className="-mt-1 mb-2 text-xs text-tinta-suave">
-          Respostas erradas comuns e a explicação que o aluno vê quando der cada uma.
-        </p>
-        <div className="space-y-2">
-          {item.errosPrevistos.map((erro, i) => (
-            <div key={i} className="flex items-start gap-2">
-              <div className="grid flex-1 gap-2 sm:grid-cols-[10rem_1fr]">
-                <input
-                  value={erro.valor}
-                  onChange={(e) =>
-                    onChange({ ...item, errosPrevistos: trocar(item.errosPrevistos, i, { ...erro, valor: e.target.value }) })
-                  }
-                  placeholder="Ex.: fui"
-                  aria-label={`Erro previsto ${i + 1}`}
-                  className={campoPequeno}
-                />
-                <input
-                  value={erro.explicacao}
-                  onChange={(e) =>
-                    onChange({
-                      ...item,
-                      errosPrevistos: trocar(item.errosPrevistos, i, { ...erro, explicacao: e.target.value }),
-                    })
-                  }
-                  placeholder="Por que está errado"
-                  aria-label={`Explicação do erro ${i + 1}`}
-                  className={campoPequeno}
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => onChange({ ...item, errosPrevistos: semIndice(item.errosPrevistos, i) })}
-                aria-label="Remover erro previsto"
-                className={`${botaoIcone} mt-1`}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-        </div>
-        <button
-          type="button"
-          onClick={() => onChange({ ...item, errosPrevistos: [...item.errosPrevistos, { valor: "", explicacao: "" }] })}
-          className={`${botaoTexto} mt-2`}
-        >
-          + Erro previsto
-        </button>
-      </div>
+      <ListaErros erros={item.errosPrevistos} onChange={(errosPrevistos) => onChange({ ...item, errosPrevistos })} exemplo="fui" />
 
-      <div>
-        <label htmlFor={`explicacao-${item.id}`} className={rotulo}>
-          Explicação para os outros erros
-        </label>
-        <textarea
-          id={`explicacao-${item.id}`}
-          value={item.explicacaoPadrao}
-          onChange={(e) => onChange({ ...item, explicacaoPadrao: e.target.value })}
-          rows={2}
-          placeholder="Ex.: Para hábitos no passado, use o pretérito imperfeito: iba, comía, jugaba."
-          className={campo}
-        />
-      </div>
+      <CampoExplicacao
+        id={item.id}
+        rotuloTexto="Explicação para os outros erros"
+        valor={item.explicacaoPadrao}
+        onChange={(explicacaoPadrao) => onChange({ ...item, explicacaoPadrao })}
+        exemplo="Ex.: Para hábitos no passado, use o pretérito imperfeito: iba, comía, jugaba."
+      />
     </div>
   );
 }
@@ -288,6 +318,192 @@ export function EditorMultipla({ item, onChange }: { item: ItemMultipla; onChang
           className={campo}
         />
       </div>
+    </div>
+  );
+}
+
+export function EditorArrastar({ item, onChange }: { item: ItemArrastar; onChange: (item: ItemArrastar) => void }) {
+  return (
+    <div className="space-y-4">
+      <CampoFrase id={item.id} valor={item.enunciado} onChange={(enunciado) => onChange({ ...item, enunciado })} />
+      <div>
+        <label htmlFor={`resposta-${item.id}`} className={rotulo}>
+          Palavra certa
+        </label>
+        <input
+          id={`resposta-${item.id}`}
+          value={item.resposta}
+          onChange={(e) => onChange({ ...item, resposta: e.target.value })}
+          placeholder="Ex.: iba"
+          className={campoPequeno}
+        />
+        <p className="mt-1.5 text-xs text-tinta-suave">Ela entra no banco de palavras automaticamente.</p>
+      </div>
+      <ListaErros erros={item.errosPrevistos} onChange={(errosPrevistos) => onChange({ ...item, errosPrevistos })} exemplo="fui" />
+      <CampoExplicacao
+        id={item.id}
+        rotuloTexto="Explicação para os outros erros"
+        valor={item.explicacaoPadrao}
+        onChange={(explicacaoPadrao) => onChange({ ...item, explicacaoPadrao })}
+        exemplo="Ex.: Para hábitos no passado, use o pretérito imperfeito."
+      />
+    </div>
+  );
+}
+
+export function EditorClassificar({
+  item,
+  colunas,
+  onChange,
+}: {
+  item: ItemClassificar;
+  colunas: Coluna[];
+  onChange: (item: ItemClassificar) => void;
+}) {
+  return (
+    <div className="space-y-3">
+      <div className="grid gap-3 sm:grid-cols-[1fr_12rem]">
+        <div>
+          <label htmlFor={`texto-${item.id}`} className={rotulo}>
+            Cartão
+          </label>
+          <input
+            id={`texto-${item.id}`}
+            value={item.texto}
+            onChange={(e) => onChange({ ...item, texto: e.target.value })}
+            placeholder="Ex.: Madrid"
+            className={campoPequeno}
+          />
+        </div>
+        <div>
+          <label htmlFor={`coluna-${item.id}`} className={rotulo}>
+            Coluna certa
+          </label>
+          <select
+            id={`coluna-${item.id}`}
+            value={item.colunaId}
+            onChange={(e) => onChange({ ...item, colunaId: e.target.value })}
+            className={campoPequeno}
+          >
+            <option value="" disabled>
+              Escolha
+            </option>
+            {colunas.map((c, i) => (
+              <option key={c.id} value={c.id}>
+                {c.nome || `Coluna ${i + 1}`}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div>
+        <label htmlFor={`explicacao-${item.id}`} className={rotulo}>
+          Por que vai nessa coluna
+        </label>
+        <input
+          id={`explicacao-${item.id}`}
+          value={item.explicacao}
+          onChange={(e) => onChange({ ...item, explicacao: e.target.value })}
+          placeholder="O aluno vê isto se puser o cartão na coluna errada."
+          className={campoPequeno}
+        />
+      </div>
+    </div>
+  );
+}
+
+export function EditorRelacionar({ item, onChange }: { item: ItemRelacionar; onChange: (item: ItemRelacionar) => void }) {
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label htmlFor={`esquerda-${item.id}`} className={rotulo}>
+            Esquerda
+          </label>
+          <input
+            id={`esquerda-${item.id}`}
+            value={item.esquerda}
+            onChange={(e) => onChange({ ...item, esquerda: e.target.value })}
+            placeholder="Ex.: perro"
+            className={campoPequeno}
+          />
+        </div>
+        <div>
+          <label htmlFor={`direita-${item.id}`} className={rotulo}>
+            Par certo
+          </label>
+          <input
+            id={`direita-${item.id}`}
+            value={item.direita}
+            onChange={(e) => onChange({ ...item, direita: e.target.value })}
+            placeholder="Ex.: cachorro"
+            className={campoPequeno}
+          />
+        </div>
+      </div>
+      <div>
+        <label htmlFor={`explicacao-${item.id}`} className={rotulo}>
+          Explicação se errar o par
+        </label>
+        <input
+          id={`explicacao-${item.id}`}
+          value={item.explicacao}
+          onChange={(e) => onChange({ ...item, explicacao: e.target.value })}
+          placeholder="Ex.: 'Perro' é cachorro; 'gato' é o mesmo nas duas línguas."
+          className={campoPequeno}
+        />
+      </div>
+    </div>
+  );
+}
+
+/** Lista de palavras curtas (palavras extras do banco, nomes de colunas). */
+export function ListaCurta({
+  rotuloTexto,
+  dica,
+  valores,
+  onChange,
+  exemplo,
+  minimo = 0,
+  textoAdicionar,
+}: {
+  rotuloTexto: string;
+  dica: string;
+  valores: string[];
+  onChange: (v: string[]) => void;
+  exemplo: string;
+  minimo?: number;
+  textoAdicionar: string;
+}) {
+  return (
+    <div className="rounded-xl bg-suave p-4">
+      <span className={rotulo}>{rotuloTexto}</span>
+      <p className="-mt-1 mb-2 text-xs text-tinta-suave">{dica}</p>
+      <div className="flex flex-wrap gap-2">
+        {valores.map((v, i) => (
+          <div key={i} className="flex items-center gap-1">
+            <input
+              value={v}
+              onChange={(e) => onChange(trocar(valores, i, e.target.value))}
+              placeholder={exemplo}
+              aria-label={`${rotuloTexto} ${i + 1}`}
+              className="w-36 rounded-xl border-2 border-linha bg-fundo px-3 py-1.5 outline-none focus:border-primaria"
+            />
+            <button
+              type="button"
+              onClick={() => onChange(semIndice(valores, i))}
+              disabled={valores.length <= minimo}
+              aria-label="Remover"
+              className={botaoIcone}
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
+      <button type="button" onClick={() => onChange([...valores, ""])} className={`${botaoTexto} mt-2`}>
+        {textoAdicionar}
+      </button>
     </div>
   );
 }

@@ -131,27 +131,18 @@ function ErrosDoExercicio({ numero, exercicio, respostas }: { numero: number; ex
           const erradas = respostas.filter((r) => r.item_id === item.id && r.status === "errado");
           const contagem = new Map<string, number>();
           for (const r of erradas) {
-            const chave = item.tipo === "lacuna" ? normalizarBasico(r.valor) : r.valor;
+            const chave = item.tipo === "lacuna" || item.tipo === "arrastar" ? normalizarBasico(r.valor) : r.valor;
             contagem.set(chave, (contagem.get(chave) ?? 0) + 1);
           }
           const ordenadas = [...contagem.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
 
           return (
             <li key={item.id} className="py-2.5 text-sm">
-              <p>{item.enunciado}</p>
+              <p>{textoDoItem(item)}</p>
               {ordenadas.length > 0 ? (
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {ordenadas.map(([valor, vezes]) => {
-                    const { texto, prevista } =
-                      item.tipo === "lacuna"
-                        ? {
-                            texto: valor,
-                            prevista: item.errosPrevistos.some((e) => normalizarBasico(e.valor) === valor),
-                          }
-                        : (() => {
-                            const alt = item.alternativas.find((a) => a.id === valor);
-                            return { texto: alt?.texto ?? "?", prevista: Boolean(alt?.explicacao) };
-                          })();
+                    const { texto, prevista } = descreverErro(exercicio, item, valor);
                     return (
                       <span
                         key={valor}
@@ -173,4 +164,36 @@ function ErrosDoExercicio({ numero, exercicio, respostas }: { numero: number; ex
       </ul>
     </div>
   );
+}
+
+type ItemQualquer = Exercicio["itens"][number];
+
+function textoDoItem(item: ItemQualquer) {
+  switch (item.tipo) {
+    case "classificar":
+      return item.texto;
+    case "relacionar":
+      return `${item.esquerda} → ${item.direita}`;
+    default:
+      return item.enunciado;
+  }
+}
+
+/** Como mostrar uma resposta errada e se ela já tem explicação própria. */
+function descreverErro(exercicio: Exercicio, item: ItemQualquer, valor: string) {
+  switch (item.tipo) {
+    case "lacuna":
+    case "arrastar":
+      return { texto: valor, prevista: item.errosPrevistos.some((e) => normalizarBasico(e.valor) === valor) };
+    case "multipla_escolha": {
+      const alt = item.alternativas.find((a) => a.id === valor);
+      return { texto: alt?.texto ?? "?", prevista: Boolean(alt?.explicacao) };
+    }
+    case "classificar": {
+      const coluna = exercicio.tipo === "classificar" ? exercicio.colunas.find((c) => c.id === valor) : undefined;
+      return { texto: coluna?.nome ?? "?", prevista: true };
+    }
+    case "relacionar":
+      return { texto: valor, prevista: true };
+  }
 }
