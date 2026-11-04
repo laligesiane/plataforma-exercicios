@@ -53,5 +53,17 @@ O e-mail embutido do Supabase só envia para membros do projeto no Supabase e po
 Para professores e alunos reais, crie uma conta grátis no [Resend](https://resend.com) e configure em
 **Authentication → Emails → SMTP Settings** com os dados de SMTP que o Resend mostra.
 
-Os modelos padrão de e-mail já funcionam com o site. Com o SMTP ligado, dá para personalizar o texto deles em
-**Authentication → Emails**, sem trocar o link `{{ .ConfirmationURL }}`.
+## 6. E-mails com a cara da Repasa
+
+Com o SMTP ligado, em **Authentication → Emails → Templates**, abra cada modelo, troque o **Subject** e cole o
+conteúdo do arquivo no **Message body**:
+
+| Modelo no Supabase | Assunto | Arquivo |
+| --- | --- | --- |
+| Confirm sign up | Confirme sua conta na Repasa | [`emails/confirmar-cadastro.html`](emails/confirmar-cadastro.html) |
+| Invite user | Você foi convidado para uma turma na Repasa | [`emails/convite.html`](emails/convite.html) |
+| Reset password | Redefina sua senha da Repasa | [`emails/redefinir-senha.html`](emails/redefinir-senha.html) |
+
+Os modelos usam o link padrão `{{ .ConfirmationURL }}`, que é o que o site espera: não troque esse trecho.
+Magic link e Change email não são usados pelo site por enquanto, então podem ficar como estão.
+O modelo de senha fica pronto para quando o site ganhar a opção "Esqueci minha senha".
