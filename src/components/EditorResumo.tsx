@@ -2,11 +2,10 @@
 
 import { useActionState, useState } from "react";
 import { MapaMental } from "@/components/MapaMental";
-import { Mensagem } from "@/components/ui/Mensagem";
+import { Mensagem, type EstadoFormulario } from "@/components/ui/Mensagem";
 import { botaoIcone, botaoPrimario, botaoTexto, campo, rotulo } from "@/components/ui/estilos";
 import { cores, LIMITES, novoId, ordemCores, type Cor, type Mapa, type No } from "@/lib/mapas";
 import type { Resumo } from "@/lib/resumos";
-import { salvarResumo } from "./actions";
 
 type AulaOpcao = { id: string; rotulo: string };
 
@@ -86,18 +85,21 @@ function EditorNo({
   );
 }
 
+/** Editor de resumo + mapa mental. Serve ao professor (turma, com aulas) e ao aluno (matéria, sem aulas). */
 export function EditorResumo({
-  turmaId,
+  salvar,
+  ocultos,
   aulas,
   resumo,
   aulaInicial,
 }: {
-  turmaId: string;
-  aulas: AulaOpcao[];
+  salvar: (estado: EstadoFormulario, formData: FormData) => Promise<EstadoFormulario>;
+  ocultos: Record<string, string>;
+  aulas?: AulaOpcao[];
   resumo?: Resumo;
   aulaInicial?: string;
 }) {
-  const [estado, acao, enviando] = useActionState(salvarResumo, null);
+  const [estado, acao, enviando] = useActionState(salvar, null);
   const [mapa, setMapa] = useState<Mapa>(resumo?.mapa ?? { centro: "", ramos: [] });
 
   const aoMudar = (caminho: number[], mudar: (n: No) => No | null) => setMapa((m) => atualizarNo(m, caminho, mudar));
@@ -124,17 +126,20 @@ export function EditorResumo({
 
   return (
     <form action={acao} className="space-y-6">
-      <input type="hidden" name="turma_id" value={turmaId} />
+      {Object.entries(ocultos).map(([nome, valor]) => (
+        <input key={nome} type="hidden" name={nome} value={valor} />
+      ))}
       {resumo && <input type="hidden" name="id" value={resumo.id} />}
       <input type="hidden" name="mapa" value={JSON.stringify(mapa)} />
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={`grid gap-4 ${aulas ? "sm:grid-cols-2" : ""}`}>
         <div>
           <label htmlFor="titulo" className={rotulo}>
             Título
           </label>
           <input id="titulo" name="titulo" maxLength={200} defaultValue={resumo?.titulo} className={campo} />
         </div>
+        {aulas && (
         <div>
           <label htmlFor="aula_id" className={rotulo}>
             Aula
@@ -148,6 +153,7 @@ export function EditorResumo({
             ))}
           </select>
         </div>
+        )}
       </div>
 
       <section className="rounded-2xl border border-linha p-5">
@@ -200,7 +206,7 @@ export function EditorResumo({
         )}
         {(previa.centro || previa.ramos.length > 0) && (
           <div className="mt-6">
-            <p className="mb-2 text-sm font-bold text-tinta-suave">Como os alunos vão ver</p>
+            <p className="mb-2 text-sm font-bold text-tinta-suave">{aulas ? "Como os alunos vão ver" : "Pré-visualização"}</p>
             <MapaMental mapa={previa} />
           </div>
         )}

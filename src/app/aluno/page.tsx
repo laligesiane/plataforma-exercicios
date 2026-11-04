@@ -2,6 +2,8 @@ import Link from "next/link";
 import { AssinarAgenda } from "@/components/AssinarAgenda";
 import { CartaoAula } from "@/components/CartaoAula";
 import { Cabecalho } from "@/components/Cabecalho";
+import { cores, type Cor } from "@/lib/mapas";
+import { FormularioMateria } from "./materias/FormularioMateria";
 import { HorariosTurma } from "@/components/HorariosTurma";
 import type { Horario } from "@/lib/agenda";
 import { categorias, type Categoria } from "@/lib/atividades/modelo";
@@ -17,7 +19,7 @@ export default async function AreaAluno() {
   const perfil = await exigirPapel("aluno");
   const supabase = await criarClienteServidor();
 
-  const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }, { data: aulasDb }, { data: resumosDb }] =
+  const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }, { data: aulasDb }, { data: resumosDb }, { data: materias }] =
     await Promise.all([
     supabase.from("turma").select("id, nome, materia, idioma_ensinado, idioma_instrucao").order("nome"),
     supabase.from("atividade_turma").select("turma_id, atividade(id, titulo, nivel, categoria, atualizada_em)"),
@@ -25,6 +27,7 @@ export default async function AreaAluno() {
     supabase.from("turma_horario").select("id, turma_id, dia_semana, hora_inicio, duracao_min, fuso"),
     supabase.from("aula").select(camposAula).order("data", { ascending: false }),
     supabase.from("resumo").select(camposResumo).order("atualizado_em", { ascending: false }),
+    supabase.from("materia").select("id, nome, cor, resumo(count)").order("criada_em"),
   ]);
   const resumos = (resumosDb ?? []) as Resumo[];
   const linkResumo = (r: Resumo) => ({ id: r.id, titulo: tituloResumo(r), href: `/aluno/resumos/${r.id}` });
@@ -56,7 +59,44 @@ export default async function AreaAluno() {
       <Cabecalho />
       <main className="mx-auto w-full max-w-3xl px-4 pt-8 pb-16">
         <h1 className="text-3xl font-extrabold tracking-tight">Olá{perfil.nome ? `, ${perfil.nome}` : ""}!</h1>
-        <p className="mt-2 text-tinta-suave">Estas são as atividades das suas turmas.</p>
+        <p className="mt-2 text-tinta-suave">Seu estudo, das suas matérias e das turmas em que você está.</p>
+
+        <section className="mt-8">
+          <h2 className="text-lg font-bold">Minhas matérias</h2>
+          {(materias ?? []).length > 0 && (
+            <ul className="mt-3 grid gap-3 sm:grid-cols-3">
+              {(materias ?? []).map((m) => {
+                const cor = cores[(m.cor as Cor) in cores ? (m.cor as Cor) : "menta"];
+                const total = (m.resumo as unknown as { count: number }[])[0]?.count ?? 0;
+                return (
+                  <li key={m.id}>
+                    <Link
+                      href={`/aluno/materias/${m.id}`}
+                      className="block h-full rounded-2xl border-2 p-4 transition-opacity hover:opacity-90"
+                      style={{ borderColor: cor.traco, background: cor.fundo, color: "#10233a" }}
+                    >
+                      <span className="block font-bold">{m.nome}</span>
+                      <span className="mt-1 block text-sm opacity-75">
+                        {total} {total === 1 ? "resumo" : "resumos"}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          {(materias ?? []).length < 3 ? (
+            <details className="mt-3 rounded-2xl border border-linha p-5" open={(materias ?? []).length === 0}>
+              <summary className="cursor-pointer font-bold text-primaria">Nova matéria</summary>
+              <p className="mt-2 mb-4 text-sm text-tinta-suave">
+                Crie matérias para guardar seus resumos e mapas mentais. O plano grátis inclui 3.
+              </p>
+              <FormularioMateria />
+            </details>
+          ) : (
+            <p className="mt-3 text-sm text-tinta-suave">Você está usando as 3 matérias do plano grátis.</p>
+          )}
+        </section>
         {(turmas ?? []).length > 0 && (
           <div className="mt-6">
             <AssinarAgenda perfilId={perfil.id} />
@@ -153,6 +193,7 @@ export default async function AreaAluno() {
         {(turmas ?? []).length === 0 && (
           <div className="mt-6 rounded-2xl border border-dashed border-linha p-6 text-center">
             <p className="font-semibold">Você ainda não está em nenhuma turma.</p>
+            <p className="mt-1 text-sm text-tinta-suave">Quando um professor te convidar, a turma aparece aqui.</p>
             <Link href="/experimente" className="mt-3 inline-block text-sm font-bold text-primaria hover:underline">
               Experimentar a aula de demonstração
             </Link>
