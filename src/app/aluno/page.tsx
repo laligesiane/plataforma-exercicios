@@ -83,7 +83,7 @@ export default async function AreaAluno() {
         {(turmas ?? []).length === 0 && (
           <div className="mt-6 rounded-2xl border border-dashed border-linha p-6 text-center">
             <p className="font-semibold">Você ainda não está em nenhuma turma.</p>
-            <Link href="/" className="mt-3 inline-block text-sm font-bold text-primaria hover:underline">
+            <Link href="/experimente" className="mt-3 inline-block text-sm font-bold text-primaria hover:underline">
               Experimentar a aula de demonstração
             </Link>
           </div>
