@@ -51,9 +51,12 @@ export function Peca({
   estado = "normal",
   desativada,
   onToque,
+  cartao,
   children,
 }: {
   id: string;
+  /** Peça com imagem: cantos menos arredondados, para caber a figura. */
+  cartao?: boolean;
   estado?: EstadoPeca;
   desativada?: boolean;
   onToque?: () => void;
@@ -75,7 +78,7 @@ export function Peca({
       }}
       disabled={desativada}
       aria-pressed={estado === "selecionada"}
-      className={`touch-none rounded-full border-2 px-4 py-1.5 font-bold transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria disabled:cursor-default ${estiloPeca[estado]} ${isDragging ? "relative z-20 shadow-lg" : ""}`}
+      className={`touch-none border-2 font-bold ${cartao ? "rounded-xl p-1.5 pb-1" : "rounded-full px-4 py-1.5"} transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria disabled:cursor-default ${estiloPeca[estado]} ${isDragging ? "relative z-20 shadow-lg" : ""}`}
     >
       {children}
     </button>
@@ -119,5 +122,23 @@ export function Alvo({
     >
       {children}
     </Tag>
+  );
+}
+
+/** Texto do cartão, com a imagem em cima quando houver. A imagem é decorativa: o texto já diz o que é. */
+export function ConteudoCartao({ texto, imagem, pequena }: { texto: string; imagem?: string; pequena?: boolean }) {
+  if (!imagem) return <>{texto}</>;
+  return (
+    <span className="flex flex-col items-center gap-1">
+      {/* eslint-disable-next-line @next/next/no-img-element -- imagem enviada pelo professor, tamanho livre */}
+      <img
+        src={imagem}
+        alt=""
+        draggable={false}
+        loading="lazy"
+        className={`${pequena ? "size-12" : "size-20 sm:size-24"} rounded-lg bg-suave object-cover`}
+      />
+      <span className="px-1">{texto}</span>
+    </span>
   );
 }

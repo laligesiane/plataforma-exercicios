@@ -36,6 +36,7 @@ import {
   ListaCurta,
   trocar,
 } from "./EditorItens";
+import { EditorMidia } from "./EditorMidia";
 
 type Turma = { id: string; nome: string };
 
@@ -413,6 +414,15 @@ function EditorExercicio({
           />
         </div>
       </div>
+
+      <EditorMidia
+        midia={exercicio.midia}
+        onChange={(midia) => {
+          const { midia: _antiga, ...resto } = exercicio;
+          void _antiga;
+          onChange((midia ? { ...resto, midia } : resto) as Exercicio);
+        }}
+      />
 
       <ExtrasDoExercicio exercicio={exercicio} onChange={onChange} />
 

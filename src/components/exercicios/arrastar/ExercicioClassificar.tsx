@@ -5,7 +5,7 @@ import { corrigirClassificar, type Resultado } from "@/lib/correcao";
 import type { ExercicioClassificar as Tipo } from "@/lib/atividades/modelo";
 import { embaralhar } from "@/lib/embaralhar";
 import { Feedback } from "../Feedback";
-import { Alvo, AreaArrastar, Peca } from "./base";
+import { Alvo, AreaArrastar, ConteudoCartao, Peca } from "./base";
 
 type Props = {
   exercicio: Tipo;
@@ -38,16 +38,17 @@ export function ExercicioClassificar({ exercicio, anteriores, onResultado }: Pro
 
   return (
     <AreaArrastar onSoltar={colocar}>
-      <div className="flex min-h-14 flex-wrap gap-2 rounded-2xl bg-suave p-3" aria-label="Cartões para classificar">
+      <div className="flex min-h-14 flex-wrap items-center gap-2 rounded-2xl bg-suave p-3" aria-label="Cartões para classificar">
         {soltos.length > 0 ? (
           soltos.map((c) => (
             <Peca
               key={c.id}
               id={c.id}
+              cartao={Boolean(c.imagem)}
               estado={selecionado === c.id ? "selecionada" : errado === c.id ? "errada" : "normal"}
               onToque={() => setSelecionado((s) => (s === c.id ? null : c.id))}
             >
-              {c.texto}
+              <ConteudoCartao texto={c.texto} imagem={c.imagem} />
             </Peca>
           ))
         ) : (
@@ -81,8 +82,11 @@ export function ExercicioClassificar({ exercicio, anteriores, onResultado }: Pro
               {exercicio.itens
                 .filter((i) => i.colunaId === coluna.id && certos.has(i.id))
                 .map((i) => (
-                  <span key={i.id} className="rounded-full border-2 border-certo bg-certo-fundo px-3 py-1 text-sm font-bold text-certo">
-                    {i.texto}
+                  <span
+                    key={i.id}
+                    className={`border-2 border-certo bg-certo-fundo text-sm font-bold text-certo ${i.imagem ? "rounded-xl p-1" : "rounded-full px-3 py-1"}`}
+                  >
+                    <ConteudoCartao texto={i.texto} imagem={i.imagem} pequena />
                   </span>
                 ))}
             </div>

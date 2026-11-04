@@ -48,6 +48,8 @@ export type ItemClassificar = {
   colunaId: string;
   /** Por que o cartão pertence à coluna certa. */
   explicacao: string;
+  /** Imagem opcional do cartão (link https). */
+  imagem?: string;
 };
 
 /** Par que o aluno liga: esquerda com direita. */

@@ -12,6 +12,7 @@ import {
   type ExercicioMultiplaEscolha,
   type ExercicioRelacionar,
 } from "@/lib/atividades/modelo";
+import { ImagemDoCartao } from "./EditorMidia";
 
 type ItemLacuna = ExercicioLacuna["itens"][number];
 type ItemMultipla = ExercicioMultiplaEscolha["itens"][number];
@@ -408,6 +409,14 @@ export function EditorClassificar({
           className={campoPequeno}
         />
       </div>
+      <ImagemDoCartao
+        imagem={item.imagem}
+        onChange={(imagem) => {
+          const { imagem: _antiga, ...resto } = item;
+          void _antiga;
+          onChange(imagem ? { ...resto, imagem } : resto);
+        }}
+      />
     </div>
   );
 }
