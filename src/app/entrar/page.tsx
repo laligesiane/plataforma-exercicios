@@ -18,7 +18,7 @@ export default async function PaginaEntrar({ searchParams }: { searchParams: Pro
         <p className="mt-2 mb-6 text-tinta-suave">Que bom ver você de novo.</p>
         {erro === "link" && (
           <p role="alert" className="mb-4 rounded-xl bg-erro-fundo px-3.5 py-2.5 text-sm text-erro">
-            Esse link expirou ou já foi usado. Se era um convite, peça um novo ao professor. Se era para trocar a senha, peça outro link em “Esqueci minha senha”.
+            Esse link expirou ou já foi usado. Se era a confirmação do cadastro, tente entrar: a conta pode já estar confirmada. Se não der, faça o cadastro de novo com o mesmo e-mail para receber outro link. Se era um convite, peça um novo ao professor. Se era para trocar a senha, use “Esqueci minha senha”.
           </p>
         )}
         {supabaseConfigurado ? (
