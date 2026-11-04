@@ -8,6 +8,8 @@ import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { CartaoAula } from "@/components/CartaoAula";
 import { HorariosTurma } from "@/components/HorariosTurma";
 import { camposResumo, tituloResumo, type Resumo } from "@/lib/resumos";
+import { BotaoExcluir } from "@/components/BotaoExcluir";
+import { apagarResumo } from "./resumos/actions";
 import { camposAula, formatarData, hojeNoFuso, tituloAula, ultimaAula, type Aula } from "@/lib/aulas";
 import { removerHorario } from "../../actions";
 import { apagarAula } from "./actions-aulas";
@@ -171,8 +173,14 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
                     >
                       {tituloResumo(r)}
                     </Link>
-                    <span className="text-sm text-tinta-suave">
+                    <span className="flex items-baseline gap-4 text-sm text-tinta-suave">
                       {aula ? tituloAula(aula) : "Sem aula específica"}
+                      <BotaoExcluir
+                        acao={apagarResumo}
+                        campos={{ id: r.id, turma_id: turma.id }}
+                        pergunta={`Excluir o resumo "${tituloResumo(r)}"? Os alunos deixam de vê-lo. Não dá para desfazer.`}
+                        discreto
+                      />
                     </span>
                   </li>
                 );

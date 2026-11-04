@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Cabecalho } from "@/components/Cabecalho";
 import { EditorResumo } from "@/components/EditorResumo";
-import { botaoSecundario } from "@/components/ui/estilos";
+import { BotaoExcluir } from "@/components/BotaoExcluir";
 import { validarMapa } from "@/lib/mapas";
 import { exigirPapel } from "@/lib/perfil";
 import { camposResumo, type Resumo } from "@/lib/resumos";
@@ -29,13 +29,13 @@ export default async function EditarResumoAluno({ params }: { params: Promise<{ 
         </Link>
         <h1 className="mt-3 mb-6 text-3xl font-extrabold tracking-tight">Editar resumo</h1>
         <EditorResumo salvar={salvarResumoAluno} ocultos={{ materia_id: materia.id }} resumo={resumo} />
-        <form action={apagarResumoAluno} className="mt-8 border-t border-linha pt-6">
-          <input type="hidden" name="id" value={resumo.id} />
-          <input type="hidden" name="materia_id" value={materia.id} />
-          <button type="submit" className={botaoSecundario}>
-            Apagar resumo
-          </button>
-        </form>
+        <BotaoExcluir
+          acao={apagarResumoAluno}
+          campos={{ id: resumo.id, materia_id: materia.id }}
+          rotulo="Excluir resumo"
+          pergunta="Excluir este resumo e o mapa mental dele? Não dá para desfazer."
+          className="mt-8 border-t border-linha pt-6"
+        />
       </main>
     </>
   );
