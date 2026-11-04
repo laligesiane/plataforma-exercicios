@@ -73,9 +73,10 @@ export async function convidarAluno(_estado: EstadoFormulario, formData: FormDat
   };
 }
 
-export async function adicionarHorario(_estado: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
+export async function salvarHorario(_estado: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
   await exigirPapel("professor");
 
+  const id = String(formData.get("id") ?? "");
   const turmaId = String(formData.get("turma_id") ?? "");
   const dia = Number(formData.get("dia_semana"));
   const hora = String(formData.get("hora_inicio") ?? "");
@@ -85,16 +86,17 @@ export async function adicionarHorario(_estado: EstadoFormulario, formData: Form
   if (!Number.isInteger(duracao) || duracao < 15 || duracao > 480) return { erro: "A duração vai de 15 a 480 minutos." };
 
   const supabase = await criarClienteServidor();
-  const { error } = await supabase
-    .from("turma_horario")
-    .insert({ turma_id: turmaId, dia_semana: dia, hora_inicio: hora, duracao_min: duracao });
+  const valores = { dia_semana: dia, hora_inicio: hora, duracao_min: duracao };
+  const { error } = id
+    ? await supabase.from("turma_horario").update(valores).eq("id", id)
+    : await supabase.from("turma_horario").insert({ turma_id: turmaId, ...valores });
   if (error) {
-    if (error.code === "23505") return { erro: "Esse horário já está cadastrado." };
+    if (error.code === "23505") return { erro: "Já existe uma aula nesse dia e horário. Edite a que já está na lista." };
     return { erro: "Não foi possível salvar o horário." };
   }
 
   revalidatePath(`/professor/turmas/${turmaId}`);
-  return { sucesso: "Horário adicionado." };
+  return { sucesso: id ? "Horário atualizado." : "Horário adicionado." };
 }
 
 export async function removerHorario(formData: FormData) {

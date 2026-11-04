@@ -54,7 +54,19 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
             Os alunos veem os horários e podem colocar as aulas no Google Agenda deles.
           </p>
           <div className="space-y-5">
-            <HorariosTurma horarios={horarios ?? []} nomeTurma={turma.nome} acaoRemover={removerHorario} turmaId={turma.id} />
+            <HorariosTurma
+              horarios={horarios ?? []}
+              nomeTurma={turma.nome}
+              acaoRemover={removerHorario}
+              turmaId={turma.id}
+              editar={(h) => (
+                <FormularioHorario
+                  key={`${h.id}-${h.dia_semana}-${h.hora_inicio}-${h.duracao_min}`}
+                  turmaId={turma.id}
+                  horario={h}
+                />
+              )}
+            />
             <FormularioHorario turmaId={turma.id} />
           </div>
         </section>
