@@ -15,7 +15,9 @@ import {
   novoItemClassificar,
   novoItemLacuna,
   novoItemMultiplaEscolha,
+  novoItemProducao,
   novoItemRelacionar,
+  ehLinkKahoot,
   problemasDaAtividade,
   tiposExercicio,
   type Atividade,
@@ -33,6 +35,7 @@ import {
   EditorClassificar,
   EditorLacuna,
   EditorMultipla,
+  EditorProducao,
   EditorRelacionar,
   ListaCurta,
   trocar,
@@ -319,7 +322,7 @@ export function EditorAtividade({ inicial, exerciciosIniciais, turmas, turmasIni
                 </button>
               ))}
             </div>
-            <p className="mt-3 text-xs text-tinta-suave">Imagem, áudio e vídeo chegam na próxima etapa.</p>
+            <p className="mt-3 text-xs text-tinta-suave">Imagem, áudio ou vídeo entram dentro de qualquer exercício, no botão &quot;Mídia&quot;.</p>
           </section>
 
           <section className="space-y-4 rounded-2xl border border-linha p-5 sm:p-6">
@@ -481,27 +484,41 @@ function EditorExercicio({
 
       <ExtrasDoExercicio exercicio={exercicio} onChange={onChange} />
 
-      <div className="mt-5 space-y-4">
-        {exercicio.itens.map((item, i) => (
-          <div key={item.id} className="rounded-xl border border-linha p-4">
-            <CabecalhoItem
-              numero={i + 1}
-              total={exercicio.itens.length}
-              rotulo={exercicio.tipo === "relacionar" ? "Par" : exercicio.tipo === "classificar" ? "Cartão" : "Item"}
-              onMover={(d) => moverItem(i, d)}
-              onRemover={() => removerItem(i)}
-            />
-            <EditorDoItem exercicio={exercicio} indice={i} onChange={onChange} />
+      {exercicio.tipo !== "kahoot" && (
+        <>
+          <div className="mt-5 space-y-4">
+            {exercicio.itens.map((item, i) => (
+              <div key={item.id} className="rounded-xl border border-linha p-4">
+                <CabecalhoItem
+                  numero={i + 1}
+                  total={exercicio.itens.length}
+                  rotulo={rotuloDoItem[exercicio.tipo]}
+                  onMover={(d) => moverItem(i, d)}
+                  onRemover={() => removerItem(i)}
+                />
+                <EditorDoItem exercicio={exercicio} indice={i} onChange={onChange} />
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      <button type="button" onClick={() => onChange(comItemNovo(exercicio))} className={`${botaoSecundario} mt-4`}>
-        {exercicio.tipo === "relacionar" ? "+ Par" : exercicio.tipo === "classificar" ? "+ Cartão" : "+ Item"}
-      </button>
+          <button type="button" onClick={() => onChange(comItemNovo(exercicio))} className={`${botaoSecundario} mt-4`}>
+            + {rotuloDoItem[exercicio.tipo]}
+          </button>
+        </>
+      )}
     </section>
   );
 }
+
+const rotuloDoItem: Record<TipoExercicio, string> = {
+  lacuna: "Item",
+  multipla_escolha: "Item",
+  arrastar: "Item",
+  classificar: "Cartão",
+  relacionar: "Par",
+  producao: "Proposta",
+  kahoot: "Item",
+};
 
 function comItemNovo(e: Exercicio): Exercicio {
   switch (e.tipo) {
@@ -515,6 +532,10 @@ function comItemNovo(e: Exercicio): Exercicio {
       return { ...e, itens: [...e.itens, novoItemClassificar()] };
     case "relacionar":
       return { ...e, itens: [...e.itens, novoItemRelacionar()] };
+    case "producao":
+      return { ...e, itens: [...e.itens, novoItemProducao(e.itens.at(-1)?.modo)] };
+    case "kahoot":
+      return e;
   }
 }
 
@@ -537,11 +558,41 @@ function EditorDoItem({ exercicio, indice, onChange }: { exercicio: Exercicio; i
       );
     case "relacionar":
       return <EditorRelacionar item={exercicio.itens[indice]} onChange={(novo) => onChange({ ...exercicio, itens: trocar(exercicio.itens, indice, novo) })} />;
+    case "producao":
+      return <EditorProducao item={exercicio.itens[indice]} onChange={(novo) => onChange({ ...exercicio, itens: trocar(exercicio.itens, indice, novo) })} />;
+    case "kahoot":
+      return null;
   }
 }
 
 /** Partes do exercício que não são itens: palavras extras do banco e colunas. */
 function ExtrasDoExercicio({ exercicio, onChange }: { exercicio: Exercicio; onChange: (e: Exercicio) => void }) {
+  if (exercicio.tipo === "kahoot") {
+    const preenchido = exercicio.link.trim() !== "";
+    return (
+      <div className="mt-5">
+        <label htmlFor={`kahoot-${exercicio.id}`} className={rotulo}>
+          Link do Kahoot
+        </label>
+        <input
+          id={`kahoot-${exercicio.id}`}
+          value={exercicio.link}
+          onChange={(e) => onChange({ ...exercicio, link: e.target.value })}
+          inputMode="url"
+          placeholder="https://kahoot.it/challenge/…"
+          className={campo}
+        />
+        {preenchido && !ehLinkKahoot(exercicio.link) ? (
+          <p className="mt-1 text-sm font-semibold text-erro">Cole um link do Kahoot (kahoot.it ou create.kahoot.it).</p>
+        ) : (
+          <p className="mt-1 text-sm text-tinta-suave">
+            No Kahoot, use &quot;Atribuir&quot; (desafio) para gerar um link que o aluno joga sozinho, ou o link do seu kahoot.
+            O jogo abre numa aba nova.
+          </p>
+        )}
+      </div>
+    );
+  }
   if (exercicio.tipo === "arrastar") {
     return (
       <div className="mt-5">

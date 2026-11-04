@@ -162,3 +162,32 @@ export async function apagarAtividade(formData: FormData) {
   revalidatePath("/professor/atividades");
   redirect("/professor/atividades");
 }
+
+export type NovaCorrecao = {
+  atividadeId: string;
+  producaoId: number;
+  avaliacao: "muito_bem" | "refazer";
+  comentario: string;
+};
+
+/** Grava (ou atualiza) a correção de uma produção. O RLS só deixa o dono da atividade. */
+export async function corrigirProducao(c: NovaCorrecao): Promise<{ ok: true; corrigidaEm: string } | { ok: false; erro: string }> {
+  await exigirPapel("professor");
+  if (!ehUuid(c.atividadeId) || !Number.isInteger(c.producaoId) || c.producaoId <= 0) {
+    return { ok: false, erro: "Dados inválidos. Recarregue a página." };
+  }
+  if (c.avaliacao !== "muito_bem" && c.avaliacao !== "refazer") return { ok: false, erro: "Escolha uma avaliação." };
+  const comentario = typeof c.comentario === "string" ? c.comentario.trim().slice(0, 3000) : "";
+
+  const supabase = await criarClienteServidor();
+  const corrigidaEm = new Date().toISOString();
+  const { error } = await supabase.from("correcao").upsert(
+    { producao_id: c.producaoId, atividade_id: c.atividadeId, avaliacao: c.avaliacao, comentario, corrigida_em: corrigidaEm },
+    { onConflict: "producao_id" },
+  );
+  if (error) return { ok: false, erro: "Não foi possível salvar a correção. Tente de novo." };
+
+  revalidatePath(`/professor/atividades/${c.atividadeId}/producoes`);
+  revalidatePath(`/atividades/${c.atividadeId}`);
+  return { ok: true, corrigidaEm };
+}

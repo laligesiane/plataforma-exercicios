@@ -2,6 +2,8 @@
 
 import { ehUuid } from "@/lib/atividades/modelo";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
+import type { ProducaoSalva } from "@/components/exercicios/Producao";
+import { montarProducoes, type LinhaProducao } from "@/lib/atividades/producoes";
 
 const status = new Set(["certo", "certo_com_aviso", "errado"]);
 
@@ -44,4 +46,53 @@ export async function registrarEnvio(e: NovoEnvio): Promise<boolean> {
     total: e.total,
   });
   return !error;
+}
+
+export type NovaProducao = {
+  atividadeId: string;
+  exercicioId: string;
+  itemId: string;
+  /** Produção escrita. */
+  texto?: string;
+  /** Produção oral: caminho do áudio já enviado ao bucket "producao". */
+  audio?: string;
+};
+
+/**
+ * Grava (ou troca pela versão nova) a produção escrita ou oral de um aluno da turma.
+ * O RLS recusa quem não é aluno da atividade.
+ */
+export async function enviarProducao(p: NovaProducao): Promise<{ ok: true; salva: ProducaoSalva } | { ok: false; erro: string }> {
+  const invalido = { ok: false as const, erro: "Não deu para enviar. Recarregue a página e tente de novo." };
+  if (!ehUuid(p.atividadeId) || !ehUuid(p.exercicioId) || typeof p.itemId !== "string" || p.itemId.length > 64) return invalido;
+
+  const supabase = await criarClienteServidor();
+  const { data: usuario } = await supabase.auth.getUser();
+  if (!usuario.user) return { ok: false, erro: "Sua sessão expirou. Entre de novo para enviar." };
+
+  const texto = typeof p.texto === "string" ? p.texto.trim().slice(0, 5000) : "";
+  // O áudio tem de estar na pasta do próprio aluno, dentro desta atividade.
+  const pasta = `${usuario.user.id}/${p.atividadeId}/`;
+  const audio = typeof p.audio === "string" && p.audio.startsWith(pasta) && /^[\w./-]+$/.test(p.audio) ? p.audio : null;
+  if (!texto && !audio) return { ok: false, erro: "Escreva ou grave sua resposta antes de enviar." };
+
+  const { data, error } = await supabase
+    .from("producao")
+    .upsert(
+      {
+        atividade_id: p.atividadeId,
+        exercicio_id: p.exercicioId,
+        item_id: p.itemId,
+        texto,
+        audio,
+        enviada_em: new Date().toISOString(),
+      },
+      { onConflict: "aluno_id,atividade_id,item_id" },
+    )
+    .select("id, texto, audio, enviada_em, correcao(avaliacao, comentario, corrigida_em)")
+    .single();
+  if (error || !data) return { ok: false, erro: "Não deu para enviar. Confira sua conexão e tente de novo." };
+
+  const [salva] = await montarProducoes(supabase, [data as unknown as LinhaProducao]);
+  return { ok: true, salva: salva[1] };
 }

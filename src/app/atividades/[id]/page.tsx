@@ -5,6 +5,8 @@ import { Cabecalho } from "@/components/Cabecalho";
 import { CabecalhoAtividade } from "@/components/exercicios/CabecalhoAtividade";
 import { carregarAtividade } from "@/lib/atividades/carregar";
 import { ehUuid } from "@/lib/atividades/modelo";
+import { montarProducoes, type LinhaProducao } from "@/lib/atividades/producoes";
+import type { ProducaoSalva } from "@/components/exercicios/Producao";
 import { obterPerfil } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { ResolverAtividade } from "./ResolverAtividade";
@@ -35,12 +37,22 @@ export default async function PaginaAtividade({ params }: Params) {
   let salvar = false;
   const anteriores: Record<string, string> = {};
   const primeiras: Record<string, boolean> = {};
+  let producoes: Record<string, ProducaoSalva> = {};
   if (perfil?.papel === "aluno") {
     const supabase = await criarClienteServidor();
-    const [{ count }, { data: respostas }] = await Promise.all([
+    const temProducao = exercicios.some((e) => e.tipo === "producao");
+    const [{ count }, { data: respostas }, { data: linhas }] = await Promise.all([
       supabase.from("atividade_turma").select("turma_id", { count: "exact", head: true }).eq("atividade_id", id),
       supabase.from("resposta").select("item_id, valor, status").eq("atividade_id", id).eq("aluno_id", perfil.id).order("criada_em"),
+      temProducao
+        ? supabase
+            .from("producao")
+            .select("item_id, texto, audio, enviada_em, correcao(avaliacao, comentario, corrigida_em)")
+            .eq("atividade_id", id)
+            .eq("aluno_id", perfil.id)
+        : Promise.resolve({ data: [] }),
     ]);
+    producoes = Object.fromEntries(await montarProducoes(supabase, (linhas ?? []) as unknown as LinhaProducao[]));
     salvar = (count ?? 0) > 0;
     for (const r of respostas ?? []) {
       anteriores[r.item_id] = r.valor;
@@ -76,6 +88,7 @@ export default async function PaginaAtividade({ params }: Params) {
             respostasAnteriores={anteriores}
             primeirasAnteriores={primeiras}
             salvar={salvar}
+            producoes={producoes}
           />
         </div>
       </main>

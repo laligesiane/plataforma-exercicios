@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Cabecalho } from "@/components/Cabecalho";
 import { normalizarBasico } from "@/lib/correcao/normalizar";
 import { carregarAtividade } from "@/lib/atividades/carregar";
-import { ehUuid, type Exercicio } from "@/lib/atividades/modelo";
+import { ehAutomatico, ehUuid, type ExercicioAutomatico as Exercicio } from "@/lib/atividades/modelo";
 import { textoDoItem } from "@/lib/atividades/resumo";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
@@ -31,7 +31,10 @@ export default async function RespostasAtividade({ params }: { params: Promise<{
     new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" });
   if (!carregada || carregada.atividade.professor_id !== professor.id) notFound();
 
-  const { atividade, exercicios } = carregada;
+  const { atividade } = carregada;
+  // Produção e Kahoot não têm correção automática: ficam fora desta conta.
+  const exercicios = carregada.exercicios.filter(ehAutomatico);
+  const temProducao = carregada.exercicios.some((e) => e.tipo === "producao");
   const itens = exercicios.flatMap((e): { id: string }[] => e.itens);
 
   // Alunos das turmas que receberam a atividade (sem repetir quem está em duas).
@@ -72,6 +75,14 @@ export default async function RespostasAtividade({ params }: { params: Promise<{
         </Link>
         <h1 className="mt-3 text-3xl font-extrabold tracking-tight">{atividade.titulo}</h1>
         <p className="mt-2 text-tinta-suave">Respostas dos alunos. Conta a última tentativa de cada item.</p>
+        {temProducao && (
+          <Link
+            href={`/professor/atividades/${id}/producoes`}
+            className="mt-4 inline-block rounded-full bg-primaria px-5 py-2 text-sm font-bold text-white hover:opacity-90"
+          >
+            Corrigir produções escritas e orais →
+          </Link>
+        )}
 
         <section className="mt-8 rounded-2xl border border-linha p-5 sm:p-6">
           <h2 className="text-lg font-bold">Por aluno</h2>

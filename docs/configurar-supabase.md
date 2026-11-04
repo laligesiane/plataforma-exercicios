@@ -36,6 +36,9 @@ Depois dos arquivos 0010 a 0016 (agenda, aulas, resumos e turmas de qualquer mat
 [`supabase/migrations/0007_atividade_materia.sql`](../supabase/migrations/0007_atividade_materia.sql).
 Ela deixa as atividades serem de qualquer matéria, não só de idiomas. O número é menor,
 mas ela vem por último. Pode rodar de novo sem erro.
+Em seguida rode [`supabase/migrations/0008_producao.sql`](../supabase/migrations/0008_producao.sql):
+ela libera a produção escrita e oral (o professor corrige) e o exercício com link do Kahoot,
+e cria a pasta privada "producao" no Storage para as gravações dos alunos.
 
 ## 2. Endereços do site
 

@@ -10,6 +10,7 @@ import {
   type ExercicioClassificar,
   type ExercicioLacuna,
   type ExercicioMultiplaEscolha,
+  type ExercicioProducao,
   type ExercicioRelacionar,
 } from "@/lib/atividades/modelo";
 import { ImagemDoCartao } from "./EditorMidia";
@@ -19,6 +20,7 @@ type ItemMultipla = ExercicioMultiplaEscolha["itens"][number];
 type ItemArrastar = ExercicioArrastar["itens"][number];
 type ItemClassificar = ExercicioClassificar["itens"][number];
 type ItemRelacionar = ExercicioRelacionar["itens"][number];
+type ItemProducao = ExercicioProducao["itens"][number];
 
 const campoPequeno = campo.replace("py-2.5", "py-2");
 
@@ -459,6 +461,60 @@ export function EditorRelacionar({ item, onChange }: { item: ItemRelacionar; onC
           value={item.explicacao}
           onChange={(e) => onChange({ ...item, explicacao: e.target.value })}
           placeholder="Ex.: 'Perro' é cachorro; 'gato' é o mesmo nas duas línguas."
+          className={campoPequeno}
+        />
+      </div>
+    </div>
+  );
+}
+
+export function EditorProducao({ item, onChange }: { item: ItemProducao; onChange: (item: ItemProducao) => void }) {
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Como o aluno responde">
+        {(
+          [
+            ["escrita", "✎ Escrita"],
+            ["oral", "🎙 Oral (gravação)"],
+          ] as const
+        ).map(([modo, texto]) => (
+          <button
+            key={modo}
+            type="button"
+            aria-pressed={item.modo === modo}
+            onClick={() => onChange({ ...item, modo })}
+            className={`rounded-full border-2 px-3.5 py-1 text-sm font-bold transition-colors ${item.modo === modo ? "border-primaria bg-primaria-suave text-primaria" : "border-linha text-tinta-suave hover:border-tinta"}`}
+          >
+            {texto}
+          </button>
+        ))}
+      </div>
+      <div>
+        <label htmlFor={`enunciado-${item.id}`} className={rotulo}>
+          Proposta
+        </label>
+        <textarea
+          id={`enunciado-${item.id}`}
+          value={item.enunciado}
+          onChange={(e) => onChange({ ...item, enunciado: e.target.value })}
+          rows={3}
+          placeholder={
+            item.modo === "oral"
+              ? "Ex.: Grave um áudio contando o que você fazia nas férias quando era criança."
+              : "Ex.: Escreva 5 frases sobre o que você fazia nas férias quando era criança."
+          }
+          className={campoPequeno}
+        />
+      </div>
+      <div>
+        <label htmlFor={`orientacao-${item.id}`} className={rotulo}>
+          O que você espera <span className="font-normal text-tinta-suave">(só você vê, para ajudar na correção)</span>
+        </label>
+        <input
+          id={`orientacao-${item.id}`}
+          value={item.orientacao}
+          onChange={(e) => onChange({ ...item, orientacao: e.target.value })}
+          placeholder="Ex.: Uso do pretérito imperfeito; pelo menos 5 frases."
           className={campoPequeno}
         />
       </div>

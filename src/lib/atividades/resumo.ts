@@ -1,4 +1,4 @@
-import type { Exercicio } from "./modelo";
+import { ehAutomatico, type Exercicio } from "./modelo";
 
 type ItemQualquer = Exercicio["itens"][number];
 
@@ -46,6 +46,8 @@ export function resumirAtividade(
   };
 
   exercicios.forEach((exercicio, i) => {
+    // Produção (o professor corrige depois) e Kahoot não entram na contagem.
+    if (!ehAutomatico(exercicio)) return;
     let certosDoExercicio = 0;
     for (const item of exercicio.itens) {
       resumo.total++;

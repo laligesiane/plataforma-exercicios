@@ -43,3 +43,17 @@ export async function enviarArquivo(arquivo: File, tipo: TipoArquivo): Promise<{
 
   return { url: supabase.storage.from("midia").getPublicUrl(caminho).data.publicUrl };
 }
+
+/** Envia a gravação do aluno ao bucket privado "producao" e devolve o caminho do arquivo. */
+export async function enviarAudioDoAluno(audio: Blob, atividadeId: string): Promise<{ caminho: string } | { erro: string }> {
+  if (audio.size > LIMITE_ARQUIVO_MB * 1024 * 1024) return { erro: "A gravação ficou grande demais. Grave uma mais curta." };
+  const tipo = audio.type.split(";")[0] || "audio/webm";
+  const supabase = criarClienteNavegador();
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) return { erro: "Sua sessão expirou. Entre de novo para enviar." };
+
+  const caminho = `${data.user.id}/${atividadeId}/${crypto.randomUUID()}.${extensoes[tipo] ?? "webm"}`;
+  const { error } = await supabase.storage.from("producao").upload(caminho, audio, { contentType: tipo, upsert: false });
+  if (error) return { erro: "Não deu para enviar a gravação. Confira sua conexão e tente de novo." };
+  return { caminho };
+}
