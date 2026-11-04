@@ -126,7 +126,7 @@ export default async function Inicio() {
               <span className="rounded-2xl rounded-br-sm border border-linha bg-fundo px-3 py-1.5 text-sm font-bold shadow-sm">
                 Bora repassar?
               </span>
-              <Mascote pose="feliz" tamanho={72} />
+              <Mascote pose="feliz" tamanho={72} animado />
             </div>
           </div>
         </section>
