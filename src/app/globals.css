@@ -171,9 +171,32 @@ body {
   transform-origin: 60px 115px;
   animation: brotinho-respira 1.4s ease-in-out infinite;
 }
+/* No dia a dia (logo, landing): balança as folhinhas devagar e pisca de vez em quando. */
+@keyframes brotinho-pisca {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+.brotinho-ocioso .brotinho-folhas {
+  transform-box: view-box;
+  transform-origin: 60px 40px;
+  animation: brotinho-folhas 2.4s ease-in-out infinite;
+}
+.brotinho-ocioso .brotinho-olhos {
+  transform-box: view-box;
+  transform-origin: 60px 66px;
+  animation: brotinho-pisca 4s infinite;
+}
+.brotinho-ocioso .brotinho-folhas-icone {
+  transform-origin: 32px 19px;
+}
+.brotinho-ocioso .brotinho-olhos-icone {
+  transform-origin: 32px 37px;
+}
 @media (prefers-reduced-motion: reduce) {
   .brotinho-animado .brotinho-folhas,
-  .brotinho-animado .brotinho-corpo {
+  .brotinho-animado .brotinho-corpo,
+  .brotinho-ocioso .brotinho-folhas,
+  .brotinho-ocioso .brotinho-olhos {
     animation: none;
   }
 }

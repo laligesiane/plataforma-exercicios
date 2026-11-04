@@ -1,7 +1,8 @@
 /**
  * Brotinho, o mascote do Repasa: uma sementinha que cresce a cada revisão.
- * "feliz" é a pose parada; "lendo" é a pose dos carregamentos (folhas
- * balançando e corpinho respirando, sem animação para quem pede menos movimento).
+ * "feliz" é a pose do dia a dia: animado, ele pisca e balança as folhinhas devagar.
+ * "lendo" é a pose dos carregamentos: animado, as folhas balançam e o corpinho respira.
+ * Quem pede menos movimento no sistema vê o Brotinho parado.
  */
 type Pose = "feliz" | "lendo";
 
@@ -21,7 +22,7 @@ export function Mascote({
       width={tamanho}
       height={tamanho}
       viewBox="0 0 120 120"
-      className={`${animado ? "brotinho-animado" : ""} ${className}`}
+      className={`${animado ? (pose === "lendo" ? "brotinho-animado" : "brotinho-ocioso") : ""} ${className}`}
       role="img"
       aria-label="Brotinho, o mascote do Repasa"
     >
@@ -35,12 +36,14 @@ export function Mascote({
         <ellipse cx="60" cy="82" rx="26" ry="22" fill="#e3f6ee" />
         {pose === "feliz" ? (
           <>
-            <circle cx="47" cy="66" r="7" fill="#fff" />
-            <circle cx="73" cy="66" r="7" fill="#fff" />
-            <circle cx="48.5" cy="67" r="3.6" fill="#10233a" />
-            <circle cx="74.5" cy="67" r="3.6" fill="#10233a" />
-            <circle cx="49.6" cy="65.6" r="1.2" fill="#fff" />
-            <circle cx="75.6" cy="65.6" r="1.2" fill="#fff" />
+            <g className="brotinho-olhos">
+              <circle cx="47" cy="66" r="7" fill="#fff" />
+              <circle cx="73" cy="66" r="7" fill="#fff" />
+              <circle cx="48.5" cy="67" r="3.6" fill="#10233a" />
+              <circle cx="74.5" cy="67" r="3.6" fill="#10233a" />
+              <circle cx="49.6" cy="65.6" r="1.2" fill="#fff" />
+              <circle cx="75.6" cy="65.6" r="1.2" fill="#fff" />
+            </g>
             <path d="M53 78 Q60 85 67 78" stroke="#10233a" strokeWidth="3" strokeLinecap="round" fill="none" />
             <circle cx="38" cy="78" r="4.5" fill="#ff9fb0" opacity=".7" />
             <circle cx="82" cy="78" r="4.5" fill="#ff9fb0" opacity=".7" />
@@ -66,20 +69,24 @@ export function Mascote({
   );
 }
 
-/** Ícone do logo: o Brotinho simplificado, em branco sobre o verde. */
-export function IconeLogo({ tamanho = 32 }: { tamanho?: number }) {
+/** Ícone do logo e do favicon: o rostinho do Brotinho, piscando e balançando as folhinhas. */
+export function IconeLogo({ tamanho = 34 }: { tamanho?: number }) {
   return (
-    <span
-      className="flex items-center justify-center rounded-[10px] bg-primaria"
-      style={{ width: tamanho, height: tamanho }}
-      aria-hidden
-    >
-      <svg width={tamanho * 0.76} height={tamanho * 0.76} viewBox="0 0 120 120">
-        <path d="M60 52 L60 30" stroke="#fff" strokeWidth="7" strokeLinecap="round" />
-        <path d="M60 34 C48 14 26 16 22 28 C36 40 52 40 60 34Z" fill="#fff" />
-        <path d="M60 34 C72 12 96 14 100 26 C86 40 68 40 60 34Z" fill="#e3f6ee" />
-        <ellipse cx="60" cy="84" rx="34" ry="30" fill="#fff" />
-      </svg>
-    </span>
+    <svg width={tamanho} height={tamanho} viewBox="0 0 64 64" className="brotinho-ocioso shrink-0" aria-hidden>
+      <rect width="64" height="64" rx="16" fill="#e3f6ee" />
+      <g className="brotinho-folhas brotinho-folhas-icone">
+        <path d="M32 21 V13" stroke="#1f7a45" strokeWidth="3.5" strokeLinecap="round" />
+        <path d="M32 14 C26 5 15 6 13 12 C19 18 28 18 32 14Z" fill="#34c38f" />
+        <path d="M32 14 C38 4 50 5 52 11 C46 18 36 18 32 14Z" fill="#0f9d6b" />
+      </g>
+      <circle cx="32" cy="40" r="20" fill="#0f9d6b" />
+      <g className="brotinho-olhos brotinho-olhos-icone">
+        <circle cx="24.5" cy="37" r="5.2" fill="#fff" />
+        <circle cx="39.5" cy="37" r="5.2" fill="#fff" />
+        <circle cx="25.5" cy="37.6" r="2.8" fill="#10233a" />
+        <circle cx="40.5" cy="37.6" r="2.8" fill="#10233a" />
+      </g>
+      <path d="M27 47 Q32 51.5 37 47" stroke="#fff" strokeWidth="3" strokeLinecap="round" fill="none" />
+    </svg>
   );
 }
