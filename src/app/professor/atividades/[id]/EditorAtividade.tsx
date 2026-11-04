@@ -322,7 +322,7 @@ export function EditorAtividade({ inicial, exerciciosIniciais, turmas, turmasIni
                 </button>
               ))}
             </div>
-            <p className="mt-3 text-xs text-tinta-suave">Imagem, áudio ou vídeo entram dentro de qualquer exercício, no botão "Mídia".</p>
+            <p className="mt-3 text-xs text-tinta-suave">Imagem, áudio ou vídeo entram dentro de qualquer exercício, no botão &quot;Mídia&quot;.</p>
           </section>
 
           <section className="space-y-4 rounded-2xl border border-linha p-5 sm:p-6">
