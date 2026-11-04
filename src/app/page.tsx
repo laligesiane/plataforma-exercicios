@@ -35,7 +35,7 @@ const recursos = [
   {
     icone: "🧠",
     titulo: "Mapas mentais",
-    texto: "Veja o assunto de cima, com as ideias ligadas umas às outras. Ótimo para a véspera da prova.",
+    texto: "Gere um mapa mental a partir do seu resumo, com um clique, e veja o assunto de cima. Ótimo para a véspera da prova.",
   },
   {
     icone: "✅",
