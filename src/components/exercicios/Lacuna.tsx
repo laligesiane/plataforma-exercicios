@@ -4,24 +4,39 @@ import { useState } from "react";
 import { corrigirLacuna, podeVerResposta, respostaCorreta, type ItemLacuna, type Resultado } from "@/lib/correcao";
 import { Feedback } from "./Feedback";
 
-export function Lacuna({ item }: { item: ItemLacuna }) {
+const estiloPorStatus = {
+  certo: "border-certo bg-certo-fundo text-certo",
+  certo_com_aviso: "border-aviso bg-aviso-fundo text-aviso",
+  errado: "border-erro bg-erro-fundo text-erro",
+} as const;
+
+type Props = {
+  item: ItemLacuna;
+  onResultado?: (resultado: Resultado) => void;
+};
+
+export function Lacuna({ item, onResultado }: Props) {
   const [valor, setValor] = useState("");
   const [resultado, setResultado] = useState<Resultado | null>(null);
   const [erros, setErros] = useState(0);
   const [mostrarResposta, setMostrarResposta] = useState(false);
 
   function conferir() {
-    if (valor.trim() === "") return;
+    if (valor.trim() === "" || resultado) return;
     const novo = corrigirLacuna(item, valor);
     setResultado(novo);
+    onResultado?.(novo);
     if (novo.status === "errado") setErros((n) => n + 1);
   }
 
   const [antes, depois] = item.enunciado.split("___");
+  const estilo = resultado
+    ? estiloPorStatus[resultado.status]
+    : "border-linha bg-suave focus:border-primaria focus:bg-fundo";
 
   return (
-    <div className="py-3">
-      <p className="leading-loose">
+    <div className="py-4 first:pt-0 last:pb-0">
+      <p className="text-[17px] leading-[2.1]">
         {antes}
         <input
           value={valor}
@@ -32,13 +47,18 @@ export function Lacuna({ item }: { item: ItemLacuna }) {
           onBlur={conferir}
           onKeyDown={(e) => e.key === "Enter" && conferir()}
           aria-label="Resposta"
-          className="mx-1 w-32 border-b-2 border-current bg-transparent px-1 text-center outline-none focus:border-blue-600"
+          autoComplete="off"
+          spellCheck={false}
+          className={`mx-1 w-32 rounded-[10px] border-2 px-2 py-0.5 text-center font-bold outline-none transition-colors ${estilo}`}
         />
         {depois}
       </p>
       <Feedback resultado={resultado} />
       {resultado?.status === "errado" && podeVerResposta(erros) && (
-        <button onClick={() => setMostrarResposta(true)} className="mt-1 text-sm underline">
+        <button
+          onClick={() => setMostrarResposta(true)}
+          className="mt-2 text-sm font-bold text-primaria underline-offset-4 hover:underline"
+        >
           {mostrarResposta ? `Resposta: ${respostaCorreta(item)}` : "Ver resposta"}
         </button>
       )}
