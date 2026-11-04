@@ -26,7 +26,7 @@ export default async function ResumoDoAluno({ params }: { params: Promise<{ id: 
   return (
     <>
       <Cabecalho />
-      <main className="mx-auto w-full max-w-4xl px-4 pt-8 pb-16">
+      <main className="mx-auto w-full max-w-5xl px-4 pt-8 pb-16">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <Link
             href={materia ? `/aluno/materias/${materia.id}` : "/aluno"}
