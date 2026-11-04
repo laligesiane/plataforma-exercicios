@@ -14,6 +14,7 @@ import {
   type Exercicio,
 } from "@/lib/atividades/modelo";
 import { ehIdioma } from "@/lib/idiomas";
+import { mensagemDeLimite } from "@/lib/limites";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
@@ -131,7 +132,8 @@ export async function salvarAtividade(dados: DadosAtividade): Promise<ResultadoS
     const { error: erroTurmas } = await supabase
       .from("atividade_turma")
       .insert(novas.map((turma_id) => ({ atividade_id: atividade.id, turma_id })));
-    if (erroTurmas) return { ok: false, erro: "Não foi possível ligar a atividade às turmas." };
+    if (erroTurmas)
+      return { ok: false, erro: mensagemDeLimite(erroTurmas.message) ?? "Não foi possível ligar a atividade às turmas." };
   }
   if (saem.length > 0) {
     await supabase.from("atividade_turma").delete().eq("atividade_id", atividade.id).in("turma_id", saem);

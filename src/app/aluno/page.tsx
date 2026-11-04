@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AssinarAgenda } from "@/components/AssinarAgenda";
 import { Cabecalho } from "@/components/Cabecalho";
 import { HorariosTurma } from "@/components/HorariosTurma";
 import type { Horario } from "@/lib/agenda";
@@ -44,6 +45,11 @@ export default async function AreaAluno() {
       <main className="mx-auto w-full max-w-3xl px-4 pt-8 pb-16">
         <h1 className="text-3xl font-extrabold tracking-tight">Olá{perfil.nome ? `, ${perfil.nome}` : ""}!</h1>
         <p className="mt-2 text-tinta-suave">Estas são as atividades das suas turmas.</p>
+        {(turmas ?? []).length > 0 && (
+          <div className="mt-6">
+            <AssinarAgenda perfilId={perfil.id} />
+          </div>
+        )}
 
         {(turmas ?? []).map((turma) => {
           const atividades = (porTurma.get(turma.id) ?? []).sort((x, y) => y.atualizada_em.localeCompare(x.atualizada_em));

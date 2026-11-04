@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AssinarAgenda } from "@/components/AssinarAgenda";
 import { Cabecalho } from "@/components/Cabecalho";
 import { nomeIdioma } from "@/lib/idiomas";
 import { exigirPapel } from "@/lib/perfil";
@@ -10,7 +11,7 @@ export default async function PainelProfessor() {
   const supabase = await criarClienteServidor();
 
   const [{ data: plano }, { data: turmas }] = await Promise.all([
-    supabase.from("plano").select("nome, max_turmas, max_alunos_por_turma").eq("id", perfil.plano_id).single(),
+    supabase.from("plano").select("nome, max_turmas, max_alunos_por_turma, max_atividades_por_turma").eq("id", perfil.plano_id).single(),
     supabase
       .from("turma")
       .select("id, nome, idioma_ensinado, idioma_instrucao, turma_aluno(count)")
@@ -31,7 +32,7 @@ export default async function PainelProfessor() {
             <span className="tabular-nums">
               {totalTurmas} de {plano.max_turmas} {plano.max_turmas === 1 ? "turma" : "turmas"}
             </span>
-            , até {plano.max_alunos_por_turma} alunos por turma.
+            , até {plano.max_alunos_por_turma} alunos e {plano.max_atividades_por_turma} atividades por turma.
           </p>
         )}
 
@@ -45,6 +46,10 @@ export default async function PainelProfessor() {
           </span>
           <span aria-hidden className="text-xl font-bold text-primaria">→</span>
         </Link>
+
+        <div className="mt-4">
+          <AssinarAgenda perfilId={perfil.id} />
+        </div>
 
         <section className="mt-8 space-y-3">
           <h2 className="text-lg font-bold">Suas turmas</h2>
