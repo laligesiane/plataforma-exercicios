@@ -8,7 +8,7 @@ const figtree = Figtree({
 });
 
 export const metadata: Metadata = {
-  title: "Plataforma de Exercícios",
+  title: "Repasa",
   description: "Exercícios de espanhol e inglês com correção na hora",
 };
 
