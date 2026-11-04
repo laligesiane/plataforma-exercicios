@@ -12,20 +12,24 @@ const estiloPorStatus = {
 
 type Props = {
   item: ItemLacuna;
-  onResultado?: (resultado: Resultado) => void;
+  /** Última resposta já dada, para retomar a atividade. */
+  valorInicial?: string;
+  onResultado?: (resultado: Resultado, valor: string) => void;
 };
 
-export function Lacuna({ item, onResultado }: Props) {
-  const [valor, setValor] = useState("");
-  const [resultado, setResultado] = useState<Resultado | null>(null);
-  const [erros, setErros] = useState(0);
+export function Lacuna({ item, valorInicial, onResultado }: Props) {
+  const [valor, setValor] = useState(valorInicial ?? "");
+  const [resultado, setResultado] = useState<Resultado | null>(() =>
+    valorInicial ? corrigirLacuna(item, valorInicial) : null,
+  );
+  const [erros, setErros] = useState(() => (resultado?.status === "errado" ? 1 : 0));
   const [mostrarResposta, setMostrarResposta] = useState(false);
 
   function conferir() {
     if (valor.trim() === "" || resultado) return;
     const novo = corrigirLacuna(item, valor);
     setResultado(novo);
-    onResultado?.(novo);
+    onResultado?.(novo, valor);
     if (novo.status === "errado") setErros((n) => n + 1);
   }
 

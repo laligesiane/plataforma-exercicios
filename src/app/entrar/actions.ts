@@ -15,6 +15,9 @@ export async function entrar(_estado: EstadoFormulario, formData: FormData): Pro
   if (error) return { erro: "E-mail ou senha incorretos." };
 
   const perfil = await obterPerfil();
+  const proximo = String(formData.get("proximo") ?? "");
+  // Só caminhos internos, para o link não levar a outro site.
+  if (/^\/(?![/\\])/.test(proximo)) redirect(proximo);
   redirect(perfil ? paginaInicial(perfil.papel) : "/");
 }
 

@@ -6,18 +6,22 @@ import { Feedback } from "./Feedback";
 
 type Props = {
   item: ItemMultiplaEscolha;
-  onResultado?: (resultado: Resultado) => void;
+  /** Id da última alternativa escolhida, para retomar a atividade. */
+  valorInicial?: string;
+  onResultado?: (resultado: Resultado, valor: string) => void;
 };
 
-export function MultiplaEscolha({ item, onResultado }: Props) {
-  const [escolhida, setEscolhida] = useState<string | null>(null);
-  const [resultado, setResultado] = useState<Resultado | null>(null);
+export function MultiplaEscolha({ item, valorInicial, onResultado }: Props) {
+  const [escolhida, setEscolhida] = useState<string | null>(valorInicial ?? null);
+  const [resultado, setResultado] = useState<Resultado | null>(() =>
+    valorInicial ? corrigirMultiplaEscolha(item, valorInicial) : null,
+  );
 
   function escolher(id: string) {
     const novo = corrigirMultiplaEscolha(item, id);
     setEscolhida(id);
     setResultado(novo);
-    onResultado?.(novo);
+    onResultado?.(novo, id);
   }
 
   function estilo(id: string) {
