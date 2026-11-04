@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Cabecalho } from "@/components/Cabecalho";
+import { HorariosTurma } from "@/components/HorariosTurma";
+import type { Horario } from "@/lib/agenda";
 import { categorias, type Categoria } from "@/lib/atividades/modelo";
 import { nomeIdioma } from "@/lib/idiomas";
 import { exigirPapel } from "@/lib/perfil";
@@ -11,11 +13,15 @@ export default async function AreaAluno() {
   const perfil = await exigirPapel("aluno");
   const supabase = await criarClienteServidor();
 
-  const [{ data: turmas }, { data: atribuicoes }, { data: respostas }] = await Promise.all([
+  const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }] = await Promise.all([
     supabase.from("turma").select("id, nome, idioma_ensinado, idioma_instrucao").order("nome"),
     supabase.from("atividade_turma").select("turma_id, atividade(id, titulo, nivel, categoria, atualizada_em)"),
     supabase.from("resposta").select("atividade_id, item_id").eq("aluno_id", perfil.id),
+    supabase.from("turma_horario").select("id, turma_id, dia_semana, hora_inicio, duracao_min, fuso"),
   ]);
+
+  const horariosPorTurma = new Map<string, (Horario & { id: string })[]>();
+  for (const h of horarios ?? []) horariosPorTurma.set(h.turma_id, [...(horariosPorTurma.get(h.turma_id) ?? []), h]);
 
   // Itens já respondidos por atividade, para mostrar "começada".
   const respondidos = new Map<string, Set<string>>();
@@ -47,6 +53,9 @@ export default async function AreaAluno() {
               <p className="text-sm text-tinta-suave">
                 {nomeIdioma(turma.idioma_ensinado)} explicado em {nomeIdioma(turma.idioma_instrucao).toLowerCase()}
               </p>
+              <div className="mt-3">
+                <HorariosTurma horarios={horariosPorTurma.get(turma.id) ?? []} nomeTurma={turma.nome} />
+              </div>
               {atividades.length > 0 ? (
                 <ul className="mt-3 grid gap-3 sm:grid-cols-2">
                   {atividades.map((a) => {
