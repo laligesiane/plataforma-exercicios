@@ -4,7 +4,9 @@ import { Cabecalho } from "@/components/Cabecalho";
 import { BotaoExcluir } from "@/components/BotaoExcluir";
 import { validarMapa } from "@/lib/mapas";
 import { exigirPapel } from "@/lib/perfil";
-import { camposResumo, type Resumo } from "@/lib/resumos";
+import { camposResumo, documentoDoResumo, type Resumo } from "@/lib/resumos";
+import { documentoTemConteudo } from "@/lib/documento";
+import { ExportarPdf } from "@/components/ExportarPdf";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { apagarResumo, salvarResumo } from "../actions";
 import { turmaComAulas } from "../dados";
@@ -25,9 +27,16 @@ export default async function EditarResumo({ params }: { params: Promise<{ id: s
     <>
       <Cabecalho />
       <main className="mx-auto w-full max-w-4xl px-4 pt-8 pb-16">
-        <Link href={`/professor/turmas/${turma.id}`} className="text-sm font-bold text-primaria hover:underline">
-          ← {turma.nome}
-        </Link>
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <Link href={`/professor/turmas/${turma.id}`} className="text-sm font-bold text-primaria hover:underline">
+            ← {turma.nome}
+          </Link>
+          <ExportarPdf
+            id={resumo.id}
+            temTexto={documentoTemConteudo(documentoDoResumo(resumo))}
+            temMapa={!!(resumo.mapa.centro || resumo.mapa.ramos.length)}
+          />
+        </div>
         <h1 className="mt-3 mb-6 text-3xl font-extrabold tracking-tight">Editar resumo</h1>
         <EditorResumo salvar={salvarResumo} ocultos={{ turma_id: turma.id }} aulas={aulas} resumo={resumo} />
         <BotaoExcluir
