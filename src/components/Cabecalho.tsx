@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { IconeLogo } from "@/components/Mascote";
 import { sair } from "@/app/entrar/actions";
 import { obterPerfil, paginaInicial } from "@/lib/perfil";
 
@@ -9,9 +10,7 @@ export async function Cabecalho() {
     <header className="border-b border-linha">
       <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3.5">
         <Link href="/" className="flex items-center gap-2.5">
-          <span className="flex size-8 items-center justify-center rounded-[10px] bg-primaria text-sm font-extrabold text-white">
-            ¿?
-          </span>
+          <IconeLogo />
           <span className="text-[17px] font-extrabold tracking-tight">Repasa</span>
         </Link>
         <nav className="flex items-center gap-4 text-sm font-semibold text-tinta-suave">
