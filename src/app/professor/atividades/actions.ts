@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   categorias,
+  configDoExercicio,
   ehExercicio,
   ehUuid,
   limparExercicio,
@@ -105,6 +106,7 @@ export async function salvarAtividade(dados: DadosAtividade): Promise<ResultadoS
     titulo: e.titulo,
     instrucoes: e.instrucoes,
     itens: e.itens,
+    config: configDoExercicio(e),
   }));
   if (linhas.length > 0) {
     const { error: erroExercicios } = await supabase.from("exercicio").upsert(linhas);
