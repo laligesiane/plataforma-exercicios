@@ -6,6 +6,7 @@ import type { EstadoFormulario } from "@/components/ui/Mensagem";
 import { mensagemDeLimite } from "@/lib/limites";
 import { ordemCores, validarMapa, type Cor } from "@/lib/mapas";
 import { exigirPapel } from "@/lib/perfil";
+import { lerConteudo } from "@/lib/resumos";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
 export async function criarMateria(_estado: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
@@ -41,7 +42,7 @@ export async function salvarResumoAluno(_estado: EstadoFormulario, formData: For
   const id = String(formData.get("id") ?? "");
   const materiaId = String(formData.get("materia_id") ?? "");
   const titulo = String(formData.get("titulo") ?? "").trim().slice(0, 200);
-  const texto = String(formData.get("texto") ?? "").trim().slice(0, 10000);
+  const { conteudo, texto } = lerConteudo(formData.get("conteudo"));
   let mapa;
   try {
     mapa = validarMapa(JSON.parse(String(formData.get("mapa") ?? "null")));
@@ -50,11 +51,11 @@ export async function salvarResumoAluno(_estado: EstadoFormulario, formData: For
   }
   if (!mapa) return { erro: "Não foi possível ler o mapa mental." };
   if (!titulo && !texto && !mapa.centro && mapa.ramos.length === 0) {
-    return { erro: "Escreva um título, um texto ou monte o mapa." };
+    return { erro: "Escreva um título, o resumo ou monte o mapa." };
   }
 
   const supabase = await criarClienteServidor();
-  const valores = { titulo, texto, mapa };
+  const valores = { titulo, texto, conteudo, mapa };
   const { error } = id
     ? await supabase
         .from("resumo")
