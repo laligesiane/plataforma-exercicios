@@ -14,7 +14,7 @@ export async function cadastrar(_estado: EstadoFormulario, formData: FormData): 
 
   const origem = (await headers()).get("origin") ?? "";
   const supabase = await criarClienteServidor();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password: senha,
     options: { data: { nome, papel }, emailRedirectTo: `${origem}/auth/confirmar?next=/${papel}` },
@@ -23,6 +23,11 @@ export async function cadastrar(_estado: EstadoFormulario, formData: FormData): 
   if (error) {
     if (error.message.toLowerCase().includes("already")) return { erro: "Esse e-mail já tem conta. Use Entrar." };
     return { erro: `Não foi possível criar a conta: ${error.message}` };
+  }
+
+  // Quando o e-mail já tem conta, o Supabase responde "ok" sem enviar nada e devolve o usuário sem identidades.
+  if (data.user && data.user.identities?.length === 0) {
+    return { erro: "Esse e-mail já tem conta na Repasa. Use Entrar, ou “Esqueci minha senha” se não lembrar a senha." };
   }
 
   return { sucesso: `Quase lá! Enviamos um link de confirmação para ${email}.` };
