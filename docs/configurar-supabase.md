@@ -2,6 +2,17 @@
 
 Passo a passo para ligar o cadastro de professores, as turmas e os convites. Faça uma vez só, nesta ordem.
 
+## 0. Ligar o domínio repasa.com.br
+
+1. Na **Vercel → plataforma-exercicios → Settings → Domains**, adicione `repasa.com.br`. Aceite a sugestão de também
+   adicionar `www.repasa.com.br` redirecionando para o principal.
+2. A Vercel vai mostrar o domínio como "Invalid Configuration". Escolha a opção de **Nameservers** e anote os dois
+   endereços (normalmente `ns1.vercel-dns.com` e `ns2.vercel-dns.com`).
+3. No **registro.br**, entre em **Domínios → repasa.com.br → DNS → Alterar servidores DNS**, troque pelos dois
+   endereços da Vercel e salve.
+4. A troca leva de alguns minutos a algumas horas. Quando a Vercel mostrar "Valid Configuration", o site abre em
+   `https://repasa.com.br`, já com HTTPS.
+
 ## 1. Criar as tabelas
 
 No Supabase, abra **SQL Editor → New query**, cole todo o conteúdo de
@@ -14,8 +25,8 @@ Para mudar os limites depois, edite a linha `gratis` na tabela **plano** (Table 
 
 Em **Authentication → URL Configuration**:
 
-- **Site URL:** `https://plataforma-exercicios.vercel.app`
-- **Redirect URLs:** adicione `https://*-lavnia-gesianes-projects.vercel.app/**` e `http://localhost:3000/**`
+- **Site URL:** `https://repasa.com.br`
+- **Redirect URLs:** adicione `https://www.repasa.com.br/**`, `https://plataforma-exercicios.vercel.app/**`, `https://*-lavnia-gesianes-projects.vercel.app/**` e `http://localhost:3000/**`
 
 ## 3. Modelos de e-mail
 
@@ -24,14 +35,14 @@ Em **Authentication → Emails**, troque o corpo destes dois modelos.
 **Confirm signup** (professor confirmando o cadastro):
 
 ```html
-<h2>Confirme sua conta na Plataforma de Exercícios</h2>
+<h2>Confirme sua conta na Repasa</h2>
 <p><a href="{{ .SiteURL }}/auth/confirmar?token_hash={{ .TokenHash }}&type=email">Confirmar meu e-mail</a></p>
 ```
 
 **Invite user** (aluno convidado para uma turma):
 
 ```html
-<h2>Você foi convidado para uma turma na Plataforma de Exercícios</h2>
+<h2>Você foi convidado para uma turma na Repasa</h2>
 <p><a href="{{ .SiteURL }}/auth/confirmar?token_hash={{ .TokenHash }}&type=invite">Criar minha senha</a></p>
 ```
 

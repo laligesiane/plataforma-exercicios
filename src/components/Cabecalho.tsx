@@ -12,7 +12,7 @@ export async function Cabecalho() {
           <span className="flex size-8 items-center justify-center rounded-[10px] bg-primaria text-sm font-extrabold text-white">
             ¿?
           </span>
-          <span className="text-[17px] font-extrabold tracking-tight">Plataforma de Exercícios</span>
+          <span className="text-[17px] font-extrabold tracking-tight">Repasa</span>
         </Link>
         <nav className="flex items-center gap-4 text-sm font-semibold text-tinta-suave">
           {perfil ? (
