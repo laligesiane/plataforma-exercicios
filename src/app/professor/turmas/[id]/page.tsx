@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Cabecalho } from "@/components/Cabecalho";
+import { etiquetasDaAtividade } from "@/lib/atividades/modelo";
 import { descreverTurma } from "@/lib/turmas";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
@@ -29,7 +30,7 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
       .eq("id", id)
       .maybeSingle(),
     supabase.from("plano").select("max_alunos_por_turma").eq("id", perfil.plano_id).single(),
-    supabase.from("atividade_turma").select("atividade(id, titulo, nivel, publicada)").eq("turma_id", id),
+    supabase.from("atividade_turma").select("atividade(id, titulo, nivel, categoria, materia, publicada)").eq("turma_id", id),
     supabase.from("turma_horario").select("id, dia_semana, hora_inicio, duracao_min, fuso").eq("turma_id", id),
     supabase.from("aula").select(camposAula).eq("turma_id", id).order("data", { ascending: false }),
     supabase.from("resumo").select(camposResumo).eq("turma_id", id).order("atualizado_em", { ascending: false }),
@@ -39,7 +40,7 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
   // Relação muitos-para-um: o Supabase devolve um objeto, mas sem tipos gerados o cliente a tipa como lista.
   const alunos = turma.turma_aluno.flatMap((m) => (m.perfil ? [m.perfil as unknown as Aluno] : []));
   const atividades = (atribuicoes ?? []).flatMap((a) =>
-    a.atividade ? [a.atividade as unknown as { id: string; titulo: string; nivel: string; publicada: boolean }] : [],
+    a.atividade ? [a.atividade as unknown as { id: string; titulo: string; nivel: string; categoria: string; materia: string; publicada: boolean }] : [],
   );
   const limite = plano?.max_alunos_por_turma ?? 0;
   const cheia = alunos.length >= limite;
@@ -210,7 +211,7 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
                     {a.titulo}
                   </Link>
                   <span className="text-sm text-tinta-suave">
-                    {a.nivel} · {a.publicada ? "Publicada" : "Rascunho"}
+                    {etiquetasDaAtividade(a)[0]} · {a.publicada ? "Publicada" : "Rascunho"}
                   </span>
                 </li>
               ))}

@@ -1,3 +1,4 @@
+import { nomeIdioma } from "../idiomas";
 import { ehLinkDeArquivo, ehMidia, type Midia } from "./midia";
 import type { ItemArrastar, ItemClassificar, ItemLacuna, ItemMultiplaEscolha, ItemRelacionar } from "@/lib/correcao";
 
@@ -98,14 +99,27 @@ export function configDoExercicio(e: Exercicio): Record<string, unknown> {
 export type Atividade = {
   id: string;
   titulo: string;
+  /** Nível e tema só valem para atividades de idioma. */
   nivel: Nivel;
   categoria: Categoria;
-  idioma_ensinado: string;
-  idioma_instrucao: string;
+  /** Preenchida nas atividades de outras matérias; vazia nas de idioma. */
+  materia: string;
+  idioma_ensinado: string | null;
+  idioma_instrucao: string | null;
   explicacao: string;
   publicada: boolean;
   publica: boolean;
 };
+
+/** Etiquetas curtas da atividade: "A2 · Gramática · Espanhol" ou só "Matemática". */
+export function etiquetasDaAtividade(
+  a: { materia?: string | null; nivel: string; categoria: string; idioma_ensinado?: string | null },
+): string[] {
+  const materia = a.materia?.trim();
+  if (materia) return [materia];
+  const tema = categorias[a.categoria as Categoria] ?? a.categoria;
+  return [a.nivel, tema, ...(a.idioma_ensinado ? [nomeIdioma(a.idioma_ensinado)] : [])];
+}
 
 const formatoUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

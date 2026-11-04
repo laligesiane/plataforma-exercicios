@@ -25,6 +25,7 @@ import {
   type TipoExercicio,
 } from "@/lib/atividades/modelo";
 import { idiomas } from "@/lib/idiomas";
+import { sugestoesMateria } from "@/lib/turmas";
 import { apagarAtividade, salvarAtividade, type ResultadoSalvar } from "../actions";
 import {
   CabecalhoItem,
@@ -47,6 +48,12 @@ type Props = {
   turmasIniciais: string[];
 };
 
+/** Deixa a atividade coerente com o tipo escolhido: idioma (sem matéria) ou matéria (sem idiomas). */
+function paraSalvar(a: Atividade, tipo: "idioma" | "materia"): Atividade {
+  if (tipo === "materia") return { ...a, idioma_ensinado: null, idioma_instrucao: null };
+  return { ...a, materia: "", idioma_ensinado: a.idioma_ensinado ?? "es", idioma_instrucao: a.idioma_instrucao ?? "pt" };
+}
+
 function mover<T>(lista: T[], indice: number, direcao: -1 | 1) {
   const alvo = indice + direcao;
   if (alvo < 0 || alvo >= lista.length) return lista;
@@ -64,6 +71,8 @@ export function EditorAtividade({ inicial, exerciciosIniciais, turmas, turmasIni
   const [resultado, setResultado] = useState<ResultadoSalvar | null>(null);
   const [salvando, iniciarSalvar] = useTransition();
   const [publicadaSalva, setPublicadaSalva] = useState(inicial.publicada);
+  const [tipo, setTipo] = useState<"idioma" | "materia">(inicial.materia.trim() ? "materia" : "idioma");
+  const atual = paraSalvar(atividade, tipo);
 
   useEffect(() => {
     if (!alterado) return;
@@ -93,7 +102,7 @@ export function EditorAtividade({ inicial, exerciciosIniciais, turmas, turmasIni
   }
 
   function salvar(publicar = atividade.publicada) {
-    const dados = { ...atividade, publicada: publicar };
+    const dados = { ...atual, publicada: publicar };
     iniciarSalvar(async () => {
       let r: ResultadoSalvar;
       try {
@@ -136,7 +145,7 @@ export function EditorAtividade({ inicial, exerciciosIniciais, turmas, turmasIni
 
       {modo === "ver" ? (
         <div className="mt-6">
-          <Previa atividade={atividade} exercicios={exercicios.map(limparExercicio)} />
+          <Previa atividade={atual} exercicios={exercicios.map(limparExercicio)} />
         </div>
       ) : (
         <div className="mt-6 space-y-6">
@@ -153,74 +162,120 @@ export function EditorAtividade({ inicial, exerciciosIniciais, turmas, turmasIni
                 className={`${campo} text-lg font-bold`}
               />
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="nivel" className={rotulo}>
-                  Nível
-                </label>
-                <select
-                  id="nivel"
-                  value={atividade.nivel}
-                  onChange={(e) => editarAtividade("nivel", e.target.value as Nivel)}
-                  className={campo}
-                >
-                  {niveis.map((n) => (
-                    <option key={n}>{n}</option>
-                  ))}
-                </select>
+            <fieldset>
+              <legend className={rotulo}>O que esta atividade ensina</legend>
+              <div className="flex flex-wrap gap-2">
+                {(
+                  [
+                    ["idioma", "Um idioma"],
+                    ["materia", "Outra matéria"],
+                  ] as const
+                ).map(([valor, texto]) => (
+                  <button
+                    key={valor}
+                    type="button"
+                    aria-pressed={tipo === valor}
+                    onClick={() => {
+                      setTipo(valor);
+                      mudar();
+                    }}
+                    className={`rounded-full border-2 px-4 py-1.5 text-sm font-bold transition-colors ${tipo === valor ? "border-primaria bg-primaria-suave text-primaria" : "border-linha text-tinta-suave hover:border-tinta"}`}
+                  >
+                    {texto}
+                  </button>
+                ))}
               </div>
-              <div>
-                <label htmlFor="categoria" className={rotulo}>
-                  Tema
-                </label>
-                <select
-                  id="categoria"
-                  value={atividade.categoria}
-                  onChange={(e) => editarAtividade("categoria", e.target.value as Categoria)}
-                  className={campo}
-                >
-                  {Object.entries(categorias).map(([valor, nome]) => (
-                    <option key={valor} value={valor}>
-                      {nome}
-                    </option>
-                  ))}
-                </select>
+            </fieldset>
+            {tipo === "idioma" ? (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="nivel" className={rotulo}>
+                    Nível
+                  </label>
+                  <select
+                    id="nivel"
+                    value={atividade.nivel}
+                    onChange={(e) => editarAtividade("nivel", e.target.value as Nivel)}
+                    className={campo}
+                  >
+                    {niveis.map((n) => (
+                      <option key={n}>{n}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="categoria" className={rotulo}>
+                    Tema
+                  </label>
+                  <select
+                    id="categoria"
+                    value={atividade.categoria}
+                    onChange={(e) => editarAtividade("categoria", e.target.value as Categoria)}
+                    className={campo}
+                  >
+                    {Object.entries(categorias).map(([valor, nome]) => (
+                      <option key={valor} value={valor}>
+                        {nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="idioma_ensinado" className={rotulo}>
+                    Idioma ensinado
+                  </label>
+                  <select
+                    id="idioma_ensinado"
+                    value={atual.idioma_ensinado ?? "es"}
+                    onChange={(e) => editarAtividade("idioma_ensinado", e.target.value)}
+                    className={campo}
+                  >
+                    {Object.entries(idiomas).map(([codigo, nome]) => (
+                      <option key={codigo} value={codigo}>
+                        {nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="idioma_instrucao" className={rotulo}>
+                    Idioma das explicações
+                  </label>
+                  <select
+                    id="idioma_instrucao"
+                    value={atual.idioma_instrucao ?? "pt"}
+                    onChange={(e) => editarAtividade("idioma_instrucao", e.target.value)}
+                    className={campo}
+                  >
+                    {Object.entries(idiomas).map(([codigo, nome]) => (
+                      <option key={codigo} value={codigo}>
+                        {nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
+            ) : (
               <div>
-                <label htmlFor="idioma_ensinado" className={rotulo}>
-                  Idioma ensinado
+                <label htmlFor="materia" className={rotulo}>
+                  Matéria
                 </label>
-                <select
-                  id="idioma_ensinado"
-                  value={atividade.idioma_ensinado}
-                  onChange={(e) => editarAtividade("idioma_ensinado", e.target.value)}
+                <input
+                  id="materia"
+                  value={atividade.materia}
+                  onChange={(e) => editarAtividade("materia", e.target.value)}
+                  list="sugestoes-materia"
+                  maxLength={60}
+                  placeholder="Ex.: Matemática"
                   className={campo}
-                >
-                  {Object.entries(idiomas).map(([codigo, nome]) => (
-                    <option key={codigo} value={codigo}>
-                      {nome}
-                    </option>
+                />
+                <datalist id="sugestoes-materia">
+                  {sugestoesMateria.map((m) => (
+                    <option key={m} value={m} />
                   ))}
-                </select>
+                </datalist>
               </div>
-              <div>
-                <label htmlFor="idioma_instrucao" className={rotulo}>
-                  Idioma das explicações
-                </label>
-                <select
-                  id="idioma_instrucao"
-                  value={atividade.idioma_instrucao}
-                  onChange={(e) => editarAtividade("idioma_instrucao", e.target.value)}
-                  className={campo}
-                >
-                  {Object.entries(idiomas).map(([codigo, nome]) => (
-                    <option key={codigo} value={codigo}>
-                      {nome}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            )}
             <div>
               <label htmlFor="explicacao" className={rotulo}>
                 Explicação do conteúdo
