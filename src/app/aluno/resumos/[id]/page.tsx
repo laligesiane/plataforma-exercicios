@@ -2,11 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Cabecalho } from "@/components/Cabecalho";
 import { BotaoExcluir } from "@/components/BotaoExcluir";
+import { ExportarPdf } from "@/components/ExportarPdf";
 import { VerResumo } from "@/components/VerResumo";
+import { documentoTemConteudo } from "@/lib/documento";
+import { validarMapa } from "@/lib/mapas";
 import { apagarResumoAluno } from "@/app/aluno/materias/actions";
 import { formatarData, tituloAula } from "@/lib/aulas";
 import { exigirPapel } from "@/lib/perfil";
-import { camposResumo, type Resumo } from "@/lib/resumos";
+import { camposResumo, documentoDoResumo, type Resumo } from "@/lib/resumos";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
 export default async function ResumoDoAluno({ params }: { params: Promise<{ id: string }> }) {
@@ -25,6 +28,10 @@ export default async function ResumoDoAluno({ params }: { params: Promise<{ id: 
   const materia = data.materia as unknown as { id: string; nome: string } | null;
   const subtitulo = [materia?.nome, turma?.nome, aula && (aula.titulo.trim() ? `${aula.titulo} · ${formatarData(aula.data)}` : tituloAula(aula))].filter(Boolean).join(" · ");
 
+  const temTexto = documentoTemConteudo(documentoDoResumo(data as unknown as Resumo));
+  const mapa = validarMapa(data.mapa);
+  const temMapa = !!mapa && (!!mapa.centro || mapa.ramos.length > 0);
+
   return (
     <>
       <Cabecalho />
@@ -36,8 +43,10 @@ export default async function ResumoDoAluno({ params }: { params: Promise<{ id: 
           >
             ← {materia ? materia.nome : "Meu painel"}
           </Link>
-          {materia && (
-            <span className="flex items-baseline gap-4">
+          <span className="flex items-baseline gap-4">
+            <ExportarPdf id={data.id} temTexto={temTexto} temMapa={temMapa} />
+            {materia && (
+              <>
               <Link
                 href={`/aluno/materias/${materia.id}/resumos/${data.id}`}
                 className="text-sm font-bold text-primaria hover:underline"
@@ -50,8 +59,9 @@ export default async function ResumoDoAluno({ params }: { params: Promise<{ id: 
                 pergunta="Excluir este resumo e o mapa mental dele? Não dá para desfazer."
                 discreto
               />
-            </span>
-          )}
+              </>
+            )}
+          </span>
         </div>
         <div className="mt-3">
           <VerResumo resumo={data as unknown as Resumo} subtitulo={subtitulo} />

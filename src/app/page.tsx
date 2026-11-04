@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Cabecalho } from "@/components/Cabecalho";
+import { Mascote } from "@/components/Mascote";
 import { botaoPrimario } from "@/components/ui/estilos";
 import { obterPerfil, paginaInicial } from "@/lib/perfil";
 
@@ -21,28 +22,33 @@ const acepcoes = [
   },
 ];
 
-const passos = [
+const recursos = [
   {
-    numero: "1",
-    titulo: "Você responde",
-    texto: "Cada item é corrigido na hora, um por um. Nada de esperar o fim da lista para saber como foi.",
+    icone: "📚",
+    titulo: "Suas matérias, organizadas",
+    texto: "Português, espanhol, história, o que for. Cada matéria guarda os seus resumos, mapas e atividades num lugar só.",
   },
   {
-    numero: "2",
-    titulo: "Errou? Entende o porquê",
-    texto: "A explicação do erro aparece logo abaixo da resposta, escrita pelo professor, como se ele estivesse do lado.",
+    icone: "✍️",
+    titulo: "Resumos do seu jeito",
+    texto: "Escreva com títulos, negrito, marca-texto, listas e notas. O sumário fica do lado, e dá para exportar em PDF.",
   },
   {
-    numero: "3",
-    titulo: "E repassa",
-    texto: "Tenta de novo com a explicação fresca na cabeça. É assim que o conteúdo deixa de ser decorado e vira seu.",
+    icone: "🧠",
+    titulo: "Mapas mentais",
+    texto: "Gere um mapa mental a partir do seu resumo, com um clique, e veja o assunto de cima. Ótimo para a véspera da prova.",
+  },
+  {
+    icone: "✅",
+    titulo: "Exercícios que explicam o erro",
+    texto: "Cada resposta é corrigida na hora. Errou? A explicação aparece logo abaixo, e você tenta de novo.",
   },
 ];
 
 const promessas = [
   { titulo: "Sem anúncios. Nunca.", texto: "Lugar de estudo não é vitrine. Ninguém vai interromper sua atividade para vender nada." },
   { titulo: "Sempre um plano grátis", texto: "Dá para começar e usar de verdade sem pagar. Os planos pagos existem para quem precisa de mais." },
-  { titulo: "O erro é parte da aula", texto: "Errar aqui não tira ponto. É o momento em que a explicação chega e o aprendizado acontece." },
+  { titulo: "Seus estudos são seus", texto: "Seus resumos e mapas ficam guardados com você, organizados por matéria, para voltar sempre que precisar." },
 ];
 
 export default async function Inicio() {
@@ -56,33 +62,109 @@ export default async function Inicio() {
         {/* Abertura */}
         <section className="mx-auto grid w-full max-w-5xl items-center gap-10 px-4 pt-12 pb-16 md:grid-cols-[1.1fr_1fr] md:pt-20">
           <div>
-            <p className="text-sm font-bold tracking-wide text-primaria uppercase">Do espanhol, repasar</p>
+            <p className="text-sm font-bold tracking-wide text-primaria uppercase">Repasa, do espanhol repasar</p>
             <h1 className="mt-3 text-4xl leading-[1.08] font-extrabold tracking-tight text-balance sm:text-5xl">
-              Voltar ao que se aprendeu até ficar firme.
+              Seu melhor amigo na hora de aprender.
             </h1>
             <p className="mt-5 max-w-prose text-lg text-tinta-suave">
-              A Repasa é um lugar para estudar com o seu professor. Você faz a atividade, vê na hora se acertou e, quando
-              erra, entende o porquê.
+              Organize suas matérias, escreva resumos, monte mapas mentais e pratique com exercícios que explicam cada
+              erro. Sozinho ou com o seu professor.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               {perfil ? (
                 <Link href={paginaInicial(perfil.papel)} className={botaoPrimario}>
-                  {perfil.papel === "professor" ? "Ir para minhas turmas" : "Ir para minhas atividades"}
+                  {perfil.papel === "professor" ? "Ir para minhas turmas" : "Ir para meus estudos"}
                 </Link>
               ) : (
                 <>
-                  <Link href="/experimente" className={botaoPrimario}>
-                    Experimentar uma atividade
+                  <Link href="/cadastro?papel=aluno" className={botaoPrimario}>
+                    Começar a estudar
                   </Link>
-                  <Link href="/cadastro" className={botaoContorno}>
-                    Sou professor
+                  <Link href="/entrar" className={botaoContorno}>
+                    Entrar
                   </Link>
                 </>
               )}
             </div>
           </div>
 
-          {/* Exemplo de correção (ilustrativo) */}
+          {/* Mesa de estudo (ilustrativa). O espaço do mascote fica no canto, marcado com data-mascote. */}
+          <div className="relative rounded-3xl border border-linha bg-suave p-5 sm:p-6" aria-hidden="true">
+            <div className="flex flex-wrap gap-1.5">
+              {["Português", "Espanhol", "História"].map((m, i) => (
+                <span
+                  key={m}
+                  className={`rounded-full px-3 py-1 text-xs font-bold ${i === 1 ? "bg-primaria text-white" : "bg-fundo text-tinta-suave"}`}
+                >
+                  {m}
+                </span>
+              ))}
+            </div>
+            <div className="mt-4 rounded-2xl border border-linha bg-fundo p-4">
+              <p className="text-xs font-bold tracking-wide text-tinta-suave uppercase">Resumo</p>
+              <p className="mt-1 text-lg font-extrabold">Pretérito imperfeito</p>
+              <p className="mt-2 text-sm text-tinta-suave">
+                Usado para <mark className="rounded bg-aviso-fundo px-1 text-tinta">hábitos no passado</mark> e para
+                descrever cenas.
+              </p>
+              <ul className="mt-2 list-disc pl-5 text-sm text-tinta-suave">
+                <li>-ar → -aba: repasaba</li>
+                <li>-er/-ir → -ía: comía, vivía</li>
+              </ul>
+            </div>
+            <div className="mt-3 flex items-center gap-2 rounded-2xl border border-linha bg-fundo p-4 text-sm font-bold">
+              <span className="rounded-full bg-primaria-suave px-3 py-1 text-primaria">Imperfeito</span>
+              <span className="h-0.5 w-5 bg-linha" />
+              <span className="rounded-full border border-linha px-3 py-1">Hábitos</span>
+              <span className="h-0.5 w-5 bg-linha" />
+              <span className="rounded-full border border-linha px-3 py-1">Descrições</span>
+            </div>
+            <div
+              data-mascote
+              className="absolute -right-3 -bottom-5 flex items-center gap-2 sm:-right-5"
+            >
+              <span className="rounded-2xl rounded-br-sm border border-linha bg-fundo px-3 py-1.5 text-sm font-bold shadow-sm">
+                Bora repassar?
+              </span>
+              <Mascote pose="feliz" tamanho={72} />
+            </div>
+          </div>
+        </section>
+
+        {/* Recursos */}
+        <section className="border-y border-linha bg-suave">
+          <div className="mx-auto w-full max-w-5xl px-4 py-16">
+            <h2 className="text-3xl font-extrabold tracking-tight">Tudo o que ajuda você a aprender</h2>
+            <p className="mt-3 max-w-prose text-tinta-suave">
+              A Repasa junta num lugar só o que normalmente fica espalhado entre caderno, aplicativo de notas e folha de
+              exercício.
+            </p>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              {recursos.map((r) => (
+                <div key={r.titulo} className="rounded-3xl border border-linha bg-fundo p-6">
+                  <span className="flex size-11 items-center justify-center rounded-[12px] bg-primaria-suave text-xl">
+                    {r.icone}
+                  </span>
+                  <h3 className="mt-4 text-lg font-extrabold">{r.titulo}</h3>
+                  <p className="mt-2 text-tinta-suave">{r.texto}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Exemplo de correção */}
+        <section className="mx-auto grid w-full max-w-5xl items-center gap-10 px-4 py-16 md:grid-cols-2">
+          <div>
+            <h2 className="text-3xl font-extrabold tracking-tight">Errou? A Repasa explica.</h2>
+            <p className="mt-4 text-tinta-suave">
+              Nada de “sete de dez, tente de novo”. Cada item é corrigido na hora e, quando a resposta não está certa, a
+              explicação aparece logo abaixo, como se alguém estivesse estudando do seu lado.
+            </p>
+            <Link href="/experimente" className={`${botaoContorno} mt-6 inline-block`}>
+              Experimentar uma atividade
+            </Link>
+          </div>
           <figure className="rounded-3xl border border-linha bg-suave p-5 sm:p-6">
             <figcaption className="text-xs font-bold tracking-wide text-tinta-suave uppercase">Como é a correção</figcaption>
             <div className="mt-3 rounded-2xl border border-linha bg-fundo p-4">
@@ -123,7 +205,7 @@ export default async function Inicio() {
               </p>
               <p className="mt-4 text-tinta-suave">
                 Em português, a palavra é quase a mesma e ganha mais um sentido: <strong className="text-tinta">repassar</strong>{" "}
-                é passar adiante. O professor repassa o que sabe; o aluno repassa a matéria até ela ser dele.
+                é passar adiante. A Repasa está aqui para isso: estudar junto com você até a matéria ser sua.
               </p>
             </div>
 
@@ -151,58 +233,38 @@ export default async function Inicio() {
           </div>
         </section>
 
-        {/* Como funciona */}
-        <section>
-          <div className="mx-auto w-full max-w-5xl px-4 py-16">
-            <h2 className="text-3xl font-extrabold tracking-tight">Como funciona</h2>
-            <ol className="mt-8 grid gap-4 md:grid-cols-3">
-              {passos.map((p) => (
-                <li key={p.numero} className="rounded-3xl border border-linha p-6">
-                  <span className="flex size-10 items-center justify-center rounded-[12px] bg-primaria text-lg font-extrabold text-white">
-                    {p.numero}
-                  </span>
-                  <h3 className="mt-4 text-lg font-extrabold">{p.titulo}</h3>
-                  <p className="mt-2 text-tinta-suave">{p.texto}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
-
         {/* Para quem */}
-        <section className="bg-suave">
+        <section>
           <div className="mx-auto grid w-full max-w-5xl gap-4 px-4 py-16 md:grid-cols-2">
-            <div className="rounded-3xl border border-linha bg-fundo p-6">
-              <h2 className="text-2xl font-extrabold tracking-tight">Para professores</h2>
+            <div className="rounded-3xl border border-linha p-6">
+              <h2 className="text-2xl font-extrabold tracking-tight">Para quem estuda</h2>
               <ul className="mt-4 space-y-2 text-tinta-suave">
-                <li>Crie turmas e convide seus alunos por e-mail.</li>
-                <li>Monte atividades de lacuna, múltipla escolha, arrastar, classificar e relacionar.</li>
-                <li>Escreva a explicação de cada erro uma vez e ela chega a todos os alunos.</li>
-                <li>Veja o que cada aluno respondeu.</li>
+                <li>Crie suas matérias e estude por conta própria, sem precisar de professor.</li>
+                <li>Escreva resumos e monte mapas mentais para revisar.</li>
+                <li>Se um professor te convidar, as turmas e atividades dele aparecem junto.</li>
+                <li>Veja os horários das suas aulas na sua agenda.</li>
               </ul>
-              <Link href="/cadastro" className={`${botaoPrimario} mt-6 inline-block`}>
-                Criar conta de professor
+              <Link href="/cadastro?papel=aluno" className={`${botaoPrimario} mt-6 inline-block`}>
+                Criar conta de aluno
               </Link>
             </div>
-            <div className="rounded-3xl border border-linha bg-fundo p-6">
-              <h2 className="text-2xl font-extrabold tracking-tight">Para alunos</h2>
+            <div className="rounded-3xl border border-linha p-6">
+              <h2 className="text-2xl font-extrabold tracking-tight">Para quem ensina</h2>
               <ul className="mt-4 space-y-2 text-tinta-suave">
-                <li>Faça as atividades do seu professor, no computador ou no celular.</li>
-                <li>Saiba na hora se acertou e, se errou, o porquê.</li>
-                <li>Volte quando quiser para repassar.</li>
+                <li>Crie turmas de qualquer matéria e convide seus alunos por e-mail.</li>
+                <li>Registre as aulas e compartilhe resumos com a turma.</li>
+                <li>Monte exercícios e escreva a explicação de cada erro uma vez só.</li>
+                <li>Veja o que cada aluno respondeu.</li>
               </ul>
-              <p className="mt-4 rounded-xl bg-primaria-suave px-4 py-3 text-sm text-tinta">
-                <strong>Em breve:</strong> estudar por conta própria, com suas matérias, resumos e mapas mentais.
-              </p>
-              <Link href="/experimente" className={`${botaoContorno} mt-6 inline-block`}>
-                Experimentar uma atividade
+              <Link href="/cadastro" className={`${botaoContorno} mt-6 inline-block`}>
+                Criar conta de professor
               </Link>
             </div>
           </div>
         </section>
 
         {/* Promessas */}
-        <section className="mx-auto w-full max-w-5xl px-4 py-16">
+        <section className="mx-auto w-full max-w-5xl px-4 pb-16">
           <h2 className="text-3xl font-extrabold tracking-tight">O que a gente promete</h2>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             {promessas.map((p) => (
@@ -220,12 +282,14 @@ export default async function Inicio() {
             <p className="text-4xl font-extrabold tracking-tight" lang="es">
               ¡Repasa!
             </p>
-            <p className="mx-auto mt-3 max-w-md opacity-80">Uma atividade leva poucos minutos. Experimente errar de propósito.</p>
+            <p className="mx-auto mt-3 max-w-md opacity-80">
+              Crie sua conta, abra sua primeira matéria e comece a estudar. É grátis.
+            </p>
             <Link
-              href="/experimente"
+              href={perfil ? paginaInicial(perfil.papel) : "/cadastro?papel=aluno"}
               className="mt-6 inline-block rounded-full bg-primaria px-6 py-2.5 font-bold text-white transition-opacity hover:opacity-90"
             >
-              Experimentar agora
+              {perfil ? "Ir para meus estudos" : "Começar a estudar"}
             </Link>
           </div>
         </section>

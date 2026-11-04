@@ -177,3 +177,44 @@ body {
     animation: none;
   }
 }
+
+/* Impressão e PDF: sempre com as cores claras, margens de folha e sem quebrar títulos e notas. */
+@media print {
+  :root {
+    --fundo: #ffffff;
+    --suave: #f2f5f3;
+    --linha: #e3e8e5;
+    --tinta: #10233a;
+    --tinta-suave: #5a6a62;
+    --primaria: #0f9d6b;
+    --primaria-suave: #e3f6ee;
+    --aviso: #8a5a00;
+    --aviso-fundo: #fff3d6;
+    --marca: #fff0a0;
+  }
+  @page {
+    margin: 16mm 14mm;
+  }
+  /* O mapa mental é largo: vai numa folha deitada. */
+  @page paisagem {
+    size: A4 landscape;
+    margin: 12mm;
+  }
+  .folha-paisagem {
+    page: paisagem;
+  }
+  html,
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .documento h2,
+  .documento h3 {
+    break-after: avoid;
+  }
+  .documento blockquote,
+  .documento li,
+  figure {
+    break-inside: avoid;
+  }
+}
