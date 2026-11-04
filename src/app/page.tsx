@@ -156,7 +156,7 @@ export default async function Inicio() {
           <h2 className="text-3xl font-extrabold tracking-tight">Como tudo começou</h2>
           <div className="mt-5 space-y-4 text-lg text-tinta-suave">
             <p>
-              A Repasa nasceu na sala de aula de uma professora de espanhol e inglês, por causa de uma pergunta que os
+              A Repasa nasceu na sala de aula de uma professora de espanhol, por causa de uma pergunta que os
               alunos faziam toda semana: <strong className="text-tinta">“mas por que eu errei?”</strong>
             </p>
             <p>
