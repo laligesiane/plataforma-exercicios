@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Cabecalho } from "@/components/Cabecalho";
 import { CartaoAula } from "@/components/CartaoAula";
 import { camposAula, hojeNoFuso, type Aula } from "@/lib/aulas";
+import { camposResumo, tituloResumo, type Resumo } from "@/lib/resumos";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
@@ -12,10 +13,12 @@ export default async function AulasDaTurma({ params }: { params: Promise<{ id: s
   await exigirPapel("aluno");
   const supabase = await criarClienteServidor();
 
-  const [{ data: turma }, { data: aulasDb }] = await Promise.all([
+  const [{ data: turma }, { data: aulasDb }, { data: resumosDb }] = await Promise.all([
     supabase.from("turma").select("id, nome").eq("id", id).maybeSingle(),
     supabase.from("aula").select(camposAula).eq("turma_id", id).order("data", { ascending: false }),
+    supabase.from("resumo").select(camposResumo).eq("turma_id", id),
   ]);
+  const resumos = (resumosDb ?? []) as Resumo[];
   if (!turma) notFound();
 
   const hoje = hojeNoFuso();
@@ -33,7 +36,14 @@ export default async function AulasDaTurma({ params }: { params: Promise<{ id: s
         {aulas.length > 0 ? (
           <div className="mt-6 space-y-4">
             {aulas.map((a, i) => (
-              <CartaoAula key={a.id} aula={a} destaque={i === 0 ? "Última aula" : undefined} />
+              <CartaoAula
+                key={a.id}
+                aula={a}
+                destaque={i === 0 ? "Última aula" : undefined}
+                resumos={resumos
+                  .filter((r) => r.aula_id === a.id)
+                  .map((r) => ({ id: r.id, titulo: tituloResumo(r), href: `/aluno/resumos/${r.id}` }))}
+              />
             ))}
           </div>
         ) : (

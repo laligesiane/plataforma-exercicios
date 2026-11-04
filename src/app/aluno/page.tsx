@@ -5,6 +5,7 @@ import { Cabecalho } from "@/components/Cabecalho";
 import { HorariosTurma } from "@/components/HorariosTurma";
 import type { Horario } from "@/lib/agenda";
 import { categorias, type Categoria } from "@/lib/atividades/modelo";
+import { camposResumo, tituloResumo, type Resumo } from "@/lib/resumos";
 import { camposAula, hojeNoFuso, ultimaAula, type Aula } from "@/lib/aulas";
 import { nomeIdioma } from "@/lib/idiomas";
 import { exigirPapel } from "@/lib/perfil";
@@ -16,14 +17,17 @@ export default async function AreaAluno() {
   const perfil = await exigirPapel("aluno");
   const supabase = await criarClienteServidor();
 
-  const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }, { data: aulasDb }] =
+  const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }, { data: aulasDb }, { data: resumosDb }] =
     await Promise.all([
     supabase.from("turma").select("id, nome, idioma_ensinado, idioma_instrucao").order("nome"),
     supabase.from("atividade_turma").select("turma_id, atividade(id, titulo, nivel, categoria, atualizada_em)"),
     supabase.from("resposta").select("atividade_id, item_id").eq("aluno_id", perfil.id),
     supabase.from("turma_horario").select("id, turma_id, dia_semana, hora_inicio, duracao_min, fuso"),
     supabase.from("aula").select(camposAula).order("data", { ascending: false }),
+    supabase.from("resumo").select(camposResumo).order("atualizado_em", { ascending: false }),
   ]);
+  const resumos = (resumosDb ?? []) as Resumo[];
+  const linkResumo = (r: Resumo) => ({ id: r.id, titulo: tituloResumo(r), href: `/aluno/resumos/${r.id}` });
 
   const hoje = hojeNoFuso();
   const aulasPorTurma = new Map<string, Aula[]>();
@@ -76,7 +80,11 @@ export default async function AreaAluno() {
                 if (!ultima) return null;
                 return (
                   <div className="mt-3">
-                    <CartaoAula aula={ultima} destaque="Última aula" />
+                    <CartaoAula
+                      aula={ultima}
+                      destaque="Última aula"
+                      resumos={resumos.filter((r) => r.aula_id === ultima.id).map(linkResumo)}
+                    />
                     {aulas.length > 1 && (
                       <Link
                         href={`/aluno/turmas/${turma.id}`}
@@ -85,6 +93,27 @@ export default async function AreaAluno() {
                         Ver todas as aulas ({aulas.length})
                       </Link>
                     )}
+                  </div>
+                );
+              })()}
+              {(() => {
+                const daTurma = resumos.filter((r) => r.turma_id === turma.id);
+                if (daTurma.length === 0) return null;
+                return (
+                  <div className="mt-3">
+                    <h3 className="text-sm font-bold text-tinta-suave">Resumos</h3>
+                    <ul className="mt-2 flex flex-wrap gap-2">
+                      {daTurma.slice(0, 8).map((r) => (
+                        <li key={r.id}>
+                          <Link
+                            href={`/aluno/resumos/${r.id}`}
+                            className="inline-block rounded-full border border-linha px-3 py-1 text-sm font-bold hover:border-primaria hover:text-primaria"
+                          >
+                            {tituloResumo(r)}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 );
               })()}
