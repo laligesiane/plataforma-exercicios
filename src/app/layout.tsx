@@ -9,7 +9,7 @@ const figtree = Figtree({
 
 export const metadata: Metadata = {
   title: "Repasa",
-  description: "Exercícios de espanhol e inglês com correção na hora",
+  description: "Estude com o seu professor e veja na hora por que errou. Do espanhol repasar: voltar ao que se aprendeu até ficar firme.",
 };
 
 export default function RootLayout({
