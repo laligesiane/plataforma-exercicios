@@ -4,8 +4,12 @@ import { Cabecalho } from "@/components/Cabecalho";
 import { nomeIdioma } from "@/lib/idiomas";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
+import { CartaoAula } from "@/components/CartaoAula";
 import { HorariosTurma } from "@/components/HorariosTurma";
+import { camposAula, formatarData, hojeNoFuso, tituloAula, ultimaAula, type Aula } from "@/lib/aulas";
 import { removerHorario } from "../../actions";
+import { apagarAula } from "./actions-aulas";
+import { FormularioAula } from "./FormularioAula";
 import { FormularioConvite } from "./FormularioConvite";
 import { FormularioHorario } from "./FormularioHorario";
 
@@ -16,7 +20,8 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
   const perfil = await exigirPapel("professor");
   const supabase = await criarClienteServidor();
 
-  const [{ data: turma }, { data: plano }, { data: atribuicoes }, { data: horarios }] = await Promise.all([
+  const [{ data: turma }, { data: plano }, { data: atribuicoes }, { data: horarios }, { data: aulasDb }] =
+    await Promise.all([
     supabase
       .from("turma")
       .select("id, nome, idioma_ensinado, idioma_instrucao, turma_aluno(perfil(id, nome, email))")
@@ -25,6 +30,7 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
     supabase.from("plano").select("max_alunos_por_turma").eq("id", perfil.plano_id).single(),
     supabase.from("atividade_turma").select("atividade(id, titulo, nivel, publicada)").eq("turma_id", id),
     supabase.from("turma_horario").select("id, dia_semana, hora_inicio, duracao_min, fuso").eq("turma_id", id),
+    supabase.from("aula").select(camposAula).eq("turma_id", id).order("data", { ascending: false }),
   ]);
   if (!turma) notFound();
 
@@ -35,6 +41,9 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
   );
   const limite = plano?.max_alunos_por_turma ?? 0;
   const cheia = alunos.length >= limite;
+  const aulas = (aulasDb ?? []) as Aula[];
+  const hoje = hojeNoFuso();
+  const ultima = ultimaAula(aulas, hoje);
 
   return (
     <>
@@ -69,6 +78,61 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
             />
             <FormularioHorario turmaId={turma.id} />
           </div>
+        </section>
+
+        <section className="mt-6 rounded-2xl border border-linha p-5 sm:p-6">
+          <h2 className="text-lg font-bold">Aulas</h2>
+          <p className="mt-1 mb-4 text-sm text-tinta-suave">
+            Registre o que foi visto em cada aula. Os alunos veem o resumo, o que fica para a próxima e a tarefa de casa.
+          </p>
+          {ultima && (
+            <div className="mb-5">
+              <CartaoAula aula={ultima} destaque="Última aula" />
+            </div>
+          )}
+          <details className="rounded-xl bg-suave p-4" open={aulas.length === 0}>
+            <summary className="cursor-pointer font-bold text-primaria">Registrar aula</summary>
+            <div className="mt-4">
+              <FormularioAula turmaId={turma.id} hoje={hoje} />
+            </div>
+          </details>
+          {aulas.length > 0 && (
+            <ul className="mt-4 divide-y divide-linha">
+              {aulas.map((a) => (
+                <li key={a.id} className="py-3">
+                  <details>
+                    <summary className="flex cursor-pointer flex-wrap items-baseline justify-between gap-x-4">
+                      <span className="font-semibold">{tituloAula(a)}</span>
+                      <span className="text-sm text-tinta-suave">{formatarData(a.data)}</span>
+                    </summary>
+                    <div className="mt-3 space-y-3">
+                      <CartaoAula aula={a} />
+                      <details className="rounded-xl bg-suave p-4">
+                        <summary className="cursor-pointer text-sm font-bold text-tinta-suave hover:text-tinta">
+                          Editar
+                        </summary>
+                        <div className="mt-4">
+                          <FormularioAula
+                            key={`${a.id}-${a.data}-${a.titulo}-${a.resumo.length}`}
+                            turmaId={turma.id}
+                            hoje={hoje}
+                            aula={a}
+                          />
+                        </div>
+                      </details>
+                      <form action={apagarAula}>
+                        <input type="hidden" name="id" value={a.id} />
+                        <input type="hidden" name="turma_id" value={turma.id} />
+                        <button type="submit" className="text-sm font-bold text-tinta-suave hover:text-erro">
+                          Apagar aula
+                        </button>
+                      </form>
+                    </div>
+                  </details>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
 
         <section className="mt-6 rounded-2xl border border-linha p-5 sm:p-6">
