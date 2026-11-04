@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { resumirAtividade, type ResumoAtividade } from "@/lib/atividades/resumo";
+import { botaoPrimario } from "@/components/ui/estilos";
+import { PainelResumo } from "./PainelResumo";
 import { corrigir, type Resultado } from "@/lib/correcao";
 import type { Exercicio } from "@/lib/atividades/modelo";
 import { CartaoExercicio } from "./CartaoExercicio";
@@ -16,19 +19,40 @@ type Props = {
   exercicios: Exercicio[];
   /** Última resposta de cada item (por id do item), para retomar de onde parou. */
   respostasAnteriores?: Record<string, string>;
+  /** Se a primeira resposta de cada item já salva estava certa. */
+  primeirasAnteriores?: Record<string, boolean>;
   onResposta?: (resposta: RespostaDada) => void;
+  /** Chamado ao clicar em "Enviar respostas", para registrar o envio. */
+  onEnviar?: (resumo: ResumoAtividade) => void;
 };
 
-export function AulaAtividade({ exercicios, respostasAnteriores = {}, onResposta }: Props) {
+export function AulaAtividade({ exercicios, respostasAnteriores = {}, primeirasAnteriores, onResposta, onEnviar }: Props) {
   const totalItens = exercicios.reduce((soma, e) => soma + e.itens.length, 0);
   const [certos, setCertos] = useState(() => contarAnteriores(exercicios, respostasAnteriores));
+  // Sem histórico salvo, a resposta retomada conta como a primeira.
+  const [primeira, setPrimeira] = useState<Record<string, boolean>>(() => primeirasAnteriores ?? { ...certos });
+  const [resumo, setResumo] = useState<ResumoAtividade | null>(null);
+  const painel = useRef<HTMLDivElement>(null);
   const acertos = Object.values(certos).filter(Boolean).length;
 
   function registrar(exercicioId: string, itemId: string) {
     return (resultado: Resultado, valor: string) => {
-      setCertos((atual) => ({ ...atual, [itemId]: resultado.status !== "errado" }));
+      const certo = resultado.status !== "errado";
+      setCertos((atual) => ({ ...atual, [itemId]: certo }));
+      setPrimeira((atual) => (itemId in atual ? atual : { ...atual, [itemId]: certo }));
       onResposta?.({ exercicioId, itemId, valor, status: resultado.status });
     };
+  }
+
+  function enviar() {
+    const novo = resumirAtividade(exercicios, certos, primeira);
+    if (novo.semResposta > 0) {
+      const itens = novo.semResposta === 1 ? "1 item" : `${novo.semResposta} itens`;
+      if (!confirm(`Você ainda não respondeu ${itens}. Enviar mesmo assim?`)) return;
+    }
+    setResumo(novo);
+    onEnviar?.(novo);
+    requestAnimationFrame(() => painel.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   }
 
   if (totalItens === 0) {
@@ -58,6 +82,19 @@ export function AulaAtividade({ exercicios, respostasAnteriores = {}, onResposta
           />
         </CartaoExercicio>
       ))}
+
+      <div ref={painel} className="scroll-mt-4">
+        {resumo ? (
+          <PainelResumo resumo={resumo} onFechar={() => setResumo(null)} />
+        ) : (
+          <div className="flex flex-col items-center gap-2 rounded-2xl bg-suave p-5 text-center">
+            <p className="text-sm text-tinta-suave">Terminou? Envie para ver o resumo dos seus acertos.</p>
+            <button type="button" onClick={enviar} className={botaoPrimario}>
+              Enviar respostas
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -28,3 +28,20 @@ export async function registrarResposta(r: NovaResposta): Promise<boolean> {
   });
   return !error;
 }
+
+export type NovoEnvio = { atividadeId: string; certos: number; dePrimeira: number; total: number };
+
+/** Registra "Enviar respostas" de um aluno da turma (o RLS recusa os demais). */
+export async function registrarEnvio(e: NovoEnvio): Promise<boolean> {
+  const inteiro = (n: unknown) => Number.isInteger(n) && (n as number) >= 0 && (n as number) <= 10000;
+  if (!ehUuid(e.atividadeId) || !inteiro(e.certos) || !inteiro(e.dePrimeira) || !inteiro(e.total)) return false;
+
+  const supabase = await criarClienteServidor();
+  const { error } = await supabase.from("envio").insert({
+    atividade_id: e.atividadeId,
+    certos: e.certos,
+    de_primeira: e.dePrimeira,
+    total: e.total,
+  });
+  return !error;
+}
