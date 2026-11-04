@@ -29,7 +29,7 @@ export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {})
                 </>
               ) : (
                 <Link href={paginaInicial(perfil.papel)} className="hover:text-tinta">
-                  Minhas atividades
+                  Minha conta
                 </Link>
               )}
               <Link href="/perfil" className="hover:text-tinta">

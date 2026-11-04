@@ -38,10 +38,10 @@ export default async function ResumoDoAluno({ params }: { params: Promise<{ id: 
       <main className="mx-auto w-full max-w-5xl px-4 pt-8 pb-16">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <Link
-            href={materia ? `/aluno/materias/${materia.id}` : "/aluno"}
+            href={materia ? `/aluno/materias/${materia.id}` : "/aluno/resumos"}
             className="text-sm font-bold text-primaria hover:underline"
           >
-            ← {materia ? materia.nome : "Meu painel"}
+            ← {materia ? materia.nome : "Meus resumos"}
           </Link>
           <span className="flex items-baseline gap-4">
             <ExportarPdf id={data.id} temTexto={temTexto} temMapa={temMapa} />

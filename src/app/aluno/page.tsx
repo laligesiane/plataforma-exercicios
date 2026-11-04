@@ -1,205 +1,163 @@
 import Link from "next/link";
-import { AssinarAgenda } from "@/components/AssinarAgenda";
-import { CartaoAula } from "@/components/CartaoAula";
-import { Cabecalho } from "@/components/Cabecalho";
-import { cores, type Cor } from "@/lib/mapas";
-import { FormularioMateria } from "./materias/FormularioMateria";
-import { HorariosTurma } from "@/components/HorariosTurma";
-import type { Horario } from "@/lib/agenda";
-import { etiquetasDaAtividade } from "@/lib/atividades/modelo";
-import { camposResumo, tituloResumo, type Resumo } from "@/lib/resumos";
-import { camposAula, hojeNoFuso, ultimaAula, type Aula } from "@/lib/aulas";
-import { descreverTurma } from "@/lib/turmas";
+import { proximaAula, type Horario } from "@/lib/agenda";
+import { formatarData, hojeNoFuso, tituloAula } from "@/lib/aulas";
+import { proximasAulas, temMapa } from "@/lib/pedidos";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
+import { CartaoMateria } from "./CartaoMateria";
+import { carregarResumosDoAluno } from "./dados";
+import { LayoutConta } from "./LayoutConta";
 
-type AtividadeResumo = { id: string; titulo: string; nivel: string; categoria: string; atualizada_em: string };
+const formatoDia = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
 
-export default async function AreaAluno() {
+export default async function MinhaConta() {
   const perfil = await exigirPapel("aluno");
   const supabase = await criarClienteServidor();
-
-  const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }, { data: aulasDb }, { data: resumosDb }, { data: materias }] =
-    await Promise.all([
-    supabase.from("turma").select("id, nome, materia, idioma_ensinado, idioma_instrucao").order("nome"),
-    supabase.from("atividade_turma").select("turma_id, atividade(id, titulo, nivel, categoria, materia, idioma_ensinado, atualizada_em)"),
-    supabase.from("resposta").select("atividade_id, item_id").eq("aluno_id", perfil.id),
-    supabase.from("turma_horario").select("id, turma_id, dia_semana, hora_inicio, duracao_min, fuso"),
-    supabase.from("aula").select(camposAula).order("data", { ascending: false }),
-    supabase.from("resumo").select(camposResumo).order("atualizado_em", { ascending: false }),
-    supabase.from("materia").select("id, nome, cor, resumo(count)").order("criada_em"),
-  ]);
-  const resumos = (resumosDb ?? []) as Resumo[];
-  const linkResumo = (r: Resumo) => ({ id: r.id, titulo: tituloResumo(r), href: `/aluno/resumos/${r.id}` });
-
   const hoje = hojeNoFuso();
-  const aulasPorTurma = new Map<string, Aula[]>();
-  for (const a of (aulasDb ?? []) as Aula[]) aulasPorTurma.set(a.turma_id, [...(aulasPorTurma.get(a.turma_id) ?? []), a]);
 
-  const horariosPorTurma = new Map<string, (Horario & { id: string })[]>();
-  for (const h of horarios ?? []) horariosPorTurma.set(h.turma_id, [...(horariosPorTurma.get(h.turma_id) ?? []), h]);
+  const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }, { data: aulasDb }, { data: materias }, { count: pendentes }, resumos] =
+    await Promise.all([
+      supabase.from("turma").select("id, nome"),
+      supabase.from("atividade_turma").select("atividade(id)"),
+      supabase.from("resposta").select("atividade_id").eq("aluno_id", perfil.id),
+      supabase.from("turma_horario").select("turma_id, dia_semana, hora_inicio, duracao_min, fuso"),
+      supabase.from("aula").select("id, turma_id, data, titulo").gte("data", hoje).order("data"),
+      supabase.from("materia").select("id, nome, cor, resumo(count)").order("criada_em"),
+      supabase.from("pedido_aula").select("id", { count: "exact", head: true }).eq("aluno_id", perfil.id).eq("status", "pendente"),
+      carregarResumosDoAluno(),
+    ]);
 
-  // Itens já respondidos por atividade, para mostrar "começada".
-  const respondidos = new Map<string, Set<string>>();
-  for (const r of respostas ?? []) {
-    if (!respondidos.has(r.atividade_id)) respondidos.set(r.atividade_id, new Set());
-    respondidos.get(r.atividade_id)!.add(r.item_id);
-  }
+  const nomeTurma = new Map((turmas ?? []).map((t) => [t.id, t.nome]));
+  const atividades = new Set((atribuicoes ?? []).flatMap((a) => (a.atividade ? [(a.atividade as unknown as { id: string }).id] : [])));
+  const comecadas = new Set((respostas ?? []).map((r) => r.atividade_id).filter((id) => atividades.has(id)));
+  const novas = atividades.size - comecadas.size;
+  const mapas = resumos.filter(temMapa);
 
-  // Rascunhos vêm como null pelo RLS e ficam de fora.
-  const porTurma = new Map<string, AtividadeResumo[]>();
-  for (const a of atribuicoes ?? []) {
-    const atividade = a.atividade as unknown as AtividadeResumo | null;
-    if (!atividade) continue;
-    porTurma.set(a.turma_id, [...(porTurma.get(a.turma_id) ?? []), atividade]);
-  }
+  // Próximo compromisso: a aula marcada mais próxima ou o próximo horário semanal.
+  const aulaMarcada = proximasAulas(aulasDb ?? [], hoje)[0] ?? null;
+  const semanal = proximaAula((horarios ?? []) as (Horario & { turma_id: string })[]);
+  const semanalData = semanal && `${semanal.ano}-${String(semanal.mes).padStart(2, "0")}-${String(semanal.dia).padStart(2, "0")}`;
+  const proxima =
+    aulaMarcada && (!semanalData || aulaMarcada.data <= semanalData)
+      ? {
+          quando: aulaMarcada.data === hoje ? "Hoje" : formatarData(aulaMarcada.data),
+          oque: `${tituloAula(aulaMarcada)} · ${nomeTurma.get(aulaMarcada.turma_id) ?? ""}`,
+        }
+      : semanal
+        ? {
+            quando: `${formatoDia.format(new Date(Date.UTC(semanal.ano, semanal.mes - 1, semanal.dia)))} às ${semanal.horario.hora_inicio.slice(0, 5)}`,
+            oque: nomeTurma.get((semanal.horario as Horario & { turma_id: string }).turma_id) ?? "Aula da turma",
+          }
+        : null;
+
+  const atalhos = [
+    {
+      href: "/aluno/atividades",
+      titulo: "Atividades",
+      numero: atividades.size,
+      detalhe: atividades.size === 0 ? "Nenhuma ainda" : novas > 0 ? `${novas} ${novas === 1 ? "nova" : "novas"}` : "Todas começadas",
+    },
+    { href: "/aluno/materias", titulo: "Matérias", numero: (materias ?? []).length, detalhe: "Plano grátis: até 3" },
+    { href: "/aluno/resumos", titulo: "Resumos", numero: resumos.length, detalhe: "Seus e das turmas" },
+    { href: "/aluno/mapas", titulo: "Mapas mentais", numero: mapas.length, detalhe: "Para revisar de relance" },
+  ];
 
   return (
-    <>
-      <Cabecalho />
-      <main className="mx-auto w-full max-w-3xl px-4 pt-8 pb-16">
-        <h1 className="text-3xl font-extrabold tracking-tight">Olá{perfil.nome ? `, ${perfil.nome}` : ""}!</h1>
-        <p className="mt-2 text-tinta-suave">Seu estudo, das suas matérias e das turmas em que você está.</p>
-
-        <section className="mt-8">
-          <h2 className="text-lg font-bold">Minhas matérias</h2>
-          {(materias ?? []).length > 0 && (
-            <ul className="mt-3 grid gap-3 sm:grid-cols-3">
-              {(materias ?? []).map((m) => {
-                const cor = cores[(m.cor as Cor) in cores ? (m.cor as Cor) : "menta"];
-                const total = (m.resumo as unknown as { count: number }[])[0]?.count ?? 0;
-                return (
-                  <li key={m.id}>
-                    <Link
-                      href={`/aluno/materias/${m.id}`}
-                      className="block h-full rounded-2xl border-2 p-4 transition-opacity hover:opacity-90"
-                      style={{ borderColor: cor.traco, background: cor.fundo, color: "#10233a" }}
-                    >
-                      <span className="block font-bold">{m.nome}</span>
-                      <span className="mt-1 block text-sm opacity-75">
-                        {total} {total === 1 ? "resumo" : "resumos"}
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-          {(materias ?? []).length < 3 ? (
-            <details className="mt-3 rounded-2xl border border-linha p-5" open={(materias ?? []).length === 0}>
-              <summary className="cursor-pointer font-bold text-primaria">Nova matéria</summary>
-              <p className="mt-2 mb-4 text-sm text-tinta-suave">
-                Crie matérias para guardar seus resumos e mapas mentais. O plano grátis inclui 3.
-              </p>
-              <FormularioMateria />
-            </details>
-          ) : (
-            <p className="mt-3 text-sm text-tinta-suave">Você está usando as 3 matérias do plano grátis.</p>
-          )}
-        </section>
-        {(turmas ?? []).length > 0 && (
-          <div className="mt-6">
-            <AssinarAgenda perfilId={perfil.id} />
-          </div>
+    <LayoutConta titulo={`Olá${perfil.nome ? `, ${perfil.nome}` : ""}!`} descricao="Tudo do seu estudo num lugar só.">
+      <section className="mt-8 rounded-2xl bg-primaria-suave p-5 sm:p-6">
+        <h2 className="text-sm font-bold tracking-wide text-primaria uppercase">Agenda</h2>
+        {proxima ? (
+          <>
+            <p className="mt-2 text-xl font-extrabold first-letter:uppercase">{proxima.quando}</p>
+            <p className="mt-0.5 text-tinta-suave">{proxima.oque}</p>
+          </>
+        ) : (
+          <p className="mt-2 text-xl font-extrabold">Nenhuma aula marcada</p>
         )}
+        {(pendentes ?? 0) > 0 && (
+          <p className="mt-2 text-sm font-semibold text-tinta-suave">
+            {pendentes} {pendentes === 1 ? "pedido de aula aguardando" : "pedidos de aula aguardando"} o professor
+          </p>
+        )}
+        <div className="mt-4 flex flex-wrap gap-4">
+          <Link href="/aluno/agenda" className="text-sm font-bold text-primaria hover:underline">
+            Ver agenda
+          </Link>
+          {(turmas ?? []).length > 0 && (
+            <Link href="/aluno/agenda#marcar" className="text-sm font-bold text-primaria hover:underline">
+              Marcar uma aula
+            </Link>
+          )}
+        </div>
+      </section>
 
-        {(turmas ?? []).map((turma) => {
-          const atividades = (porTurma.get(turma.id) ?? []).sort((x, y) => y.atualizada_em.localeCompare(x.atualizada_em));
-          return (
-            <section key={turma.id} className="mt-8">
-              <h2 className="text-lg font-bold">{turma.nome}</h2>
-              <p className="text-sm text-tinta-suave">
-                {descreverTurma(turma)}
-              </p>
-              <div className="mt-3">
-                <HorariosTurma horarios={horariosPorTurma.get(turma.id) ?? []} nomeTurma={turma.nome} />
-              </div>
-              {(() => {
-                const aulas = aulasPorTurma.get(turma.id) ?? [];
-                const ultima = ultimaAula(aulas, hoje);
-                if (!ultima) return null;
-                return (
-                  <div className="mt-3">
-                    <CartaoAula
-                      aula={ultima}
-                      destaque="Última aula"
-                      resumos={resumos.filter((r) => r.aula_id === ultima.id).map(linkResumo)}
-                    />
-                    {aulas.length > 1 && (
-                      <Link
-                        href={`/aluno/turmas/${turma.id}`}
-                        className="mt-2 inline-block text-sm font-bold text-primaria hover:underline"
-                      >
-                        Ver todas as aulas ({aulas.length})
-                      </Link>
-                    )}
-                  </div>
-                );
-              })()}
-              {(() => {
-                const daTurma = resumos.filter((r) => r.turma_id === turma.id);
-                if (daTurma.length === 0) return null;
-                return (
-                  <div className="mt-3">
-                    <h3 className="text-sm font-bold text-tinta-suave">Resumos</h3>
-                    <ul className="mt-2 flex flex-wrap gap-2">
-                      {daTurma.slice(0, 8).map((r) => (
-                        <li key={r.id}>
-                          <Link
-                            href={`/aluno/resumos/${r.id}`}
-                            className="inline-block rounded-full border border-linha px-3 py-1 text-sm font-bold hover:border-primaria hover:text-primaria"
-                          >
-                            {tituloResumo(r)}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                );
-              })()}
-              {atividades.length > 0 ? (
-                <ul className="mt-3 grid gap-3 sm:grid-cols-2">
-                  {atividades.map((a) => {
-                    const feitos = respondidos.get(a.id)?.size ?? 0;
-                    return (
-                      <li key={a.id}>
-                        <Link
-                          href={`/atividades/${a.id}`}
-                          className="block h-full rounded-2xl border border-linha p-5 transition-colors hover:border-primaria"
-                        >
-                          <span className="block font-bold">{a.titulo}</span>
-                          <span className="mt-1 block text-sm text-tinta-suave">
-                            {etiquetasDaAtividade(a).join(" · ")}
-                          </span>
-                          <span
-                            className={`mt-3 inline-block rounded-full px-3 py-1 text-xs font-bold ${feitos > 0 ? "bg-suave text-tinta-suave" : "bg-primaria-suave text-primaria"}`}
-                          >
-                            {feitos > 0 ? `Começada · ${feitos} ${feitos === 1 ? "item respondido" : "itens respondidos"}` : "Nova"}
-                          </span>
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : (
-                <p className="mt-3 rounded-2xl border border-dashed border-linha p-5 text-sm text-tinta-suave">
-                  Nenhuma atividade publicada nesta turma ainda.
-                </p>
-              )}
-            </section>
-          );
-        })}
+      <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {atalhos.map((a) => (
+          <li key={a.href}>
+            <Link href={a.href} className="block h-full rounded-2xl border border-linha p-4 transition-colors hover:border-primaria">
+              <span className="block text-3xl font-extrabold tabular-nums">{a.numero}</span>
+              <span className="mt-1 block font-bold">{a.titulo}</span>
+              <span className="block text-sm text-tinta-suave">{a.detalhe}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
 
-        {(turmas ?? []).length === 0 && (
-          <div className="mt-6 rounded-2xl border border-dashed border-linha p-6 text-center">
-            <p className="font-semibold">Você ainda não está em nenhuma turma.</p>
-            <p className="mt-1 text-sm text-tinta-suave">Quando um professor te convidar, a turma aparece aqui.</p>
-            <Link href="/experimente" className="mt-3 inline-block text-sm font-bold text-primaria hover:underline">
+      {(materias ?? []).length > 0 && (
+        <section className="mt-8">
+          <div className="flex items-baseline justify-between">
+            <h2 className="text-lg font-bold">Minhas matérias</h2>
+            <Link href="/aluno/materias" className="text-sm font-bold text-primaria hover:underline">
+              Ver todas
+            </Link>
+          </div>
+          <ul className="mt-3 grid gap-3 sm:grid-cols-3">
+            {(materias ?? []).map((m) => (
+              <li key={m.id}>
+                <CartaoMateria id={m.id} nome={m.nome} cor={m.cor} total={(m.resumo as unknown as { count: number }[])[0]?.count ?? 0} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {resumos.length > 0 && (
+        <section className="mt-8">
+          <div className="flex items-baseline justify-between">
+            <h2 className="text-lg font-bold">Resumos recentes</h2>
+            <Link href="/aluno/resumos" className="text-sm font-bold text-primaria hover:underline">
+              Ver todos
+            </Link>
+          </div>
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {resumos.slice(0, 6).map((r) => (
+              <li key={r.id}>
+                <Link
+                  href={`/aluno/resumos/${r.id}`}
+                  className="inline-block rounded-full border border-linha px-3 py-1 text-sm font-bold hover:border-primaria hover:text-primaria"
+                >
+                  {r.titulo_exibido}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {(materias ?? []).length === 0 && (turmas ?? []).length === 0 && (
+        <div className="mt-8 rounded-2xl border border-dashed border-linha p-6 text-center">
+          <p className="font-semibold">Comece criando uma matéria.</p>
+          <p className="mt-1 text-sm text-tinta-suave">Nela você guarda resumos e mapas mentais. Se tiver professor, peça o convite da turma.</p>
+          <div className="mt-3 flex flex-wrap justify-center gap-4">
+            <Link href="/aluno/materias" className="text-sm font-bold text-primaria hover:underline">
+              Criar matéria
+            </Link>
+            <Link href="/experimente" className="text-sm font-bold text-primaria hover:underline">
               Experimentar a aula de demonstração
             </Link>
           </div>
-        )}
-      </main>
-    </>
+        </div>
+      )}
+    </LayoutConta>
   );
 }

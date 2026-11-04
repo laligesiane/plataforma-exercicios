@@ -28,8 +28,8 @@ export default async function AulasDaTurma({ params }: { params: Promise<{ id: s
     <>
       <Cabecalho />
       <main className="mx-auto w-full max-w-3xl px-4 pt-8 pb-16">
-        <Link href="/aluno" className="text-sm font-bold text-primaria hover:underline">
-          ← Minhas turmas
+        <Link href="/aluno/atividades" className="text-sm font-bold text-primaria hover:underline">
+          ← Minhas atividades
         </Link>
         <h1 className="mt-3 text-3xl font-extrabold tracking-tight">{turma.nome}</h1>
         <p className="mt-2 text-tinta-suave">Todas as aulas, da mais recente para a mais antiga.</p>
