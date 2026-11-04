@@ -20,6 +20,8 @@ export const tiposExercicio = {
   arrastar: "Arrastar palavras",
   classificar: "Classificar em colunas",
   relacionar: "Relacionar",
+  producao: "Produção escrita ou oral",
+  kahoot: "Kahoot",
 } as const;
 export type TipoExercicio = keyof typeof tiposExercicio;
 
@@ -81,18 +83,72 @@ export type ExercicioRelacionar = {
   itens: (ItemRelacionar & { id: string })[];
 };
 
+/** Resposta aberta, escrita ou gravada, que o professor corrige e comenta. */
+export type ItemProducao = {
+  id: string;
+  tipo: "producao";
+  enunciado: string;
+  modo: "escrita" | "oral";
+  /** O que o professor espera (só o professor vê; ajuda na correção). */
+  orientacao: string;
+};
+
+export type ExercicioProducao = {
+  id: string;
+  tipo: "producao";
+  titulo: string;
+  instrucoes: string;
+  /** Imagem, áudio ou vídeo mostrado no topo do exercício. */
+  midia?: Midia;
+  itens: ItemProducao[];
+};
+
+/** Link para um Kahoot. Não tem itens: o jogo acontece no site do Kahoot. */
+export type ExercicioKahoot = {
+  id: string;
+  tipo: "kahoot";
+  titulo: string;
+  instrucoes: string;
+  /** Imagem, áudio ou vídeo mostrado no topo do exercício. */
+  midia?: Midia;
+  link: string;
+  itens: never[];
+};
+
 export type Exercicio =
   | ExercicioLacuna
   | ExercicioMultiplaEscolha
   | ExercicioArrastar
   | ExercicioClassificar
-  | ExercicioRelacionar;
+  | ExercicioRelacionar
+  | ExercicioProducao
+  | ExercicioKahoot;
+
+/** Exercícios que o Repasa corrige na hora (entram na contagem de acertos). */
+export type ExercicioAutomatico = Exclude<Exercicio, ExercicioProducao | ExercicioKahoot>;
+
+export function ehAutomatico(e: Exercicio): e is ExercicioAutomatico {
+  return e.tipo !== "producao" && e.tipo !== "kahoot";
+}
+
+/** Só links do Kahoot (kahoot.it, create.kahoot.it, kahoot.com), em https. */
+export function ehLinkKahoot(link: string): boolean {
+  try {
+    const url = new URL(link.trim());
+    const host = url.hostname;
+    const doKahoot = ["kahoot.it", "kahoot.com"].some((d) => host === d || host.endsWith(`.${d}`));
+    return url.protocol === "https:" && doKahoot && link.length <= 2000;
+  } catch {
+    return false;
+  }
+}
 
 /** Campos do exercício que ficam na coluna "config" do banco, conforme o tipo. */
 export function configDoExercicio(e: Exercicio): Record<string, unknown> {
   const config: Record<string, unknown> = e.midia ? { midia: e.midia } : {};
   if (e.tipo === "arrastar") config.palavrasExtras = e.palavrasExtras;
   if (e.tipo === "classificar") config.colunas = e.colunas;
+  if (e.tipo === "kahoot") config.link = e.link;
   return config;
 }
 
@@ -168,6 +224,10 @@ export function novoItemRelacionar(): ExercicioRelacionar["itens"][number] {
   return { id: novoId(), tipo: "relacionar", esquerda: "", direita: "", explicacao: "" };
 }
 
+export function novoItemProducao(modo: ItemProducao["modo"] = "escrita"): ItemProducao {
+  return { id: novoId(), tipo: "producao", enunciado: "", modo, orientacao: "" };
+}
+
 export function novoExercicio(tipo: TipoExercicio): Exercicio {
   const id = novoId();
   switch (tipo) {
@@ -218,6 +278,16 @@ export function novoExercicio(tipo: TipoExercicio): Exercicio {
         instrucoes: "Toque num item da esquerda e depois no par dele à direita.",
         itens: [novoItemRelacionar(), novoItemRelacionar(), novoItemRelacionar()],
       };
+    case "producao":
+      return {
+        id,
+        tipo,
+        titulo: "Produção",
+        instrucoes: "Responda com suas palavras. O professor vai ler, corrigir e comentar.",
+        itens: [novoItemProducao("escrita")],
+      };
+    case "kahoot":
+      return { id, tipo, titulo: "Kahoot", instrucoes: "Abra o Kahoot e jogue.", link: "", itens: [] };
   }
 }
 
@@ -316,6 +386,20 @@ export function limparExercicio(exercicio: Exercicio): Exercicio {
           explicacao: limpar(item.explicacao),
         })),
       };
+    case "producao":
+      return {
+        ...base,
+        tipo: "producao",
+        itens: exercicio.itens.map((item) => ({
+          id: item.id,
+          tipo: "producao",
+          enunciado: limpar(item.enunciado),
+          modo: item.modo === "oral" ? "oral" : "escrita",
+          orientacao: limpar(item.orientacao),
+        })),
+      };
+    case "kahoot":
+      return { ...base, tipo: "kahoot", link: limpar(exercicio.link), itens: [] };
   }
 }
 
@@ -327,7 +411,11 @@ export function problemasDaAtividade(titulo: string, exercicios: Exercicio[]): s
 
   exercicios.forEach((exercicio, i) => {
     const ex = `Exercício ${i + 1}`;
-    if (exercicio.itens.length === 0) problemas.push(`${ex}: adicione pelo menos um item.`);
+    if (exercicio.tipo === "kahoot") {
+      if (!ehLinkKahoot(exercicio.link)) problemas.push(`${ex}: cole o link do Kahoot (kahoot.it).`);
+    } else if (exercicio.itens.length === 0) {
+      problemas.push(`${ex}: adicione pelo menos um item.`);
+    }
     const midia: Midia | undefined = exercicio.midia;
     if (midia && !ehMidia(midia)) {
       problemas.push(
@@ -361,6 +449,8 @@ export function problemasDaAtividade(titulo: string, exercicios: Exercicio[]): s
           problemas.push(`${onde}: escolha a coluna certa do cartão.`);
         }
         if (!item.explicacao) problemas.push(`${onde}: explique por que o cartão vai nessa coluna.`);
+      } else if (item.tipo === "producao") {
+        if (!item.enunciado) problemas.push(`${onde}: escreva o que o aluno deve produzir.`);
       } else if (item.tipo === "relacionar") {
         if (!item.esquerda || !item.direita) problemas.push(`${onde}: preencha os dois lados do par.`);
         if (!item.explicacao) problemas.push(`${onde}: escreva a explicação para quando o aluno errar o par.`);
@@ -438,6 +528,13 @@ export function ehExercicio(valor: unknown): valor is Exercicio {
       );
     case "relacionar":
       return cada("relacionar", (it) => texto(it.esquerda) && texto(it.direita) && texto(it.explicacao));
+    case "producao":
+      return cada(
+        "producao",
+        (it) => texto(it.enunciado) && (it.modo === "escrita" || it.modo === "oral") && texto(it.orientacao),
+      );
+    case "kahoot":
+      return texto(e.link) && e.link.length <= 2000 && itens.length === 0;
     default:
       return false;
   }
