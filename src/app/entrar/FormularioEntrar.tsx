@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { Mensagem } from "@/components/ui/Mensagem";
 import { botaoPrimario, campo, rotulo } from "@/components/ui/estilos";
@@ -18,9 +19,14 @@ export function FormularioEntrar({ proximo }: { proximo?: string }) {
         <input id="email" name="email" type="email" autoComplete="email" required className={campo} />
       </div>
       <div>
-        <label htmlFor="senha" className={rotulo}>
-          Senha
-        </label>
+        <div className="flex items-baseline justify-between">
+          <label htmlFor="senha" className={rotulo}>
+            Senha
+          </label>
+          <Link href="/esqueci-senha" className="text-sm font-bold text-primaria hover:underline">
+            Esqueci minha senha
+          </Link>
+        </div>
         <input id="senha" name="senha" type="password" autoComplete="current-password" required className={campo} />
       </div>
       <Mensagem estado={estado} />

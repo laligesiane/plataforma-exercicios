@@ -13,7 +13,7 @@ export async function definirSenha(_estado: EstadoFormulario, formData: FormData
 
   const supabase = await criarClienteServidor();
   const { error } = await supabase.auth.updateUser({ password: senha });
-  if (error) return { erro: "Não foi possível salvar a senha. Abra o link do convite de novo." };
+  if (error) return { erro: "Não foi possível salvar a senha. Abra o link do e-mail de novo." };
 
   const perfil = await obterPerfil();
   redirect(perfil ? paginaInicial(perfil.papel) : "/");
