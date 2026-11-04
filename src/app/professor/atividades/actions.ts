@@ -25,7 +25,7 @@ export async function criarAtividade() {
 
   const { data: turma } = await supabase
     .from("turma")
-    .select("idioma_ensinado, idioma_instrucao")
+    .select("materia, idioma_ensinado, idioma_instrucao")
     .order("criada_em")
     .limit(1)
     .maybeSingle();
@@ -34,8 +34,10 @@ export async function criarAtividade() {
     .from("atividade")
     .insert({
       professor_id: professor.id,
-      idioma_ensinado: turma?.idioma_ensinado ?? "es",
-      idioma_instrucao: turma?.idioma_instrucao ?? "pt",
+      // Segue a primeira turma: de outra matéria, a atividade nasce com essa matéria; senão, com os idiomas dela.
+      ...(turma?.materia?.trim()
+        ? { materia: turma.materia.trim(), idioma_ensinado: null, idioma_instrucao: null }
+        : { idioma_ensinado: turma?.idioma_ensinado ?? "es", idioma_instrucao: turma?.idioma_instrucao ?? "pt" }),
     })
     .select("id")
     .single();
@@ -59,7 +61,14 @@ export async function salvarAtividade(dados: DadosAtividade): Promise<ResultadoS
 
   if (!niveis.includes(atividade.nivel)) return { ok: false, erro: "Nível inválido." };
   if (!(atividade.categoria in categorias)) return { ok: false, erro: "Categoria inválida." };
-  if (!ehIdioma(atividade.idioma_ensinado) || !ehIdioma(atividade.idioma_instrucao)) {
+  const materia = typeof atividade.materia === "string" ? atividade.materia.trim().slice(0, 60) : "";
+  const idiomaEnsinado = atividade.idioma_ensinado;
+  const idiomaInstrucao = atividade.idioma_instrucao;
+  if (materia) {
+    if (idiomaEnsinado !== null || idiomaInstrucao !== null) return { ok: false, erro: "Dados inválidos. Recarregue a página." };
+  } else if (typeof atividade.materia === "string" && atividade.materia.trim() === "" && idiomaEnsinado === null) {
+    return { ok: false, erro: "Escreva o nome da matéria." };
+  } else if (!ehIdioma(idiomaEnsinado ?? "") || !ehIdioma(idiomaInstrucao ?? "")) {
     return { ok: false, erro: "Escolha os dois idiomas." };
   }
   if (!ehUuid(atividade.id) || !Array.isArray(dados.turmas) || !dados.turmas.every(ehUuid)) {
@@ -88,8 +97,9 @@ export async function salvarAtividade(dados: DadosAtividade): Promise<ResultadoS
       titulo: titulo || "Atividade sem título",
       nivel: atividade.nivel,
       categoria: atividade.categoria,
-      idioma_ensinado: atividade.idioma_ensinado,
-      idioma_instrucao: atividade.idioma_instrucao,
+      materia,
+      idioma_ensinado: materia ? null : idiomaEnsinado,
+      idioma_instrucao: materia ? null : idiomaInstrucao,
       explicacao: atividade.explicacao.trim(),
       publicada: atividade.publicada,
       publica: atividade.publica,

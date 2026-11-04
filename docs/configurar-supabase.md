@@ -32,6 +32,11 @@ Por fim, [`supabase/migrations/0006_midia.sql`](../supabase/migrations/0006_midi
 "midia" no Storage, onde ficam as imagens e os áudios que o professor envia (até 20 MB cada).
 Rode cada arquivo uma vez só, na ordem.
 
+Depois dos arquivos 0010 a 0016 (agenda, aulas, resumos e turmas de qualquer matéria), rode
+[`supabase/migrations/0007_atividade_materia.sql`](../supabase/migrations/0007_atividade_materia.sql).
+Ela deixa as atividades serem de qualquer matéria, não só de idiomas. O número é menor,
+mas ela vem por último. Pode rodar de novo sem erro.
+
 ## 2. Endereços do site
 
 Em **Authentication → URL Configuration**:

@@ -4,7 +4,7 @@ import { CartaoAula } from "@/components/CartaoAula";
 import { Cabecalho } from "@/components/Cabecalho";
 import { HorariosTurma } from "@/components/HorariosTurma";
 import type { Horario } from "@/lib/agenda";
-import { categorias, type Categoria } from "@/lib/atividades/modelo";
+import { etiquetasDaAtividade } from "@/lib/atividades/modelo";
 import { camposResumo, tituloResumo, type Resumo } from "@/lib/resumos";
 import { camposAula, hojeNoFuso, ultimaAula, type Aula } from "@/lib/aulas";
 import { descreverTurma } from "@/lib/turmas";
@@ -20,7 +20,7 @@ export default async function AreaAluno() {
   const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }, { data: aulasDb }, { data: resumosDb }] =
     await Promise.all([
     supabase.from("turma").select("id, nome, materia, idioma_ensinado, idioma_instrucao").order("nome"),
-    supabase.from("atividade_turma").select("turma_id, atividade(id, titulo, nivel, categoria, atualizada_em)"),
+    supabase.from("atividade_turma").select("turma_id, atividade(id, titulo, nivel, categoria, materia, idioma_ensinado, atualizada_em)"),
     supabase.from("resposta").select("atividade_id, item_id").eq("aluno_id", perfil.id),
     supabase.from("turma_horario").select("id, turma_id, dia_semana, hora_inicio, duracao_min, fuso"),
     supabase.from("aula").select(camposAula).order("data", { ascending: false }),
@@ -129,7 +129,7 @@ export default async function AreaAluno() {
                         >
                           <span className="block font-bold">{a.titulo}</span>
                           <span className="mt-1 block text-sm text-tinta-suave">
-                            {a.nivel} · {categorias[a.categoria as Categoria] ?? a.categoria}
+                            {etiquetasDaAtividade(a).join(" · ")}
                           </span>
                           <span
                             className={`mt-3 inline-block rounded-full px-3 py-1 text-xs font-bold ${feitos > 0 ? "bg-suave text-tinta-suave" : "bg-primaria-suave text-primaria"}`}

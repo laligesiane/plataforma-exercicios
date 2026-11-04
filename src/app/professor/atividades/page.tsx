@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Cabecalho } from "@/components/Cabecalho";
-import { categorias, type Categoria } from "@/lib/atividades/modelo";
-import { nomeIdioma } from "@/lib/idiomas";
+import { etiquetasDaAtividade } from "@/lib/atividades/modelo";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { BotaoNovaAtividade } from "./novo-botao";
@@ -12,7 +11,7 @@ export default async function AtividadesProfessor({ searchParams }: { searchPara
   const supabase = await criarClienteServidor();
   const { data: atividades, error } = await supabase
     .from("atividade")
-    .select("id, titulo, nivel, categoria, idioma_ensinado, publicada, publica, exercicio(count), atividade_turma(turma(nome))")
+    .select("id, titulo, nivel, categoria, materia, idioma_ensinado, publicada, publica, exercicio(count), atividade_turma(turma(nome))")
     .eq("professor_id", professor.id)
     .order("atualizada_em", { ascending: false });
 
@@ -50,7 +49,7 @@ export default async function AtividadesProfessor({ searchParams }: { searchPara
                     <Link href={`/professor/atividades/${a.id}`} className="min-w-0 flex-1">
                       <span className="block font-bold">{a.titulo}</span>
                       <span className="mt-1 block text-sm text-tinta-suave">
-                        {a.nivel} · {categorias[a.categoria as Categoria] ?? a.categoria} · {nomeIdioma(a.idioma_ensinado)} ·{" "}
+                        {etiquetasDaAtividade(a).join(" · ")} ·{" "}
                         {total} {total === 1 ? "exercício" : "exercícios"}
                       </span>
                     </Link>

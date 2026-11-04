@@ -2,7 +2,7 @@ import "server-only";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import type { Atividade, Exercicio } from "./modelo";
 
-const camposAtividade = "id, titulo, nivel, categoria, idioma_ensinado, idioma_instrucao, explicacao, publicada, publica, professor_id";
+const camposAtividade = "id, titulo, nivel, categoria, materia, idioma_ensinado, idioma_instrucao, explicacao, publicada, publica, professor_id";
 
 export type AtividadeCarregada = Atividade & { professor_id: string };
 
