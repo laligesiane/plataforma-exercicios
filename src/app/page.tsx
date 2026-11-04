@@ -152,7 +152,7 @@ export default async function Inicio() {
         </section>
 
         {/* Como funciona */}
-        <section className="border-t border-linha">
+        <section>
           <div className="mx-auto w-full max-w-5xl px-4 py-16">
             <h2 className="text-3xl font-extrabold tracking-tight">Como funciona</h2>
             <ol className="mt-8 grid gap-4 md:grid-cols-3">
