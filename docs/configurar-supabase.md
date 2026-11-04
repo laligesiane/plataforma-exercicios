@@ -25,7 +25,9 @@ Depois, numa nova query, cole e rode
 [`supabase/migrations/0002_atividades.sql`](../supabase/migrations/0002_atividades.sql).
 Ela cria as atividades, os exercícios e as respostas dos alunos. Em seguida rode
 [`supabase/migrations/0003_tipos_arrastar.sql`](../supabase/migrations/0003_tipos_arrastar.sql),
-que libera os exercícios de arrastar, classificar e relacionar. Rode cada arquivo uma vez só, na ordem.
+que libera os exercícios de arrastar, classificar e relacionar, e depois
+[`supabase/migrations/0004_corrige_criar_atividade.sql`](../supabase/migrations/0004_corrige_criar_atividade.sql).
+Rode cada arquivo uma vez só, na ordem.
 
 ## 2. Endereços do site
 
