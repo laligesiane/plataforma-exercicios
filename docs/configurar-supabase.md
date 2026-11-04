@@ -82,7 +82,51 @@ conteúdo do arquivo no **Message body**:
 | Confirm sign up | Confirme sua conta na Repasa | [`emails/confirmar-cadastro.html`](emails/confirmar-cadastro.html) |
 | Invite user | Você foi convidado para uma turma na Repasa | [`emails/convite.html`](emails/convite.html) |
 | Reset password | Redefina sua senha da Repasa | [`emails/redefinir-senha.html`](emails/redefinir-senha.html) |
+| Magic link | Seu código para entrar na Repasa | [`emails/codigo-entrar.html`](emails/codigo-entrar.html) |
 
 Os modelos usam o link padrão `{{ .ConfirmationURL }}`, que é o que o site espera: não troque esse trecho.
-Magic link e Change email não são usados pelo site por enquanto, então podem ficar como estão.
+O modelo Magic link é o do "Código por e-mail" na tela de entrar: ele usa `{{ .Token }}` (o código de 6 números)
+no lugar do link. Change email não é usado pelo site por enquanto.
 O modelo de senha fica pronto para quando o site ganhar a opção "Esqueci minha senha".
+
+## 7. Entrar sem senha, com Google e verificação em duas etapas
+
+Rode [`supabase/migrations/0019_login_perfil.sql`](../supabase/migrations/0019_login_perfil.sql) no SQL Editor.
+Ela pega o nome de quem entra pelo Google e faz a pessoa escolher "Sou professor" ou "Sou aluno" no primeiro acesso.
+
+### Código por e-mail
+
+1. Em **Authentication → Emails → Templates → Magic link**, troque o assunto para `Seu código para entrar na Repasa`
+   e cole o conteúdo de [`emails/codigo-entrar.html`](emails/codigo-entrar.html). O que faz o código aparecer no e-mail
+   é o trecho `{{ .Token }}`.
+2. Em **Authentication → Sign In / Providers → Email**, confira que **Email OTP Length** está em `6` e
+   **Email OTP Expiration** em `3600` (1 hora).
+
+### Google
+
+No Google Cloud (https://console.cloud.google.com), entrando com a conta Google que vai cuidar da Repasa:
+
+1. No topo, clique no seletor de projetos → **Novo projeto** → nome `Repasa` → **Criar**. Deixe ele selecionado.
+2. Menu → **APIs e serviços → Tela de consentimento OAuth** (ou **Google Auth Platform**) → **Começar**.
+   - Nome do app: `Repasa`; e-mail de suporte: o seu.
+   - Público: **Externo**.
+   - Dados de contato: o seu e-mail. Aceite os termos e **Criar**.
+3. Em **Branding** (Marca), em **Domínios autorizados**, adicione `repasa.com.br` e salve.
+4. Em **Clientes** → **Criar cliente**:
+   - Tipo: **Aplicativo da Web**; nome: `Repasa site`.
+   - **Origens JavaScript autorizadas:** `https://repasa.com.br`
+   - **URIs de redirecionamento autorizados:** `https://eafuupcfaemtfahqdnyh.supabase.co/auth/v1/callback`
+   - **Criar**. Aparece o **ID do cliente** e a **Chave secreta do cliente**. Deixe essa janela aberta.
+5. Em **Público** (Audience), clique em **Publicar app** → confirmar. Sem isso, só e-mails de teste conseguem entrar.
+   Como a Repasa só pede nome, e-mail e foto, o Google não exige revisão.
+6. No Supabase, **Authentication → Sign In / Providers → Google**: ligue **Enable Sign in with Google**, cole o
+   **Client ID** e o **Client Secret** e salve. A chave secreta vai só aqui: nunca em chat, e-mail ou código.
+
+Quem já tem conta com o mesmo e-mail cai na mesma conta ao entrar pelo Google.
+
+### Verificação em duas etapas
+
+Em **Authentication → Multi-Factor**, confira que **TOTP (App Authenticator)** está **Enabled** (já vem ligado
+nos projetos novos). Cada pessoa liga a sua em **Perfil → Verificação em duas etapas**.
+Se alguém perder o celular: **Authentication → Users**, abra a pessoa e apague o fator em **MFA factors**
+(ou, no SQL Editor, `delete from auth.mfa_factors where user_id = '<id da pessoa>';`).

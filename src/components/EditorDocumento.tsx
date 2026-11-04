@@ -99,10 +99,12 @@ export function EditorDocumento({
   nome,
   inicial,
   placeholder = "Escreva o resumo aqui. Use Título e Subtítulo para separar as partes.",
+  aoMudar,
 }: {
   nome: string;
   inicial: Documento;
   placeholder?: string;
+  aoMudar?: (doc: Documento) => void;
 }) {
   const [json, setJson] = useState(() => JSON.stringify(inicial));
   const [, forcarAtualizacao] = useState(0);
@@ -116,7 +118,11 @@ export function EditorDocumento({
     ],
     content: inicial,
     editorProps: { attributes: { "aria-label": "Resumo", class: "px-5 py-4" } },
-    onUpdate: ({ editor }) => setJson(JSON.stringify(editor.getJSON())),
+    onUpdate: ({ editor }) => {
+      const doc = editor.getJSON() as Documento;
+      setJson(JSON.stringify(doc));
+      aoMudar?.(doc);
+    },
     onSelectionUpdate: () => forcarAtualizacao((n) => n + 1),
     onTransaction: () => forcarAtualizacao((n) => n + 1),
   });

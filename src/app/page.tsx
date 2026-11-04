@@ -79,8 +79,8 @@ export default async function Inicio() {
                   <Link href="/cadastro?papel=aluno" className={botaoPrimario}>
                     Começar a estudar
                   </Link>
-                  <Link href="/experimente" className={botaoContorno}>
-                    Experimentar uma atividade
+                  <Link href="/entrar" className={botaoContorno}>
+                    Entrar
                   </Link>
                 </>
               )}

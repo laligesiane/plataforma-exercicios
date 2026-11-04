@@ -1,10 +1,12 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { EditorDocumento } from "@/components/EditorDocumento";
 import { MapaMental } from "@/components/MapaMental";
 import { Mensagem, type EstadoFormulario } from "@/components/ui/Mensagem";
 import { botaoIcone, botaoPrimario, botaoTexto, campo, rotulo } from "@/components/ui/estilos";
+import { validarDocumento, type Documento } from "@/lib/documento";
+import { mapaDoDocumento } from "@/lib/documento/mapa";
 import { cores, LIMITES, novoId, ordemCores, type Cor, type Mapa, type No } from "@/lib/mapas";
 import { documentoDoResumo, type Resumo } from "@/lib/resumos";
 
@@ -102,7 +104,25 @@ export function EditorResumo({
 }) {
   const [estado, acao, enviando] = useActionState(salvar, null);
   const [mapa, setMapa] = useState<Mapa>(resumo?.mapa ?? { centro: "", ramos: [] });
-  const temMapa = !!(resumo?.mapa?.centro || resumo?.mapa?.ramos?.length);
+  const [mapaAberto, setMapaAberto] = useState(!!(resumo?.mapa?.centro || resumo?.mapa?.ramos?.length));
+  const docInicial = documentoDoResumo(resumo ?? { conteudo: null, texto: "" });
+  const docAtual = useRef<Documento>(docInicial);
+  const [titulo, setTitulo] = useState(resumo?.titulo ?? "");
+  const [aviso, setAviso] = useState("");
+
+  const gerarMapa = () => {
+    const doc = validarDocumento(docAtual.current);
+    const novo = doc ? mapaDoDocumento(doc, titulo) : null;
+    if (!novo || novo.ramos.length === 0) {
+      setAviso("Escreva o resumo com títulos, subtítulos ou listas para gerar o mapa.");
+      return;
+    }
+    const temAlgo = mapa.centro || mapa.ramos.length > 0;
+    if (temAlgo && !window.confirm("Trocar o mapa mental atual pelo mapa gerado a partir do resumo?")) return;
+    setMapa(novo);
+    setMapaAberto(true);
+    setAviso("Mapa gerado. Ajuste o que quiser e salve.");
+  };
 
   const aoMudar = (caminho: number[], mudar: (n: No) => No | null) => setMapa((m) => atualizarNo(m, caminho, mudar));
   const adicionarRamo = () =>
@@ -139,7 +159,14 @@ export function EditorResumo({
           <label htmlFor="titulo" className={rotulo}>
             Título
           </label>
-          <input id="titulo" name="titulo" maxLength={200} defaultValue={resumo?.titulo} className={campo} />
+          <input
+            id="titulo"
+            name="titulo"
+            maxLength={200}
+            value={titulo}
+            onChange={(e) => setTitulo(e.target.value)}
+            className={campo}
+          />
         </div>
         {aulas && (
         <div>
@@ -161,10 +188,24 @@ export function EditorResumo({
 
       <div>
         <p className={rotulo}>Resumo</p>
-        <EditorDocumento nome="conteudo" inicial={documentoDoResumo(resumo ?? { conteudo: null, texto: "" })} />
+        <EditorDocumento nome="conteudo" inicial={docInicial} aoMudar={(d) => (docAtual.current = d)} />
+        <div className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+          <button type="button" onClick={gerarMapa} className={botaoTexto}>
+            ✦ Gerar mapa mental a partir do resumo
+          </button>
+          {aviso && (
+            <span role="status" className="text-sm text-tinta-suave">
+              {aviso}
+            </span>
+          )}
+        </div>
       </div>
 
-      <details open={temMapa} className="group rounded-2xl border border-linha p-5">
+      <details
+        open={mapaAberto}
+        onToggle={(e) => setMapaAberto(e.currentTarget.open)}
+        className="group rounded-2xl border border-linha p-5"
+      >
         <summary className="cursor-pointer list-none text-lg font-bold">
           <span className="mr-2 inline-block text-primaria transition-transform group-open:rotate-90">›</span>
           Mapa mental <span className="text-sm font-normal text-tinta-suave">(opcional)</span>
