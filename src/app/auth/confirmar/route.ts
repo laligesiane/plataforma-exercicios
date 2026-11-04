@@ -3,13 +3,15 @@ import { NextResponse, type NextRequest } from "next/server";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
 // Retorno dos e-mails do Supabase.
-// Modelo padrão: ?code=... (confirmação de cadastro). Modelo personalizado: ?token_hash=...&type=...
+// Modelo padrão: ?code=... (confirmação de cadastro e volta do Google). Modelo personalizado: ?token_hash=...&type=...
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const codigo = searchParams.get("code");
   const tokenHash = searchParams.get("token_hash");
   const tipo = searchParams.get("type") as EmailOtpType | null;
   const proximo = searchParams.get("next");
+  // O Google volta com ?error=... quando a pessoa cancela ou o provedor não está ligado.
+  if (searchParams.get("error")) return NextResponse.redirect(`${origin}/entrar?erro=google`);
   const supabase = await criarClienteServidor();
 
   if (codigo) {

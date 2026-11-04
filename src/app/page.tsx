@@ -74,8 +74,8 @@ export default async function Inicio() {
                   <Link href="/experimente" className={botaoPrimario}>
                     Experimentar uma atividade
                   </Link>
-                  <Link href="/cadastro" className={botaoContorno}>
-                    Sou professor
+                  <Link href="/entrar" className={botaoContorno}>
+                    Entrar
                   </Link>
                 </>
               )}
