@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 260" role="img" aria-label="Um relógio marcando três e meia">
+  <rect width="400" height="260" rx="20" fill="#eef8f3"/>
+  <circle cx="200" cy="130" r="100" fill="#fff" stroke="#1f9d6b" stroke-width="10"/>
+  <g stroke="#2b2f36" stroke-width="5" stroke-linecap="round">
+    <path d="M200 42v14M200 204v14M112 130h14M274 130h14"/>
+  </g>
+  <g font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#2b2f36" text-anchor="middle">
+    <text x="200" y="80">12</text><text x="252" y="138">3</text><text x="200" y="196">6</text><text x="148" y="138">9</text>
+  </g>
+  <path d="M200 130l39 10" stroke="#2b2f36" stroke-width="9" stroke-linecap="round"/>
+  <path d="M200 130v78" stroke="#1f9d6b" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="200" cy="130" r="8" fill="#2b2f36"/>
+</svg>

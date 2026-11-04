@@ -61,6 +61,11 @@ export function ehMidia(valor: unknown): valor is Midia {
   const m = valor as Record<string, unknown>;
   if (m.legenda !== undefined && typeof m.legenda !== "string") return false;
   if (m.tipo === "video") return typeof m.url === "string" && enderecoDoVideo(m.url) !== null;
-  if (m.tipo === "imagem" || m.tipo === "audio") return ehLinkDeArquivo(m.url);
+  if (m.tipo === "imagem" || m.tipo === "audio") return ehLinkDeArquivo(m.url) || ehImagemDaDemo(m.url);
   return false;
+}
+
+/** Imagens da aula de demonstração, servidas pelo próprio site (public/demo). */
+function ehImagemDaDemo(url: unknown): boolean {
+  return typeof url === "string" && /^\/demo\/[\w-]+\.svg$/.test(url);
 }
