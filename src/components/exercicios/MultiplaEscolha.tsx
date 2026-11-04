@@ -4,24 +4,37 @@ import { useState } from "react";
 import { corrigirMultiplaEscolha, type ItemMultiplaEscolha, type Resultado } from "@/lib/correcao";
 import { Feedback } from "./Feedback";
 
-export function MultiplaEscolha({ item }: { item: ItemMultiplaEscolha }) {
+type Props = {
+  item: ItemMultiplaEscolha;
+  onResultado?: (resultado: Resultado) => void;
+};
+
+export function MultiplaEscolha({ item, onResultado }: Props) {
   const [escolhida, setEscolhida] = useState<string | null>(null);
   const [resultado, setResultado] = useState<Resultado | null>(null);
 
   function escolher(id: string) {
+    const novo = corrigirMultiplaEscolha(item, id);
     setEscolhida(id);
-    setResultado(corrigirMultiplaEscolha(item, id));
+    setResultado(novo);
+    onResultado?.(novo);
+  }
+
+  function estilo(id: string) {
+    if (id !== escolhida || !resultado) return "border-linha bg-fundo hover:border-primaria";
+    return resultado.status === "errado" ? "border-erro bg-erro-fundo text-erro" : "border-certo bg-certo-fundo text-certo";
   }
 
   return (
-    <div className="py-3">
-      <p>{item.enunciado}</p>
-      <div className="mt-2 flex flex-wrap gap-2">
+    <div className="py-4 first:pt-0 last:pb-0">
+      <p className="text-[17px]">{item.enunciado}</p>
+      <div className="mt-3 flex flex-wrap gap-2">
         {item.alternativas.map((a) => (
           <button
             key={a.id}
             onClick={() => escolher(a.id)}
-            className={`rounded border px-3 py-1 ${escolhida === a.id ? "border-blue-600 bg-blue-50 dark:bg-blue-950" : "border-gray-300 dark:border-gray-700"}`}
+            aria-pressed={escolhida === a.id}
+            className={`min-w-15 rounded-full border-2 px-5 py-2 font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria ${estilo(a.id)}`}
           >
             {a.texto}
           </button>
