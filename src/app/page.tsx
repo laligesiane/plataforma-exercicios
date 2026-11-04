@@ -106,7 +106,7 @@ export default async function Inicio() {
                 <span className="rounded-lg border-2 border-certo bg-certo-fundo px-2 py-0.5 text-certo">repaso</span> mis
                 apuntes.
               </p>
-              <p className="mt-2 text-sm font-bold text-certo">Isso! Agora ficou.</p>
+              <p className="mt-2 text-sm font-bold text-certo">Isso! Agora está certo.</p>
             </div>
           </figure>
         </section>
