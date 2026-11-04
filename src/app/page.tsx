@@ -24,22 +24,46 @@ const acepcoes = [
 
 const recursos = [
   {
-    icone: "📚",
+    icone: (
+      <>
+        <path d="M2 4.5h6a4 4 0 0 1 4 4V20a3 3 0 0 0-3-3H2z" />
+        <path d="M22 4.5h-6a4 4 0 0 0-4 4V20a3 3 0 0 1 3-3h7z" />
+      </>
+    ),
     titulo: "Suas matérias, organizadas",
     texto: "Português, espanhol, história, o que for. Cada matéria guarda os seus resumos, mapas e atividades num lugar só.",
   },
   {
-    icone: "✍️",
+    icone: (
+      <>
+        <path d="M12 20h9" />
+        <path d="M16.4 3.6a2.1 2.1 0 0 1 3 3L7.5 18.5 3.5 19.5l1-4z" />
+      </>
+    ),
     titulo: "Resumos do seu jeito",
     texto: "Escreva com títulos, negrito, marca-texto, listas e notas. O sumário fica do lado, e dá para exportar em PDF.",
   },
   {
-    icone: "🧠",
+    icone: (
+      <>
+        <circle cx="12" cy="12" r="3" />
+        <circle cx="4.5" cy="5" r="2" />
+        <circle cx="19.5" cy="5" r="2" />
+        <circle cx="4.5" cy="19" r="2" />
+        <circle cx="19.5" cy="19" r="2" />
+        <path d="M6 6.4 9.8 10M18 6.4 14.2 10M6 17.6l3.8-3.6M18 17.6l-3.8-3.6" />
+      </>
+    ),
     titulo: "Mapas mentais",
     texto: "Gere um mapa mental a partir do seu resumo, com um clique, e veja o assunto de cima. Ótimo para a véspera da prova.",
   },
   {
-    icone: "✅",
+    icone: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="m8 12.5 2.8 2.8L16.5 9.5" />
+      </>
+    ),
     titulo: "Exercícios que explicam o erro",
     texto: "Cada resposta é corrigida na hora. Errou? A explicação aparece logo abaixo, e você tenta de novo.",
   },
@@ -142,8 +166,19 @@ export default async function Inicio() {
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               {recursos.map((r) => (
                 <div key={r.titulo} className="rounded-3xl border border-linha bg-fundo p-6">
-                  <span className="flex size-11 items-center justify-center rounded-[12px] bg-primaria-suave text-xl">
-                    {r.icone}
+                  <span className="flex size-11 items-center justify-center rounded-[12px] bg-primaria-suave text-primaria">
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="size-6"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      {r.icone}
+                    </svg>
                   </span>
                   <h3 className="mt-4 text-lg font-extrabold">{r.titulo}</h3>
                   <p className="mt-2 text-tinta-suave">{r.texto}</p>
