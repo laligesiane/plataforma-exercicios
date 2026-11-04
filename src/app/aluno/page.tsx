@@ -7,7 +7,7 @@ import type { Horario } from "@/lib/agenda";
 import { categorias, type Categoria } from "@/lib/atividades/modelo";
 import { camposResumo, tituloResumo, type Resumo } from "@/lib/resumos";
 import { camposAula, hojeNoFuso, ultimaAula, type Aula } from "@/lib/aulas";
-import { nomeIdioma } from "@/lib/idiomas";
+import { descreverTurma } from "@/lib/turmas";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
@@ -19,7 +19,7 @@ export default async function AreaAluno() {
 
   const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }, { data: aulasDb }, { data: resumosDb }] =
     await Promise.all([
-    supabase.from("turma").select("id, nome, idioma_ensinado, idioma_instrucao").order("nome"),
+    supabase.from("turma").select("id, nome, materia, idioma_ensinado, idioma_instrucao").order("nome"),
     supabase.from("atividade_turma").select("turma_id, atividade(id, titulo, nivel, categoria, atualizada_em)"),
     supabase.from("resposta").select("atividade_id, item_id").eq("aluno_id", perfil.id),
     supabase.from("turma_horario").select("id, turma_id, dia_semana, hora_inicio, duracao_min, fuso"),
@@ -69,7 +69,7 @@ export default async function AreaAluno() {
             <section key={turma.id} className="mt-8">
               <h2 className="text-lg font-bold">{turma.nome}</h2>
               <p className="text-sm text-tinta-suave">
-                {nomeIdioma(turma.idioma_ensinado)} explicado em {nomeIdioma(turma.idioma_instrucao).toLowerCase()}
+                {descreverTurma(turma)}
               </p>
               <div className="mt-3">
                 <HorariosTurma horarios={horariosPorTurma.get(turma.id) ?? []} nomeTurma={turma.nome} />

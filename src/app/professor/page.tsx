@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AssinarAgenda } from "@/components/AssinarAgenda";
 import { Cabecalho } from "@/components/Cabecalho";
-import { nomeIdioma } from "@/lib/idiomas";
+import { descreverTurma } from "@/lib/turmas";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { FormularioTurma } from "./FormularioTurma";
@@ -14,7 +14,7 @@ export default async function PainelProfessor() {
     supabase.from("plano").select("nome, max_turmas, max_alunos_por_turma, max_atividades_por_turma").eq("id", perfil.plano_id).single(),
     supabase
       .from("turma")
-      .select("id, nome, idioma_ensinado, idioma_instrucao, turma_aluno(count)")
+      .select("id, nome, materia, idioma_ensinado, idioma_instrucao, turma_aluno(count)")
       .order("criada_em"),
   ]);
 
@@ -63,7 +63,7 @@ export default async function PainelProfessor() {
                   >
                     <span className="block font-bold">{turma.nome}</span>
                     <span className="mt-1 block text-sm text-tinta-suave">
-                      {nomeIdioma(turma.idioma_ensinado)} explicado em {nomeIdioma(turma.idioma_instrucao).toLowerCase()}
+                      {descreverTurma(turma)}
                     </span>
                     <span className="mt-3 inline-block rounded-full bg-primaria-suave px-3 py-1 text-xs font-bold text-primaria tabular-nums">
                       {turma.turma_aluno[0]?.count ?? 0} alunos
