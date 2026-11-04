@@ -13,7 +13,7 @@ export default async function PaginaDefinirSenha() {
       <main className="mx-auto w-full max-w-sm px-4 pt-12 pb-16">
         <h1 className="text-3xl font-extrabold tracking-tight">Crie sua senha</h1>
         <p className="mt-2 mb-6 text-tinta-suave">
-          {perfil.nome ? `Olá, ${perfil.nome}! ` : ""}Escolha uma senha para entrar nas próximas vezes.
+          {perfil.nome ? `Olá, ${perfil.nome}! ` : ""}Escolha a senha que você vai usar para entrar.
         </p>
         <FormularioSenha />
       </main>
