@@ -11,6 +11,12 @@ import { apagarMateria, apagarResumoAluno } from "../actions";
 
 const formatoData = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short" });
 
+/** Data curta ("5 de nov."); vazia se a data vier faltando ou estranha, em vez de quebrar a página. */
+function dataCurta(valor: string | null | undefined) {
+  const d = valor ? new Date(valor) : null;
+  return d && !Number.isNaN(d.getTime()) ? formatoData.format(d) : "";
+}
+
 export default async function PaginaMateria({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   await exigirPapel("aluno");
@@ -20,8 +26,8 @@ export default async function PaginaMateria({ params }: { params: Promise<{ id: 
     supabase.from("resumo").select(camposResumo).eq("materia_id", id).order("atualizado_em", { ascending: false }),
   ]);
   if (!materia) notFound();
-  const resumos = (resumosDb ?? []) as Resumo[];
-  const cor = cores[(materia.cor as Cor) in cores ? (materia.cor as Cor) : "menta"];
+  const resumos = ((resumosDb ?? []) as Resumo[]).filter((r) => r && r.id);
+  const cor = cores[typeof materia.cor === "string" && materia.cor in cores ? (materia.cor as Cor) : "menta"];
 
   return (
     <>
@@ -47,8 +53,8 @@ export default async function PaginaMateria({ params }: { params: Promise<{ id: 
                 <Link href={`/aluno/resumos/${r.id}`} className="block grow p-5 pb-3">
                   <span className="block font-bold">{tituloResumo(r)}</span>
                   <span className="mt-1 block text-sm text-tinta-suave">
-                    {r.mapa?.ramos?.length ? `Com mapa mental` : "Resumo"} ·{" "}
-                    {formatoData.format(new Date(r.atualizado_em))}
+                    {Array.isArray(r.mapa?.ramos) && r.mapa.ramos.length ? "Com mapa mental" : "Resumo"}
+                    {dataCurta(r.atualizado_em) && ` · ${dataCurta(r.atualizado_em)}`}
                   </span>
                 </Link>
                 <div className="flex items-baseline gap-4 px-5 pb-4">

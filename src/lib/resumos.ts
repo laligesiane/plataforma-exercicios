@@ -31,7 +31,8 @@ export function lerCorResumo(valor: unknown): CorResumo {
 }
 
 export function tituloResumo(r: Pick<Resumo, "titulo" | "mapa">) {
-  return r.titulo.trim() || r.mapa?.centro?.trim() || "Resumo sem título";
+  const centro = typeof r.mapa?.centro === "string" ? r.mapa.centro.trim() : "";
+  return (typeof r.titulo === "string" ? r.titulo.trim() : "") || centro || "Resumo sem título";
 }
 
 /** Lê o conteúdo enviado pelo editor. Devolve o documento e o texto corrido dele. */
