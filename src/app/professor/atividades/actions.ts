@@ -17,6 +17,7 @@ import { dataValida } from "@/lib/aulas";
 import { ehIdioma } from "@/lib/idiomas";
 import { mensagemDeLimite } from "@/lib/limites";
 import { exigirPapel } from "@/lib/perfil";
+import { ordemNoFim } from "@/lib/trilha";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
 /** Cria um rascunho e abre o editor. Usa os idiomas da primeira turma, se houver. */
@@ -146,7 +147,7 @@ export async function salvarAtividade(dados: DadosAtividade): Promise<ResultadoS
   if (novas.length > 0) {
     const { error: erroTurmas } = await supabase
       .from("atividade_turma")
-      .insert(novas.map((turma_id) => ({ atividade_id: atividade.id, turma_id })));
+      .insert(novas.map((turma_id) => ({ atividade_id: atividade.id, turma_id, ordem: ordemNoFim() })));
     if (erroTurmas)
       return { ok: false, erro: mensagemDeLimite(erroTurmas.message) ?? "Não foi possível ligar a atividade às turmas." };
   }

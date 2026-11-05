@@ -14,6 +14,8 @@ import { camposAula, formatarData, hojeNoFuso, tituloAula, ultimaAula, type Aula
 import { removerHorario } from "../../actions";
 import { apagarAula } from "./actions-aulas";
 import { FormularioAula } from "./FormularioAula";
+import { botaoIcone, caixaMarcar } from "@/components/ui/estilos";
+import { alternarTrilha, moverNaTrilha } from "./actions-trilha";
 import { CodigoTurma } from "./CodigoTurma";
 import { FormularioConvite } from "./FormularioConvite";
 import { FormularioHorario } from "./FormularioHorario";
@@ -30,11 +32,11 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
     await Promise.all([
     supabase
       .from("turma")
-      .select("id, nome, codigo, materia, idioma_ensinado, idioma_instrucao, turma_aluno(perfil(id, nome, email))")
+      .select("id, nome, codigo, trilha, materia, idioma_ensinado, idioma_instrucao, turma_aluno(perfil(id, nome, email))")
       .eq("id", id)
       .maybeSingle(),
     supabase.from("plano").select("max_alunos_por_turma").eq("id", perfil.plano_id).single(),
-    supabase.from("atividade_turma").select("atividade(id, titulo, nivel, categoria, materia, publicada)").eq("turma_id", id),
+    supabase.from("atividade_turma").select("ordem, atividade(id, titulo, nivel, categoria, materia, publicada)").eq("turma_id", id).order("ordem"),
     supabase.from("turma_horario").select("id, dia_semana, hora_inicio, duracao_min, fuso").eq("turma_id", id),
     supabase.from("aula").select(camposAula).eq("turma_id", id).order("data", { ascending: false }),
     supabase.from("resumo").select(camposResumo).eq("turma_id", id).order("atualizado_em", { ascending: false }),
@@ -243,19 +245,53 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
               Todas as atividades
             </Link>
           </div>
+          {atividades.length > 1 && (
+            <form action={alternarTrilha} className="mt-3">
+              <input type="hidden" name="turma_id" value={turma.id} />
+              <label className="flex items-start gap-2.5 rounded-xl bg-suave px-3.5 py-3 text-sm">
+                <input type="checkbox" name="trilha" defaultChecked={turma.trilha} className={`${caixaMarcar} mt-0.5`} />
+                <span>
+                  <strong className="font-bold">Trilha em ordem.</strong>{" "}
+                  <span className="text-tinta-suave">A próxima atividade só abre para o aluno depois que ele envia a anterior.</span>
+                </span>
+              </label>
+              <button type="submit" className="mt-2 text-sm font-bold text-primaria hover:underline">
+                Salvar
+              </button>
+            </form>
+          )}
           {atividades.length > 0 ? (
-            <ul className="mt-3 divide-y divide-linha">
-              {atividades.map((a) => (
-                <li key={a.id} className="flex flex-wrap items-baseline justify-between gap-x-4 py-3">
-                  <Link href={`/professor/atividades/${a.id}`} className="font-semibold hover:text-primaria">
-                    {a.titulo}
-                  </Link>
-                  <span className="text-sm text-tinta-suave">
+            <ol className="mt-3 divide-y divide-linha">
+              {atividades.map((a, i) => (
+                <li key={a.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-3">
+                  <span className="flex min-w-0 items-baseline gap-2">
+                    <span className="text-sm font-bold text-tinta-suave tabular-nums">{i + 1}.</span>
+                    <Link href={`/professor/atividades/${a.id}`} className="font-semibold hover:text-primaria">
+                      {a.titulo}
+                    </Link>
+                  </span>
+                  <span className="flex items-center gap-2 text-sm text-tinta-suave">
                     {etiquetasDaAtividade(a)[0]} · {a.publicada ? "Publicada" : "Rascunho"}
+                    {atividades.length > 1 &&
+                      (["subir", "descer"] as const).map((direcao) => (
+                        <form key={direcao} action={moverNaTrilha}>
+                          <input type="hidden" name="turma_id" value={turma.id} />
+                          <input type="hidden" name="atividade_id" value={a.id} />
+                          <input type="hidden" name="direcao" value={direcao} />
+                          <button
+                            type="submit"
+                            disabled={direcao === "subir" ? i === 0 : i === atividades.length - 1}
+                            aria-label={`${direcao === "subir" ? "Subir" : "Descer"} ${a.titulo}`}
+                            className={botaoIcone}
+                          >
+                            {direcao === "subir" ? "↑" : "↓"}
+                          </button>
+                        </form>
+                      ))}
                   </span>
                 </li>
               ))}
-            </ul>
+            </ol>
           ) : (
             <p className="mt-2 text-sm text-tinta-suave">
               Nenhuma atividade ainda. Crie uma em Atividades e marque esta turma.
