@@ -46,8 +46,14 @@ export default async function PaginaMateria({
     <>
       <Cabecalho />
       <main className="mx-auto w-full max-w-7xl px-4 pt-8 pb-16 sm:px-6 lg:px-8">
-        <Link href="/aluno/materias" className="text-sm font-bold text-primaria hover:underline">
-          ← Minhas matérias
+        <Link
+          href={`/aluno/cursos/${(materia.curso_id as string | null) ?? "sem-curso"}`}
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-primaria hover:underline"
+        >
+          <svg viewBox="0 0 24 24" className="size-4 shrink-0" aria-hidden fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 5l-7 7 7 7" />
+          </svg>
+          {cursos.find((c) => c.id === materia.curso_id)?.nome ?? "Sem curso"}
         </Link>
         <h1 className="mt-3 flex items-center gap-3 text-3xl font-extrabold tracking-tight">
           <span aria-hidden className="size-4 rounded-full" style={{ background: cor.traco }} />

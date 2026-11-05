@@ -7,7 +7,7 @@ import { abaAtiva } from "@/components/navegacao";
 const abas = [
   { href: "/aluno", rotulo: "Visão geral" },
   { href: "/aluno/atividades", rotulo: "Atividades" },
-  { href: "/aluno/materias", rotulo: "Matérias" },
+  { href: "/aluno/cursos", rotulo: "Cursos" },
   { href: "/aluno/praticas", rotulo: "Práticas" },
   { href: "/aluno/agenda", rotulo: "Agenda" },
   { href: "/aluno/foco", rotulo: "Modo foco" },

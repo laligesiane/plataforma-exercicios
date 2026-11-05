@@ -42,7 +42,7 @@ export function GerarAtividade({ resumos, materias, cursos }: Props) {
       {resumos.length === 0 ? (
         <p className="mt-4 text-sm text-tinta-suave">
           Você ainda não tem resumos.{" "}
-          <Link href="/aluno/materias" className="font-bold text-primaria hover:underline">
+          <Link href="/aluno/cursos" className="font-bold text-primaria hover:underline">
             Escrever o primeiro
           </Link>
         </p>
