@@ -135,3 +135,33 @@ Em **Authentication → Multi-Factor**, confira que **TOTP (App Authenticator)**
 nos projetos novos). Cada pessoa liga a sua em **Perfil → Verificação em duas etapas**.
 Se alguém perder o celular: **Authentication → Users**, abra a pessoa e apague o fator em **MFA factors**
 (ou, no SQL Editor, `delete from auth.mfa_factors where user_id = '<id da pessoa>';`).
+
+## 8. Voz natural no "Ouvir o resumo" (Azure, plano grátis)
+
+Sem esta configuração, o resumo é lido com a voz do celular ou do computador. Com ela, aparecem as vozes
+naturais Francisca, Antonio, Thalita e Donato, iguais em qualquer aparelho.
+
+O plano grátis (F0) da Azure dá **500 mil letras por mês**, mais ou menos 100 resumos grandes lidos do começo ao fim.
+Cada frase é guardada no cache, então ouvir o mesmo resumo de novo não gasta a cota. **O plano F0 não cobra nada**:
+quando a cota do mês acaba, a Azure só recusa os pedidos e a Repasa volta sozinha para a voz do aparelho até o mês virar.
+
+1. Crie a conta grátis em <https://azure.microsoft.com/free>. A Microsoft pede celular e cartão só para confirmar
+   quem você é; o recurso F0 abaixo não gera cobrança.
+2. No portal (<https://portal.azure.com>), procure **Speech** na barra de busca e abra **Speech services**
+   (às vezes aparece como "Serviços de Fala"). Clique em **Create**.
+3. Preencha:
+   - **Subscription**: a assinatura que a conta criou.
+   - **Resource group**: **Create new** → `repasa`.
+   - **Region**: **Brazil South**.
+   - **Name**: `repasa-voz` (ou outro nome livre).
+   - **Pricing tier**: **Free F0**. Confira isto: é o que garante que nada é cobrado.
+4. **Review + create** → **Create**. Quando terminar, clique em **Go to resource**.
+5. No menu do recurso, abra **Keys and Endpoint**. Copie a **KEY 1** e veja a **Location/Region** (`brazilsouth`).
+6. Na **Vercel → plataforma-exercicios → Settings → Environment Variables**, adicione para todos os ambientes:
+   - `AZURE_SPEECH_KEY` = a KEY 1
+   - `AZURE_SPEECH_REGION` = `brazilsouth`
+7. Faça um novo deploy (Deployments → ⋯ → Redeploy). Abra um resumo e toque em **Voz**: as vozes marcadas
+   "natural" devem aparecer primeiro.
+
+A chave fica só no servidor. Se ela vazar, gere outra em **Keys and Endpoint → Regenerate Key 1** e troque na Vercel.
+Para ver quanto da cota já foi usado: no recurso, **Monitoring → Metrics** → métrica **Synthesized Characters**.

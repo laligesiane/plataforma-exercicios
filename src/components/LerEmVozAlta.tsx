@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { opcoesDeVoz, partesDaFala, VELOCIDADES, type OpcaoVoz } from "@/lib/fala";
+import { AMOSTRA, urlDaVoz, VOZES_NATURAIS } from "@/lib/fala/natural";
 
 const CHAVE_PREFERENCIA = "repasa:leitura-voz";
-const AMOSTRA = "Oi! Eu vou ler o seu resumo com esta voz.";
+const temVozDoAparelho = () => typeof window !== "undefined" && "speechSynthesis" in window;
 
 type Preferencia = { voz?: string; velocidade: number };
 
@@ -30,6 +31,7 @@ function salvarPreferencia(p: Preferencia) {
 function useVozes() {
   const [vozes, setVozes] = useState<SpeechSynthesisVoice[]>([]);
   useEffect(() => {
+    if (!temVozDoAparelho()) return;
     const carregar = () => setVozes(speechSynthesis.getVoices());
     carregar();
     speechSynthesis.addEventListener("voiceschanged", carregar);
@@ -41,7 +43,8 @@ function useVozes() {
 type Estado = "parado" | "lendo" | "pausado";
 
 /**
- * Lê o resumo em voz alta com a voz do navegador. Nada é gravado nem enviado.
+ * Lê o resumo em voz alta. Com `assinaturas` (chave da Azure configurada), oferece primeiro as vozes
+ * naturais, que vêm como áudio de /api/voz; sem elas, ou se a cota do mês acabar, usa a voz do navegador.
  * O aluno escolhe a voz (sempre há pelo menos duas) e a velocidade; a escolha fica guardada no aparelho.
  * Enquanto lê, o trecho atual fica marcado no texto e uma barra de controles fica presa no rodapé,
  * para dar para rolar o resumo no celular sem perder o botão de pausar.
@@ -52,21 +55,43 @@ export function LerEmVozAlta({
   trechos,
   alvo,
   idioma = "pt-BR",
+  assinaturas,
 }: {
   titulo: string;
   trechos: string[];
   alvo: string;
   idioma?: string;
+  /** Assinatura de cada parte da fala, para pedir o áudio com voz natural. */
+  assinaturas?: Record<string, string>;
 }) {
   const [disponivel, setDisponivel] = useState(false);
-  useEffect(() => setDisponivel("speechSynthesis" in window), []);
+  useEffect(() => setDisponivel(temVozDoAparelho() || Boolean(assinaturas)), [assinaturas]);
   if (!disponivel || !trechos.length) return null;
-  return <Leitor titulo={titulo} trechos={trechos} alvo={alvo} idioma={idioma} />;
+  return <Leitor titulo={titulo} trechos={trechos} alvo={alvo} idioma={idioma} assinaturas={assinaturas} />;
 }
 
-function Leitor({ titulo, trechos, alvo, idioma }: { titulo: string; trechos: string[]; alvo: string; idioma: string }) {
+const opcoesNaturais: OpcaoVoz[] = VOZES_NATURAIS.map((v) => ({ id: v.id, rotulo: v.rotulo, detalhe: v.detalhe, tom: 1, natural: v.id }));
+
+function Leitor({
+  titulo,
+  trechos,
+  alvo,
+  idioma,
+  assinaturas,
+}: {
+  titulo: string;
+  trechos: string[];
+  alvo: string;
+  idioma: string;
+  assinaturas?: Record<string, string>;
+}) {
   const vozes = useVozes();
-  const opcoes = useMemo(() => opcoesDeVoz(vozes, idioma), [vozes, idioma]);
+  // Se a voz natural falhar (cota do mês acabou, sem internet), some da lista e a leitura segue com a do aparelho.
+  const [naturalFalhou, setNaturalFalhou] = useState(false);
+  const opcoes = useMemo(() => {
+    const doAparelho = temVozDoAparelho() ? opcoesDeVoz(vozes, idioma) : [];
+    return assinaturas && !naturalFalhou ? [...opcoesNaturais, ...doAparelho] : doAparelho;
+  }, [vozes, idioma, assinaturas, naturalFalhou]);
   const [pref, setPref] = useState<Preferencia>({ velocidade: 1 });
   useEffect(() => setPref(lerPreferencia()), []);
   const opcao = opcoes.find((o) => o.id === pref.voz) ?? opcoes[0];
@@ -81,7 +106,6 @@ function Leitor({ titulo, trechos, alvo, idioma }: { titulo: string; trechos: st
   const geracao = useRef(0);
   const config = useRef({ opcao, velocidade: pref.velocidade });
   config.current = { opcao, velocidade: pref.velocidade };
-
   const montarFala = useCallback(
     (texto: string, o: OpcaoVoz | undefined, velocidade: number) => {
       const fala = new SpeechSynthesisUtterance(texto);
@@ -98,10 +122,46 @@ function Leitor({ titulo, trechos, alvo, idioma }: { titulo: string; trechos: st
     [idioma],
   );
 
+  // Um só elemento de áudio para a leitura toda: o iPhone só deixa tocar o que começou num toque.
+  const audio = useRef<HTMLAudioElement | null>(null);
+
+  const silenciar = useCallback(() => {
+    if (temVozDoAparelho()) speechSynthesis.cancel();
+    audio.current?.pause();
+  }, []);
+
+  /** Toca um texto com a opção escolhida e chama `depois` ao terminar. Devolve false se não conseguiu. */
+  const tocar = useCallback(
+    (texto: string, o: OpcaoVoz | undefined, velocidade: number, minha: number, depois: () => void, falhou: () => void) => {
+      const assinatura = o?.natural ? assinaturas?.[texto] : undefined;
+      if (o?.natural && assinatura) {
+        audio.current ??= new Audio();
+        const el = audio.current;
+        el.src = urlDaVoz(texto, o.natural, assinatura);
+        el.playbackRate = velocidade;
+        el.onended = () => minha === geracao.current && depois();
+        el.onerror = () => minha === geracao.current && falhou();
+        el.play().catch((e: DOMException) => {
+          if (minha === geracao.current && e.name !== "AbortError") falhou();
+        });
+        return;
+      }
+      if (!temVozDoAparelho()) return falhou();
+      const fala = montarFala(texto, o?.natural ? undefined : o, velocidade);
+      fala.onend = () => minha === geracao.current && depois();
+      fala.onerror = (e) => {
+        if (minha !== geracao.current || e.error === "interrupted" || e.error === "canceled") return;
+        setEstado("parado");
+      };
+      speechSynthesis.speak(fala);
+    },
+    [assinaturas, montarFala],
+  );
+
   const falarDe = useCallback(
     (i: number, parte = 0) => {
       const minha = ++geracao.current;
-      speechSynthesis.cancel();
+      silenciar();
       // Pula trechos vazios e termina depois do último.
       while (i < trechos.length && !partes[i + 1]?.[parte]) {
         i++;
@@ -116,42 +176,56 @@ function Leitor({ titulo, trechos, alvo, idioma }: { titulo: string; trechos: st
       posicao.current = { indice: i, parte };
       setIndice(i);
       setEstado("lendo");
-      const fala = montarFala(partes[i + 1][parte], config.current.opcao, config.current.velocidade);
-      fala.onend = () => {
-        if (minha !== geracao.current) return;
-        const fim = parte + 1 >= partes[i + 1].length;
-        falarDe(fim ? i + 1 : i, fim ? 0 : parte + 1);
-      };
-      fala.onerror = (e) => {
-        if (minha !== geracao.current || e.error === "interrupted" || e.error === "canceled") return;
-        setEstado("parado");
-      };
-      speechSynthesis.speak(fala);
+      const fim = parte + 1 >= partes[i + 1].length;
+      const proxima: [number, number] = fim ? [i + 1, 0] : [i, parte + 1];
+      const o = config.current.opcao;
+      tocar(
+        partes[i + 1][parte],
+        o,
+        config.current.velocidade,
+        minha,
+        () => falarDe(...proxima),
+        () => {
+          // Voz natural indisponível: continua do mesmo ponto com a melhor voz do aparelho.
+          setNaturalFalhou(true);
+          const reserva = temVozDoAparelho() ? opcoesDeVoz(speechSynthesis.getVoices(), idioma)[0] : undefined;
+          if (!o?.natural || !reserva) return setEstado("parado");
+          config.current = { ...config.current, opcao: reserva };
+          falarDe(i, parte);
+        },
+      );
+      // Já pede o áudio da próxima parte, para não ter pausa entre as frases.
+      const seguinte = partes[proxima[0] + 1]?.[proxima[1]];
+      const assinatura = seguinte && o?.natural ? assinaturas?.[seguinte] : undefined;
+      if (seguinte && o?.natural && assinatura) void fetch(urlDaVoz(seguinte, o.natural, assinatura)).catch(() => {});
     },
-    [montarFala, partes, trechos.length],
+    [silenciar, tocar, partes, trechos.length, idioma, assinaturas],
   );
 
   const parar = useCallback(() => {
     geracao.current++;
-    speechSynthesis.cancel();
+    silenciar();
     posicao.current = { indice: -1, parte: 0 };
     setIndice(-1);
     setEstado("parado");
     setPainel(false);
-  }, []);
+  }, [silenciar]);
 
   // Pausar = parar guardando o lugar. O pause() do navegador não funciona bem no Android.
   const pausar = () => {
     geracao.current++;
-    speechSynthesis.cancel();
+    silenciar();
     setEstado("pausado");
   };
   const continuar = () => falarDe(posicao.current.indice, posicao.current.parte);
 
-  useEffect(() => () => {
-    geracao.current++;
-    speechSynthesis.cancel();
-  }, []);
+  useEffect(
+    () => () => {
+      geracao.current++;
+      silenciar();
+    },
+    [silenciar],
+  );
 
   // Marca o trecho lido e o traz para a tela, se tiver saído dela.
   useEffect(() => {
@@ -207,9 +281,9 @@ function Leitor({ titulo, trechos, alvo, idioma }: { titulo: string; trechos: st
       // Recomeça a frase atual com a voz nova: o aluno ouve na hora como ficou.
       falarDe(posicao.current.indice, posicao.current.parte);
     } else if (estado === "parado" && nova.voz) {
-      geracao.current++;
-      speechSynthesis.cancel();
-      speechSynthesis.speak(montarFala(AMOSTRA, config.current.opcao, p.velocidade));
+      const minha = ++geracao.current;
+      silenciar();
+      tocar(AMOSTRA, config.current.opcao, p.velocidade, minha, () => {}, () => setNaturalFalhou(true));
     }
   }
 
@@ -245,7 +319,7 @@ function Leitor({ titulo, trechos, alvo, idioma }: { titulo: string; trechos: st
 
       {!ativo && painel && (
         <div className="mt-3 max-w-xl rounded-2xl border border-linha bg-fundo p-4">
-          <EscolhaDeVoz opcoes={opcoes} atual={opcao?.id} velocidade={pref.velocidade} escolher={escolher} amostra />
+          <EscolhaDeVoz opcoes={opcoes} atual={opcao?.id} velocidade={pref.velocidade} escolher={escolher} amostra naturalFalhou={naturalFalhou} />
         </div>
       )}
 
@@ -258,7 +332,13 @@ function Leitor({ titulo, trechos, alvo, idioma }: { titulo: string; trechos: st
           >
             {painel && (
               <div className="max-h-[50vh] overflow-y-auto border-b border-linha p-4">
-                <EscolhaDeVoz opcoes={opcoes} atual={opcao?.id} velocidade={pref.velocidade} escolher={escolher} />
+                <EscolhaDeVoz
+                  opcoes={opcoes}
+                  atual={opcao?.id}
+                  velocidade={pref.velocidade}
+                  escolher={escolher}
+                  naturalFalhou={naturalFalhou}
+                />
               </div>
             )}
             <div className="flex items-center gap-1 px-2 py-2 sm:px-3">
@@ -322,12 +402,14 @@ function EscolhaDeVoz({
   velocidade,
   escolher,
   amostra = false,
+  naturalFalhou = false,
 }: {
   opcoes: OpcaoVoz[];
   atual?: string;
   velocidade: number;
   escolher: (p: Partial<Preferencia>) => void;
   amostra?: boolean;
+  naturalFalhou?: boolean;
 }) {
   const chip = (ativo: boolean) =>
     `rounded-full border px-3 py-1.5 text-sm font-bold transition-colors ${
@@ -370,7 +452,12 @@ function EscolhaDeVoz({
         </div>
       </fieldset>
       <p className="text-xs text-tinta-suave">
-        As vozes são as do seu aparelho, então mudam de um celular ou navegador para outro. A escolha fica guardada aqui.
+        {naturalFalhou
+          ? "As vozes naturais não estão disponíveis agora (o limite grátis do mês pode ter acabado). Por enquanto a leitura usa as vozes do seu aparelho. "
+          : opcoes.some((o) => o.natural)
+            ? "As vozes marcadas como naturais soam iguais em qualquer aparelho; as outras são as do seu celular ou computador. "
+            : "As vozes são as do seu aparelho, então mudam de um celular ou navegador para outro. "}
+        A escolha fica guardada aqui.
       </p>
     </div>
   );
