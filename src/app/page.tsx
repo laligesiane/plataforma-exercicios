@@ -1,8 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Cabecalho } from "@/components/Cabecalho";
 import { Mascote } from "@/components/Mascote";
 import { botaoPrimario } from "@/components/ui/estilos";
 import { obterPerfil, paginaInicial } from "@/lib/perfil";
+import { dadosEstruturadosInicio } from "@/lib/seo/site";
 
 const botaoContorno =
   "rounded-full border-2 border-linha px-6 py-2 font-bold text-tinta transition-colors hover:border-tinta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria";
@@ -75,11 +77,17 @@ const promessas = [
   { titulo: "Seus estudos são seus", texto: "Seus resumos e mapas ficam guardados com você, organizados por matéria, para voltar sempre que precisar." },
 ];
 
+export const metadata: Metadata = { alternates: { canonical: "/" } };
+
 export default async function Inicio() {
   const perfil = await obterPerfil();
 
   return (
     <div className="flex min-h-screen flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(dadosEstruturadosInicio()).replace(/</g, "\\u003c") }}
+      />
       <Cabecalho />
 
       <main className="flex-1">
@@ -331,7 +339,10 @@ export default async function Inicio() {
       </main>
 
       <footer className="border-t border-linha py-6 text-center text-xs text-tinta-suave">
-        Repasa · repasa.com.br · Sem anúncios, nunca.
+        Repasa · repasa.com.br · Sem anúncios, nunca. ·{" "}
+        <Link href="/privacidade" className="hover:underline">
+          Privacidade e cookies
+        </Link>
         <br />
         A Repasa está em versão beta: ela é nova e continua melhorando a cada semana.
       </footer>

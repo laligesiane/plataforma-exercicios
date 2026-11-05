@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BotaoGoogle, Divisor } from "@/components/auth/BotaoGoogle";
@@ -7,6 +8,12 @@ import { caminhoInterno } from "@/lib/auth/destino";
 import { obterPerfil } from "@/lib/perfil";
 import { loginGoogleLigado, supabaseConfigurado } from "@/lib/supabase/config";
 import { FormularioEntrar } from "./FormularioEntrar";
+
+export const metadata: Metadata = {
+  title: "Entrar · Repasa",
+  description: "Entre na sua conta da Repasa.",
+  alternates: { canonical: "/entrar" },
+};
 
 export default async function PaginaEntrar({ searchParams }: { searchParams: Promise<{ erro?: string; proximo?: string }> }) {
   const { erro, proximo: proximoBruto } = await searchParams;

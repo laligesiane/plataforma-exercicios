@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BotaoGoogle, Divisor } from "@/components/auth/BotaoGoogle";
@@ -5,6 +6,12 @@ import { Cabecalho } from "@/components/Cabecalho";
 import { obterPerfil, paginaInicial } from "@/lib/perfil";
 import { loginGoogleLigado, supabaseConfigurado } from "@/lib/supabase/config";
 import { FormularioCadastro } from "./FormularioCadastro";
+
+export const metadata: Metadata = {
+  title: "Criar conta grátis · Repasa",
+  description: "Crie sua conta grátis na Repasa, como aluno ou professor. Resumos, mapas mentais e exercícios que explicam cada erro, sem anúncios.",
+  alternates: { canonical: "/cadastro" },
+};
 
 export default async function PaginaCadastro({ searchParams }: { searchParams: Promise<{ papel?: string }> }) {
   const papel = (await searchParams).papel === "aluno" ? "aluno" : "professor";

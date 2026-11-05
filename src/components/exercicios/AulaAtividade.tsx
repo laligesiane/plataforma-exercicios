@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { resumirAtividade, type ResumoAtividade } from "@/lib/atividades/resumo";
 import { botaoPrimario } from "@/components/ui/estilos";
+import { registrarEvento } from "@/lib/analytics/cliente";
 import { PainelResumo } from "./PainelResumo";
 import { corrigir, type Resultado } from "@/lib/correcao";
 import { ehAutomatico, type Exercicio } from "@/lib/atividades/modelo";
@@ -91,6 +92,7 @@ export function AulaAtividade({
     }
     setResumo(novo);
     onEnviar?.(novo);
+    registrarEvento("atividade_enviada", { total: novo.total, certos: novo.certos, de_primeira: novo.dePrimeira });
     requestAnimationFrame(() => painel.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   }
 

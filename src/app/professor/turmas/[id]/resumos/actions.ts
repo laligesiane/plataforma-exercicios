@@ -6,6 +6,7 @@ import type { EstadoFormulario } from "@/components/ui/Mensagem";
 import { validarMapa } from "@/lib/mapas";
 import { lerConteudo, lerCorResumo } from "@/lib/resumos";
 import { exigirPapel } from "@/lib/perfil";
+import { marcarEvento } from "@/lib/analytics/servidor";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
 /** Cria (sem id) ou atualiza (com id) um resumo e volta para a turma. */
@@ -38,6 +39,7 @@ export async function salvarResumo(_estado: EstadoFormulario, formData: FormData
         .eq("id", id)
     : await supabase.from("resumo").insert({ turma_id: turmaId, ...valores });
   if (error) return { erro: "Não foi possível salvar o resumo." };
+  if (!id) await marcarEvento("resumo_criado", { papel: "professor" });
 
   revalidatePath(`/professor/turmas/${turmaId}`);
   revalidatePath("/aluno");

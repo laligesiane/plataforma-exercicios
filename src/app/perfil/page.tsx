@@ -3,6 +3,7 @@ import { EscolherTema } from "@/components/Tema";
 import type { Metadata } from "next";
 import { sair } from "@/app/entrar/actions";
 import { Cabecalho } from "@/components/Cabecalho";
+import { EscolhaCookies } from "@/components/EscolhaCookies";
 import { botaoSecundario } from "@/components/ui/estilos";
 import { LIMITES_LIGADOS } from "@/lib/limites";
 import { exigirLogin } from "@/lib/perfil";
@@ -82,6 +83,12 @@ export default async function PaginaPerfil() {
         <Secao titulo="Leitura">
           <PainelLeitura />
         </Secao>
+
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <Secao titulo="Cookies e privacidade">
+            <EscolhaCookies />
+          </Secao>
+        )}
 
         {LIMITES_LIGADOS && (
         <Secao titulo="Plano">

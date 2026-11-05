@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { Mascote } from "@/components/Mascote";
 import { botaoPrimario, botaoSecundario } from "@/components/ui/estilos";
 
@@ -30,10 +30,18 @@ export type AcoesFim = {
   outrosCartoes?: () => void;
   /** Link da tela com todos os jogos. */
   hrefJogos: string;
+  /** Chamado uma vez quando a tela de fim aparece (estatística). */
+  aoTerminar?: () => void;
 };
 
 /** Tela de fim de rodada, igual em todos os jogos. */
 export function FimDeJogo({ titulo, texto, acoes }: { titulo: string; texto: ReactNode; acoes: AcoesFim }) {
+  const { aoTerminar } = acoes;
+  // Cada rodada monta uma tela de fim nova (o jogo recomeça pela chave), então isto roda uma vez por rodada.
+  useEffect(() => {
+    aoTerminar?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <div className="flex flex-col items-center rounded-2xl bg-primaria-suave p-8 text-center" role="status">
       <Mascote tamanho={96} animado />

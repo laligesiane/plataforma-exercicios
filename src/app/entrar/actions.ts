@@ -3,6 +3,7 @@
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { EstadoFormulario } from "@/components/ui/Mensagem";
+import { marcarEvento } from "@/lib/analytics/servidor";
 import { destinoDepoisDoLogin } from "@/lib/auth/depois-do-login";
 import { caminhoInterno } from "@/lib/auth/destino";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
@@ -18,6 +19,7 @@ export async function entrar(_estado: EstadoFormulario, formData: FormData): Pro
   const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
   if (error) return { erro: "E-mail ou senha incorretos. Se você entra pelo Google ou nunca criou senha, use “Receber código por e-mail”." };
 
+  await marcarEvento("login", { method: "senha" });
   redirect(await destinoDepoisDoLogin(String(formData.get("proximo") ?? "")));
 }
 
@@ -50,6 +52,7 @@ export async function verificarCodigo(_estado: EstadoCodigo, formData: FormData)
   const { error } = await supabase.auth.verifyOtp({ email, token: codigo, type: "email" });
   if (error) return { enviadoPara: email, erro: "Código errado ou vencido. Confira o último e-mail ou peça outro código." };
 
+  await marcarEvento("login", { method: "codigo" });
   redirect(await destinoDepoisDoLogin(String(formData.get("proximo") ?? "")));
 }
 
