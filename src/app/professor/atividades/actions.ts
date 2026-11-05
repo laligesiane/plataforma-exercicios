@@ -20,7 +20,7 @@ import { exigirPapel } from "@/lib/perfil";
 import { ordemNoFim } from "@/lib/trilha";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
-/** Cria um rascunho e abre o editor. Usa os idiomas da primeira turma, se houver. */
+/** Cria um rascunho e abre o editor. Usa a matéria (ou os idiomas) da primeira turma, se houver. */
 export async function criarAtividade() {
   const professor = await exigirPapel("professor");
   const supabase = await criarClienteServidor();
@@ -36,10 +36,11 @@ export async function criarAtividade() {
     .from("atividade")
     .insert({
       professor_id: professor.id,
-      // Segue a primeira turma: de outra matéria, a atividade nasce com essa matéria; senão, com os idiomas dela.
-      ...(turma?.materia?.trim()
-        ? { materia: turma.materia.trim(), idioma_ensinado: null, idioma_instrucao: null }
-        : { idioma_ensinado: turma?.idioma_ensinado ?? "es", idioma_instrucao: turma?.idioma_instrucao ?? "pt" }),
+      // Segue a primeira turma (a matéria ou os idiomas dela). Sem turma, nasce como matéria "Geral",
+      // que o professor troca no editor; antes nascia como Espanhol, herança da Repasa só de idiomas.
+      ...(turma?.idioma_ensinado && turma.idioma_instrucao && !turma.materia?.trim()
+        ? { idioma_ensinado: turma.idioma_ensinado, idioma_instrucao: turma.idioma_instrucao }
+        : { materia: turma?.materia?.trim() || "Geral", idioma_ensinado: null, idioma_instrucao: null }),
     })
     .select("id")
     .single();

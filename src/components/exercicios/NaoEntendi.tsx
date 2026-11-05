@@ -54,7 +54,7 @@ export function NaoEntendi({ exercicioId, iniciais = [], onEnviar }: { exercicio
             onChange={(e) => setTexto(e.target.value)}
             maxLength={1000}
             rows={3}
-            placeholder="Ex.: no item 2, por que não pode ser 'fui'?"
+            placeholder="Ex.: no item 2, por que não pode ser a letra B?"
             className={`${campo} mt-1.5 text-sm`}
           />
           {erro && (

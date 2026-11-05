@@ -11,7 +11,7 @@ const opcoes = Object.entries(idiomas);
 
 export function FormularioTurma() {
   const [estado, acao, enviando] = useActionState(criarTurma, null);
-  const [tipo, setTipo] = useState<"idioma" | "materia">("idioma");
+  const [tipo, setTipo] = useState<"idioma" | "materia">("materia");
 
   return (
     <form action={acao} className="space-y-4">
@@ -33,8 +33,8 @@ export function FormularioTurma() {
         <div className="flex flex-wrap gap-2">
           {(
             [
+              ["materia", "Uma matéria"],
               ["idioma", "Um idioma"],
-              ["materia", "Outra matéria"],
             ] as const
           ).map(([valor, texto]) => (
             <label

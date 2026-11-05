@@ -37,7 +37,7 @@ export function FormularioAula({ turmaId, hoje, aula }: { turmaId: string; hoje:
             name="titulo"
             maxLength={200}
             defaultValue={aula?.titulo}
-            placeholder="Ex.: Pretérito imperfeito"
+            placeholder="Ex.: Frações equivalentes"
             className={campo}
           />
         </div>

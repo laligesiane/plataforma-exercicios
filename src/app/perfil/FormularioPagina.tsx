@@ -44,7 +44,7 @@ export function FormularioPagina({ pagina, nomePadrao }: { pagina: PaginaSalva |
         <label htmlFor="materias" className={rotulo}>
           O que você ensina
         </label>
-        <input id="materias" name="materias" defaultValue={pagina?.materias ?? ""} maxLength={200} placeholder="Ex.: Espanhol e inglês para adultos" className={campo} />
+        <input id="materias" name="materias" defaultValue={pagina?.materias ?? ""} maxLength={200} placeholder="Ex.: Matemática para o ENEM, inglês para adultos" className={campo} />
       </div>
       <div>
         <label htmlFor="bio" className={rotulo}>

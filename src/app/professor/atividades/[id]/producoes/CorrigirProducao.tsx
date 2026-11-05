@@ -72,7 +72,7 @@ export function CorrigirProducao({
         onChange={(e) => mudar(setComentario)(e.target.value)}
         rows={3}
         maxLength={3000}
-        placeholder="Comentário para o aluno (opcional). Ex.: Muito bom! Só cuidado com 'iba', que leva b."
+        placeholder="Comentário para o aluno (opcional). Ex.: Muito bom! Só faltou explicar a segunda parte."
         className={`${campo} bg-fundo`}
       />
       <div className="flex items-center gap-3">

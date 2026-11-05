@@ -14,6 +14,7 @@ import {
   type ExercicioRelacionar,
 } from "@/lib/atividades/modelo";
 import { ImagemDoCartao } from "./EditorMidia";
+import { useExemplos } from "./exemplos";
 
 type ItemLacuna = ExercicioLacuna["itens"][number];
 type ItemMultipla = ExercicioMultiplaEscolha["itens"][number];
@@ -68,6 +69,7 @@ export function CabecalhoItem({
 /** Frase com o botão que insere a marca da lacuna onde está o cursor. */
 function CampoFrase({ id, valor, onChange }: { id: string; valor: string; onChange: (v: string) => void }) {
   const frase = useRef<HTMLInputElement>(null);
+  const ex = useExemplos();
   const temLacuna = valor.includes(LACUNA);
 
   function inserirLacuna() {
@@ -96,7 +98,7 @@ function CampoFrase({ id, valor, onChange }: { id: string; valor: string; onChan
         id={`frase-${id}`}
         value={valor}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Ex.: Cuando era niño, ___ al parque todos los días."
+        placeholder={ex.frase}
         className={campo}
       />
       {!temLacuna && (
@@ -172,6 +174,7 @@ function CampoExplicacao({
 }
 
 function CampoDica({ id, valor, onChange }: { id: string; valor?: string; onChange: (v: string) => void }) {
+  const ex = useExemplos();
   return (
     <div>
       <label htmlFor={`dica-${id}`} className={rotulo}>
@@ -182,7 +185,7 @@ function CampoDica({ id, valor, onChange }: { id: string; valor?: string; onChan
         value={valor ?? ""}
         maxLength={300}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Ex.: É uma ação que se repetia no passado."
+        placeholder={ex.dica}
         className={campo}
       />
     </div>
@@ -190,6 +193,7 @@ function CampoDica({ id, valor, onChange }: { id: string; valor?: string; onChan
 }
 
 export function EditorLacuna({ item, onChange }: { item: ItemLacuna; onChange: (item: ItemLacuna) => void }) {
+  const ex = useExemplos();
   return (
     <div className="space-y-4">
       <CampoFrase id={item.id} valor={item.enunciado} onChange={(enunciado) => onChange({ ...item, enunciado })} />
@@ -202,7 +206,7 @@ export function EditorLacuna({ item, onChange }: { item: ItemLacuna; onChange: (
               <input
                 value={aceita}
                 onChange={(e) => onChange({ ...item, aceitas: trocar(item.aceitas, i, e.target.value) })}
-                placeholder={i === 0 ? "Ex.: iba" : "Outra forma aceita"}
+                placeholder={i === 0 ? `Ex.: ${ex.resposta}` : "Outra forma aceita"}
                 aria-label={i === 0 ? "Resposta certa" : `Outra resposta aceita ${i}`}
                 className={campoPequeno}
               />
@@ -239,14 +243,14 @@ export function EditorLacuna({ item, onChange }: { item: ItemLacuna; onChange: (
         </span>
       </label>
 
-      <ListaErros erros={item.errosPrevistos} onChange={(errosPrevistos) => onChange({ ...item, errosPrevistos })} exemplo="fui" />
+      <ListaErros erros={item.errosPrevistos} onChange={(errosPrevistos) => onChange({ ...item, errosPrevistos })} exemplo={ex.erro} />
 
       <CampoExplicacao
         id={item.id}
         rotuloTexto="Explicação para os outros erros"
         valor={item.explicacaoPadrao}
         onChange={(explicacaoPadrao) => onChange({ ...item, explicacaoPadrao })}
-        exemplo="Ex.: Para hábitos no passado, use o pretérito imperfeito: iba, comía, jugaba."
+        exemplo={ex.explicacaoErros}
       />
       <CampoDica id={item.id} valor={item.dica} onChange={(dica) => onChange({ ...item, dica })} />
     </div>
@@ -254,6 +258,7 @@ export function EditorLacuna({ item, onChange }: { item: ItemLacuna; onChange: (
 }
 
 export function EditorMultipla({ item, onChange }: { item: ItemMultipla; onChange: (item: ItemMultipla) => void }) {
+  const ex = useExemplos();
   return (
     <div className="space-y-4">
       <div>
@@ -264,7 +269,7 @@ export function EditorMultipla({ item, onChange }: { item: ItemMultipla; onChang
           id={`pergunta-${item.id}`}
           value={item.enunciado}
           onChange={(e) => onChange({ ...item, enunciado: e.target.value })}
-          placeholder="Ex.: Vivo ___ Madrid."
+          placeholder={ex.pergunta}
           className={campo}
         />
       </div>
@@ -346,29 +351,30 @@ export function EditorMultipla({ item, onChange }: { item: ItemMultipla; onChang
 }
 
 export function EditorArrastar({ item, onChange }: { item: ItemArrastar; onChange: (item: ItemArrastar) => void }) {
+  const ex = useExemplos();
   return (
     <div className="space-y-4">
       <CampoFrase id={item.id} valor={item.enunciado} onChange={(enunciado) => onChange({ ...item, enunciado })} />
       <div>
         <label htmlFor={`resposta-${item.id}`} className={rotulo}>
-          Palavra certa
+          Resposta certa
         </label>
         <input
           id={`resposta-${item.id}`}
           value={item.resposta}
           onChange={(e) => onChange({ ...item, resposta: e.target.value })}
-          placeholder="Ex.: iba"
+          placeholder={`Ex.: ${ex.resposta}`}
           className={campoPequeno}
         />
         <p className="mt-1.5 text-xs text-tinta-suave">Ela entra no banco de palavras automaticamente.</p>
       </div>
-      <ListaErros erros={item.errosPrevistos} onChange={(errosPrevistos) => onChange({ ...item, errosPrevistos })} exemplo="fui" />
+      <ListaErros erros={item.errosPrevistos} onChange={(errosPrevistos) => onChange({ ...item, errosPrevistos })} exemplo={ex.erro} />
       <CampoExplicacao
         id={item.id}
         rotuloTexto="Explicação para os outros erros"
         valor={item.explicacaoPadrao}
         onChange={(explicacaoPadrao) => onChange({ ...item, explicacaoPadrao })}
-        exemplo="Ex.: Para hábitos no passado, use o pretérito imperfeito."
+        exemplo={ex.explicacaoErros}
       />
       <CampoDica id={item.id} valor={item.dica} onChange={(dica) => onChange({ ...item, dica })} />
     </div>
@@ -384,6 +390,7 @@ export function EditorClassificar({
   colunas: Coluna[];
   onChange: (item: ItemClassificar) => void;
 }) {
+  const ex = useExemplos();
   return (
     <div className="space-y-3">
       <div className="grid gap-3 sm:grid-cols-[1fr_12rem]">
@@ -395,7 +402,7 @@ export function EditorClassificar({
             id={`texto-${item.id}`}
             value={item.texto}
             onChange={(e) => onChange({ ...item, texto: e.target.value })}
-            placeholder="Ex.: Madrid"
+            placeholder={ex.cartao}
             className={campoPequeno}
           />
         </div>
@@ -445,6 +452,7 @@ export function EditorClassificar({
 }
 
 export function EditorRelacionar({ item, onChange }: { item: ItemRelacionar; onChange: (item: ItemRelacionar) => void }) {
+  const ex = useExemplos();
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
@@ -456,7 +464,7 @@ export function EditorRelacionar({ item, onChange }: { item: ItemRelacionar; onC
             id={`esquerda-${item.id}`}
             value={item.esquerda}
             onChange={(e) => onChange({ ...item, esquerda: e.target.value })}
-            placeholder="Ex.: perro"
+            placeholder={ex.esquerda}
             className={campoPequeno}
           />
         </div>
@@ -468,7 +476,7 @@ export function EditorRelacionar({ item, onChange }: { item: ItemRelacionar; onC
             id={`direita-${item.id}`}
             value={item.direita}
             onChange={(e) => onChange({ ...item, direita: e.target.value })}
-            placeholder="Ex.: cachorro"
+            placeholder={ex.direita}
             className={campoPequeno}
           />
         </div>
@@ -481,7 +489,7 @@ export function EditorRelacionar({ item, onChange }: { item: ItemRelacionar; onC
           id={`explicacao-${item.id}`}
           value={item.explicacao}
           onChange={(e) => onChange({ ...item, explicacao: e.target.value })}
-          placeholder="Ex.: 'Perro' é cachorro; 'gato' é o mesmo nas duas línguas."
+          placeholder={ex.explicacaoPar}
           className={campoPequeno}
         />
       </div>
@@ -490,6 +498,7 @@ export function EditorRelacionar({ item, onChange }: { item: ItemRelacionar; onC
 }
 
 export function EditorProducao({ item, onChange }: { item: ItemProducao; onChange: (item: ItemProducao) => void }) {
+  const ex = useExemplos();
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2" role="group" aria-label="Como o aluno responde">
@@ -519,11 +528,7 @@ export function EditorProducao({ item, onChange }: { item: ItemProducao; onChang
           value={item.enunciado}
           onChange={(e) => onChange({ ...item, enunciado: e.target.value })}
           rows={3}
-          placeholder={
-            item.modo === "oral"
-              ? "Ex.: Grave um áudio contando o que você fazia nas férias quando era criança."
-              : "Ex.: Escreva 5 frases sobre o que você fazia nas férias quando era criança."
-          }
+          placeholder={item.modo === "oral" ? ex.propostaOral : ex.propostaEscrita}
           className={campoPequeno}
         />
       </div>
@@ -535,7 +540,7 @@ export function EditorProducao({ item, onChange }: { item: ItemProducao; onChang
           id={`orientacao-${item.id}`}
           value={item.orientacao}
           onChange={(e) => onChange({ ...item, orientacao: e.target.value })}
-          placeholder="Ex.: Uso do pretérito imperfeito; pelo menos 5 frases."
+          placeholder={ex.orientacao}
           className={campoPequeno}
         />
       </div>

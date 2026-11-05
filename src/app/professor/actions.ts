@@ -14,7 +14,7 @@ export async function criarTurma(_estado: EstadoFormulario, formData: FormData):
   const professor = await exigirPapel("professor");
 
   const nome = String(formData.get("nome") ?? "").trim();
-  const tipo = String(formData.get("tipo") ?? "idioma");
+  const tipo = String(formData.get("tipo") ?? "materia");
   const idiomaEnsinado = String(formData.get("idioma_ensinado") ?? "");
   const idiomaInstrucao = String(formData.get("idioma_instrucao") ?? "");
   const materia = String(formData.get("materia") ?? "").trim().slice(0, 80);
