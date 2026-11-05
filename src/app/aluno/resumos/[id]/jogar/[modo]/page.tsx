@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Cabecalho } from "@/components/Cabecalho";
+import { Icone } from "@/components/jogos/Icones";
 import { Jogo } from "@/components/jogos/Jogo";
 import { cartoesUteis, infoDoJogo } from "@/lib/documento/jogos";
 import { carregarCartoes } from "../dados";
@@ -26,8 +27,8 @@ export default async function JogarResumo({ params }: { params: Promise<{ id: st
         <Link href={`/aluno/resumos/${id}/jogar`} className="text-sm font-bold text-primaria hover:underline">
           ← Outros jogos
         </Link>
-        <h1 className="mt-3 text-2xl font-extrabold tracking-tight sm:text-3xl">
-          <span aria-hidden>{info.emoji}</span> {info.nome}
+        <h1 className="mt-3 flex items-center gap-2 text-2xl font-extrabold tracking-tight sm:text-3xl">
+          <Icone nome={info.modo} className="size-7 text-primaria" /> {info.nome}
         </h1>
         <p className="mt-1 mb-5 text-sm text-tinta-suave">{titulo}</p>
         <Jogo modo={info.modo} cartoes={cartoes} resumoId={id} />

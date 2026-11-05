@@ -4,6 +4,7 @@ import { useState } from "react";
 import { botaoPrimario, botaoTexto } from "@/components/ui/estilos";
 import type { Pergunta } from "@/lib/documento/jogos";
 import { tocarResultado } from "@/lib/som";
+import { Icone } from "./Icones";
 import { FimDeJogo, Progresso, incentivo, type AcoesFim } from "./comum";
 
 /**
@@ -63,7 +64,7 @@ export function JogoPerguntas({
       <Progresso
         feitos={indice}
         total={perguntas.length}
-        extra={sequencia >= 2 ? <span className="font-bold text-primaria">🔥 {sequencia} seguidas</span> : undefined}
+        extra={sequencia >= 2 ? <span className="inline-flex items-center gap-1 font-bold text-primaria"><Icone nome="fogo" className="size-4" /> {sequencia} seguidas</span> : undefined}
       />
       <p className="mt-5 text-xs font-bold tracking-wide text-tinta-suave uppercase">{instrucao}</p>
       <p className="mt-2 rounded-2xl border-2 border-linha bg-fundo p-5 text-lg leading-relaxed whitespace-pre-line">{atual.enunciado}</p>

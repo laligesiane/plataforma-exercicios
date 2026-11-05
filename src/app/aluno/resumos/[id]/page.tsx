@@ -8,6 +8,7 @@ import { botaoPrimario } from "@/components/ui/estilos";
 import { documentoTemConteudo } from "@/lib/documento";
 import { validarMapa } from "@/lib/mapas";
 import { apagarResumoAluno, gerarMapaDoResumo } from "@/app/aluno/materias/actions";
+import { Icone } from "@/components/jogos/Icones";
 import { BotaoGerarMapa } from "@/components/BotaoGerarMapa";
 import { formatarData, tituloAula } from "@/lib/aulas";
 import { iaConfigurada } from "@/lib/pratica/gerar";
@@ -52,8 +53,8 @@ export default async function ResumoDoAluno({ params }: { params: Promise<{ id: 
           <span className="esconder-no-foco flex flex-wrap items-baseline gap-x-4 gap-y-1">
             {materia && temTexto && <BotaoGerarMapa acao={gerarMapaDoResumo.bind(null, data.id)} temMapa={temMapa} />}
             {temTexto && (
-              <Link href={`/aluno/resumos/${data.id}/jogar`} className="text-sm font-bold text-primaria hover:underline">
-                🎮 Cartões e jogos
+              <Link href={`/aluno/resumos/${data.id}/jogar`} className="inline-flex items-center gap-1.5 text-sm font-bold text-primaria hover:underline">
+                <Icone nome="jogos" className="size-4" /> Cartões e jogos
               </Link>
             )}
             {materia && (

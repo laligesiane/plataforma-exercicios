@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Icone } from "@/components/jogos/Icones";
 import { Cabecalho } from "@/components/Cabecalho";
 import { CARTOES_POR_RODADA } from "@/lib/documento/cartoes";
 import { cartoesUteis, jogos } from "@/lib/documento/jogos";
@@ -39,8 +40,8 @@ export default async function JogosDoResumo({ params }: { params: Promise<{ id: 
                       href={`/aluno/resumos/${id}/jogar/${j.modo}`}
                       className="flex h-full items-start gap-3 rounded-2xl border-2 border-linha bg-fundo p-4 transition-colors hover:border-primaria hover:bg-primaria-suave"
                     >
-                      <span aria-hidden className="text-3xl">
-                        {j.emoji}
+                      <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primaria-suave text-primaria">
+                        <Icone nome={j.modo} className="size-6" />
                       </span>
                       <span>
                         <span className="block font-extrabold">{j.nome}</span>
@@ -49,8 +50,8 @@ export default async function JogosDoResumo({ params }: { params: Promise<{ id: 
                     </Link>
                   ) : (
                     <div className="flex h-full items-start gap-3 rounded-2xl border-2 border-dashed border-linha p-4 opacity-70">
-                      <span aria-hidden className="text-3xl grayscale">
-                        {j.emoji}
+                      <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-suave text-tinta-suave">
+                        <Icone nome={j.modo} className="size-6" />
                       </span>
                       <span>
                         <span className="block font-extrabold">{j.nome}</span>

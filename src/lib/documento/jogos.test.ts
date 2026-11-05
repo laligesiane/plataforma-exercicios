@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { esconderTermo, rodadaDeCartoes, totalDeRodadas, type Cartao } from "./cartoes";
-import { cartoesParaCompletar, montarComplete, montarLigar, montarMemoria, montarQuiz, montarVerdadeiroFalso, resumir } from "./jogos";
+import { primeiraFrase, cartoesParaCompletar, montarComplete, montarLigar, montarMemoria, montarQuiz, montarVerdadeiroFalso, resumir } from "./jogos";
 
 const cartao = (i: number, tipo: Cartao["tipo"] = "negrito"): Cartao => ({
   id: `c${i}`,
@@ -35,6 +35,12 @@ describe("pistas sem entregar a resposta", () => {
   });
   it("aceita termos com caracteres especiais", () => {
     expect(esconderTermo({ frente: "C++ (linguagem)", verso: "Usa C++ (linguagem) aqui." })).toBe("Usa ____ aqui.");
+  });
+  it("primeira frase vem inteira, sem reticências", () => {
+    expect(primeiraFrase("O aprendizado parte de uma amostra conhecida (conjunto de treino). Depois generaliza.")).toBe(
+      "O aprendizado parte de uma amostra conhecida (conjunto de treino).",
+    );
+    expect(primeiraFrase("Sem ponto final")).toBe("Sem ponto final");
   });
   it("resumir corta em palavra inteira", () => {
     expect(resumir("uma frase bem comprida para cortar", 15)).toBe("uma frase bem…");
