@@ -6,33 +6,34 @@ import { coresResumo, lerCorResumo, type CorResumo } from "@/lib/resumos";
 
 /** A cor da Repasa usa a mesma paleta da "Cor dos destaques" do resumo. Menta é o padrão. */
 export type CorTema = CorResumo;
-const CHAVE = "repasa-tema";
+/** Nome do cookie da cor; o "Sair" apaga ele. */
+export const CHAVE_TEMA = "repasa-tema";
+const CHAVE = CHAVE_TEMA;
 
-/** Roda antes de pintar a página, para a cor escolhida não piscar em verde ao abrir. */
-export const scriptTema = `try{var t=localStorage.getItem("${CHAVE}");if(t&&t!=="menta")document.documentElement.dataset.tema=t}catch(e){}`;
+/** Roda antes de pintar a página, para a cor escolhida não piscar em verde ao abrir.
+ *  A cor fica num cookie (não no localStorage) para o "Sair" conseguir apagá-la no servidor. */
+export const scriptTema = `try{localStorage.removeItem("${CHAVE}");var m=document.cookie.match(/(?:^|; )${CHAVE}=([a-z]+)/);if(m&&m[1]!=="menta")document.documentElement.dataset.tema=m[1]}catch(e){}`;
+
+function guardar(cor: CorTema) {
+  // Verde é o padrão: sem cookie. Vale um ano e é renovado a cada página com o cabeçalho.
+  document.cookie =
+    cor === "menta" ? `${CHAVE}=; path=/; max-age=0; samesite=lax` : `${CHAVE}=${cor}; path=/; max-age=31536000; samesite=lax`;
+}
 
 function aplicar(cor: CorTema) {
   const html = document.documentElement;
   if (cor === "menta") delete html.dataset.tema;
   else html.dataset.tema = cor;
-  try {
-    localStorage.setItem(CHAVE, cor);
-  } catch {
-    /* sem armazenamento: vale só nesta página */
-  }
+  guardar(cor);
 }
 
-/** Mantém o aparelho com a cor salva na conta (ex.: escolhida no celular, aberta no computador). */
+/** Mantém o aparelho com a cor salva na conta (ex.: escolhida no celular, aberta no computador).
+ *  Sem login (tema null), volta para o verde padrão. */
 export function SincronizarTema({ tema }: { tema?: string | null }) {
   useEffect(() => {
     const cor = lerCorResumo(tema);
     if ((document.documentElement.dataset.tema ?? "menta") !== cor) aplicar(cor);
-    else
-      try {
-        localStorage.setItem(CHAVE, cor);
-      } catch {
-        /* ignora */
-      }
+    else guardar(cor);
   }, [tema]);
   return null;
 }
