@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { melhorVoz } from "../../lib/fala";
 
 const vozes: Record<string, string> = { es: "es-ES", en: "en-US", fr: "fr-FR", it: "it-IT", de: "de-DE", pt: "pt-BR" };
 
@@ -23,8 +24,12 @@ export function Ouvir({ texto }: { texto: string }) {
     const fala = new SpeechSynthesisUtterance(texto);
     fala.lang = vozes[idioma!];
     fala.rate = 0.9;
-    const voz = speechSynthesis.getVoices().find((v) => v.lang.toLowerCase().startsWith(idioma!));
-    if (voz) fala.voice = voz;
+    // A voz mais natural do aparelho nesse idioma (as neurais primeiro, as robóticas por último).
+    const voz = melhorVoz(speechSynthesis.getVoices(), vozes[idioma!]);
+    if (voz) {
+      fala.voice = voz;
+      fala.lang = voz.lang;
+    }
     speechSynthesis.cancel();
     speechSynthesis.speak(fala);
   }

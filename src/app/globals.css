@@ -340,3 +340,21 @@ html[data-dislexia] p,
 html[data-dislexia] li {
   line-height: 1.8;
 }
+
+/* Leitura em voz alta do resumo: o trecho lido fica marcado e, com a leitura ligada,
+   tocar num parágrafo lê a partir dele. */
+.leitura-ativa [data-trecho] {
+  cursor: pointer;
+}
+.documento .lendo-agora {
+  border-radius: 0.4em;
+  background: var(--primaria-suave);
+  box-shadow: 0 0 0 0.3em var(--primaria-suave);
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+@media print {
+  .documento .lendo-agora {
+    background: none;
+    box-shadow: none;
+  }
+}

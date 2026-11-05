@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { BotaoSom } from "@/components/exercicios/BotaoSom";
+import { tocarResultado } from "@/lib/som";
 import { CartaoExercicio } from "@/components/exercicios/CartaoExercicio";
 import { ConteudoExercicio } from "@/components/exercicios/AulaAtividade";
 import type { Exercicio } from "@/lib/atividades/modelo";
@@ -30,6 +32,7 @@ export function SessaoRevisao({ grupos }: { grupos: GrupoRevisao[] }) {
 
   function registrar(grupo: GrupoRevisao) {
     return (itemId: string) => async (resultado: Resultado) => {
+      tocarResultado(resultado.status !== "errado");
       const id = grupo.revisaoPorItem[itemId];
       if (id === undefined || respondidos.current.has(itemId)) return;
       respondidos.current.add(itemId);
@@ -52,6 +55,7 @@ export function SessaoRevisao({ grupos }: { grupos: GrupoRevisao[] }) {
             style={{ width: `${(feitos.length / total) * 100}%` }}
           />
         </div>
+        <BotaoSom />
       </div>
 
       {falhou && (
