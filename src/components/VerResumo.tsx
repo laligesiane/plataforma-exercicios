@@ -1,7 +1,8 @@
 import { Documento } from "@/components/Documento";
 import { MapaMental } from "@/components/MapaMental";
 import { Sumario } from "@/components/Sumario";
-import { documentoTemConteudo, secoesDoDocumento } from "@/lib/documento";
+import { LerEmVozAlta } from "@/components/LerEmVozAlta";
+import { documentoTemConteudo, secoesDoDocumento, textoDoDocumento } from "@/lib/documento";
 import { validarMapa } from "@/lib/mapas";
 import { documentoDoResumo, tituloResumo, type Resumo } from "@/lib/resumos";
 
@@ -18,6 +19,11 @@ export function VerResumo({ resumo, subtitulo }: { resumo: Resumo; subtitulo?: s
     <article data-cor={resumo.cor ?? "menta"}>
       <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{tituloResumo(resumo)}</h1>
       {subtitulo && <p className="mt-2 text-tinta-suave">{subtitulo}</p>}
+      {temTexto && (
+        <div className="mt-3">
+          <LerEmVozAlta texto={`${tituloResumo(resumo)}. ${textoDoDocumento(doc)}`} />
+        </div>
+      )}
 
 
       {temTexto &&

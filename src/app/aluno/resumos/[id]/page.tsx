@@ -51,6 +51,11 @@ export default async function ResumoDoAluno({ params }: { params: Promise<{ id: 
           </Link>
           <span className="esconder-no-foco flex flex-wrap items-baseline gap-x-4 gap-y-1">
             {materia && temTexto && <BotaoGerarMapa acao={gerarMapaDoResumo.bind(null, data.id)} temMapa={temMapa} />}
+            {temTexto && (
+              <Link href={`/aluno/resumos/${data.id}/cartoes`} className="text-sm font-bold text-primaria hover:underline">
+                🃏 Estudar com cartões
+              </Link>
+            )}
             <ExportarPdf id={data.id} temTexto={temTexto} temMapa={temMapa} />
             {materia && (
               <>

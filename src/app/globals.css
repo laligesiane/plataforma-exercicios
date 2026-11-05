@@ -327,3 +327,16 @@ html[data-foco="ativo"] .esconder-no-foco {
 html:not([data-foco="ativo"]) .so-no-foco {
   display: none !important;
 }
+
+/* Preferências de leitura (botão "Aa" no cabeçalho). O Tailwind usa rem, então tudo cresce junto. */
+html[data-tamanho="grande"] { font-size: 112.5%; }
+html[data-tamanho="maior"] { font-size: 125%; }
+html[data-dislexia] body {
+  font-family: var(--font-atkinson), var(--font-figtree), system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  word-spacing: 0.12em;
+}
+html[data-dislexia] p,
+html[data-dislexia] li {
+  line-height: 1.8;
+}
