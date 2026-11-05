@@ -169,6 +169,7 @@ export function EditorPratica({ resumo, pratica }: Props) {
                   semMidia
                   onChange={(novo) => setExercicios(exercicios.map((e, j) => (j === i ? novo : e)))}
                   onMover={(d) => setExercicios(mover(exercicios, i, d))}
+                  onCopiar={(novo) => setExercicios([...exercicios.slice(0, i + 1), novo, ...exercicios.slice(i + 1)])}
                   onRemover={() => setExercicios(exercicios.filter((_, j) => j !== i))}
                 />
               ))}
