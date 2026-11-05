@@ -3,6 +3,7 @@ import { sair } from "@/app/entrar/actions";
 import { Cabecalho } from "@/components/Cabecalho";
 import { botaoSecundario } from "@/components/ui/estilos";
 import { exigirLogin } from "@/lib/perfil";
+import { loginGoogleLigado } from "@/lib/supabase/config";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { AtivarMfa, BotaoDesligarMfa, FormularioNome, FormularioSenhaPerfil } from "./Formularios";
 
@@ -91,7 +92,7 @@ export default async function PaginaPerfil() {
           <p className="text-sm text-tinta-suave">
             Contas ligadas: <strong className="text-tinta">{provedores.map((p) => nomesProvedor[p] ?? p).join(" e ") || "E-mail"}</strong>.
             Você sempre pode entrar com um código enviado para {perfil.email}, sem senha.
-            {!provedores.includes("google") && " Para usar o Google, clique em “Continuar com Google” na tela de entrar com este mesmo e-mail."}
+            {loginGoogleLigado && !provedores.includes("google") && " Para usar o Google, clique em “Continuar com Google” na tela de entrar com este mesmo e-mail."}
           </p>
           <h3 className="mt-5 mb-1 font-bold">Senha</h3>
           <p className="mb-3 text-sm text-tinta-suave">
