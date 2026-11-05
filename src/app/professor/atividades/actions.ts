@@ -205,16 +205,24 @@ export async function duplicarAtividade(formData: FormData) {
   const supabase = await criarClienteServidor();
 
   const [{ data: original }, { data: exercicios }] = await Promise.all([
-    supabase.from("atividade").select("*").eq("id", id).eq("professor_id", professor.id).maybeSingle(),
+    supabase.from("atividade").select("*").eq("id", id).maybeSingle(),
     supabase.from("exercicio").select("ordem, tipo, titulo, instrucoes, itens, config").eq("atividade_id", id).order("ordem"),
   ]);
-  if (!original) redirect("/professor/atividades?erro=duplicar");
+  // Copia a própria atividade ou uma pública da biblioteca.
+  const daBiblioteca = original?.professor_id !== professor.id;
+  if (!original || (daBiblioteca && !(original.publicada && original.publica))) redirect("/professor/atividades?erro=duplicar");
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { id: _id, criada_em, atualizada_em, publicada, publica, prazo: _prazo, ...campos } = original;
   const { data: copia, error } = await supabase
     .from("atividade")
-    .insert({ ...campos, titulo: `Cópia de ${original.titulo}`.slice(0, 200), publicada: false, publica: false })
+    .insert({
+      ...campos,
+      professor_id: professor.id,
+      titulo: daBiblioteca ? original.titulo : `Cópia de ${original.titulo}`.slice(0, 200),
+      publicada: false,
+      publica: false,
+    })
     .select("id")
     .single();
   if (error) redirect("/professor/atividades?erro=duplicar");

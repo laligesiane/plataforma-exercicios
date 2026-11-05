@@ -33,7 +33,7 @@ export default async function PaginaEditor({
       <main className="mx-auto w-full max-w-3xl px-4 pt-6">
         {copia && (
           <p role="status" className="mb-4 rounded-xl bg-primaria-suave px-3.5 py-2.5 text-sm">
-            Esta é uma cópia em rascunho. Troque o título se quiser, marque as turmas e publique.
+            Esta é uma cópia em rascunho, só sua. Ajuste o que quiser, marque as turmas e publique.
           </p>
         )}
         <EditorAtividade

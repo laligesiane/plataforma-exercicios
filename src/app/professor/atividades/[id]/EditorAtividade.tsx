@@ -395,7 +395,7 @@ export function EditorAtividade({ inicial, exerciciosIniciais, turmas, turmasIni
               />
               <span>
                 <strong className="font-bold">Pública.</strong>{" "}
-                <span className="text-tinta-suave">Qualquer pessoa com o link pode fazer, sem login. As respostas de quem não é da turma não são salvas.</span>
+                <span className="text-tinta-suave">Qualquer pessoa com o link pode fazer, sem login, e ela aparece na Biblioteca para outros professores copiarem. As respostas de quem não é da turma não são salvas.</span>
               </span>
             </label>
             {publicadaSalva && atividade.publica && !alterado && (
