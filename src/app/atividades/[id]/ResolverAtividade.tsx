@@ -6,7 +6,8 @@ import type { Exercicio } from "@/lib/atividades/modelo";
 import type { EnviarProducao, ProducaoSalva } from "@/components/exercicios/Producao";
 import { enviarAudioDoAluno } from "@/lib/atividades/enviarMidia";
 import type { ResumoAtividade } from "@/lib/atividades/resumo";
-import { enviarProducao, registrarEnvio, registrarResposta } from "../actions";
+import type { DuvidaSalva } from "@/components/exercicios/NaoEntendi";
+import { enviarDuvida, enviarProducao, registrarEnvio, registrarResposta } from "../actions";
 
 type Props = {
   atividadeId: string;
@@ -15,9 +16,10 @@ type Props = {
   primeirasAnteriores: Record<string, boolean>;
   salvar: boolean;
   producoes: Record<string, ProducaoSalva>;
+  duvidas?: Record<string, DuvidaSalva[]>;
 };
 
-export function ResolverAtividade({ atividadeId, exercicios, respostasAnteriores, primeirasAnteriores, salvar, producoes }: Props) {
+export function ResolverAtividade({ atividadeId, exercicios, respostasAnteriores, primeirasAnteriores, salvar, producoes, duvidas }: Props) {
   const [falhou, setFalhou] = useState(false);
 
   async function aoResponder(r: RespostaDada) {
@@ -54,6 +56,8 @@ export function ResolverAtividade({ atividadeId, exercicios, respostasAnteriores
         onEnviar={aoEnviar}
         producoes={producoes}
         onProducao={salvar ? aoProduzir : undefined}
+        duvidas={duvidas}
+        onDuvida={salvar ? (exercicioId, texto) => enviarDuvida(atividadeId, exercicioId, texto) : undefined}
       />
     </>
   );

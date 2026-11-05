@@ -9,6 +9,7 @@ import { ehAutomatico, type Exercicio } from "@/lib/atividades/modelo";
 import { ExercicioKahoot } from "./ExercicioKahoot";
 import { ItemProducao, type ProducaoSalva, type EnviarProducao } from "./Producao";
 import { CartaoExercicio } from "./CartaoExercicio";
+import { NaoEntendi, type DuvidaSalva, type EnviarDuvida } from "./NaoEntendi";
 import { Lacuna } from "./Lacuna";
 import { MultiplaEscolha } from "./MultiplaEscolha";
 import { ExercicioArrastar } from "./arrastar/ExercicioArrastar";
@@ -35,6 +36,10 @@ type Props = {
   producoes?: Record<string, ProducaoSalva>;
   /** Envia uma produção escrita ou oral. Sem ela, a produção não pode ser enviada (visitante, professor). */
   onProducao?: EnviarProducao;
+  /** Dúvidas já mandadas, por id do exercício. */
+  duvidas?: Record<string, DuvidaSalva[]>;
+  /** Manda uma dúvida ao professor. Sem ela, o botão "Não entendi" não aparece (visitante, professor). */
+  onDuvida?: EnviarDuvida;
 };
 
 export function AulaAtividade({
@@ -45,6 +50,8 @@ export function AulaAtividade({
   onEnviar,
   producoes = {},
   onProducao,
+  duvidas = {},
+  onDuvida,
 }: Props) {
   const totalItens = exercicios.filter(ehAutomatico).reduce((soma, e) => soma + e.itens.length, 0);
   const temOutros = exercicios.some((e) => !ehAutomatico(e));
@@ -102,6 +109,11 @@ export function AulaAtividade({
           titulo={exercicio.titulo}
           instrucoes={exercicio.instrucoes}
           midia={exercicio.midia}
+          rodape={
+            onDuvida && exercicio.tipo !== "kahoot" ? (
+              <NaoEntendi exercicioId={exercicio.id} iniciais={duvidas[exercicio.id]} onEnviar={onDuvida} />
+            ) : undefined
+          }
         >
           <ConteudoExercicio
             exercicio={exercicio}

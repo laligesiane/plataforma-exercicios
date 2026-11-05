@@ -12,7 +12,7 @@ export default async function AtividadesProfessor({ searchParams }: { searchPara
   const supabase = await criarClienteServidor();
   const { data: atividades, error } = await supabase
     .from("atividade")
-    .select("id, titulo, nivel, categoria, materia, idioma_ensinado, publicada, publica, exercicio(count), atividade_turma(turma(nome))")
+    .select("id, titulo, nivel, categoria, materia, idioma_ensinado, publicada, publica, exercicio(count), atividade_turma(turma(nome)), duvida(resposta)")
     .eq("professor_id", professor.id)
     .order("atualizada_em", { ascending: false });
 
@@ -80,6 +80,17 @@ export default async function AtividadesProfessor({ searchParams }: { searchPara
                         Respostas dos alunos
                       </Link>
                     )}
+                    {(() => {
+                      const abertas = ((a.duvida ?? []) as { resposta: string | null }[]).filter((d) => !d.resposta).length;
+                      return abertas > 0 ? (
+                        <Link
+                          href={`/professor/atividades/${a.id}/respostas#duvidas`}
+                          className="rounded-full bg-aviso-fundo px-2.5 py-0.5 text-xs font-bold text-aviso"
+                        >
+                          {abertas} {abertas === 1 ? "dúvida" : "dúvidas"} sem resposta
+                        </Link>
+                      ) : null;
+                    })()}
                   </div>
                 </li>
               );

@@ -232,3 +232,24 @@ export async function duplicarAtividade(formData: FormData) {
   revalidatePath("/professor/atividades");
   redirect(`/professor/atividades/${copia.id}?copia=1`);
 }
+
+/** Professor responde (ou corrige a resposta de) uma dúvida. O RLS só deixa o dono da atividade. */
+export async function responderDuvida(_estado: { erro?: string; ok?: boolean } | null, formData: FormData) {
+  await exigirPapel("professor");
+  const id = Number(formData.get("id"));
+  const atividadeId = String(formData.get("atividade_id") ?? "");
+  const resposta = String(formData.get("resposta") ?? "").trim().slice(0, 2000);
+  if (!Number.isSafeInteger(id) || !ehUuid(atividadeId)) return { erro: "Recarregue a página." };
+  if (!resposta) return { erro: "Escreva a resposta." };
+
+  const supabase = await criarClienteServidor();
+  const { data, error } = await supabase
+    .from("duvida")
+    .update({ resposta, respondida_em: new Date().toISOString() })
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
+  if (error || !data) return { erro: "Não foi possível salvar a resposta." };
+  revalidatePath(`/professor/atividades/${atividadeId}/respostas`);
+  return { ok: true };
+}
