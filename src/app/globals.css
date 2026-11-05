@@ -353,12 +353,6 @@ html[data-tema="laranja"], [data-cor="laranja"] { --primaria: #c75d0e; --primari
   html[data-tema="roxo"], [data-cor="roxo"] { --primaria: #b49af5; --primaria-suave: #2a1f47; --marca: #43316e; }
   html[data-tema="laranja"], [data-cor="laranja"] { --primaria: #f5a464; --primaria-suave: #3b2412; --marca: #5e3a17; }
 }
-/* Logo do cabeçalho na cor da Repasa (sempre o tom claro, igual nos dois modos). O mascote continua verde. */
-html[data-tema="azul"] .logo-fundo { fill: #2f6fd6; }
-html[data-tema="rosa"] .logo-fundo { fill: #c2417e; }
-html[data-tema="roxo"] .logo-fundo { fill: #7a4fd1; }
-html[data-tema="laranja"] .logo-fundo { fill: #c75d0e; }
-html[data-tema] .logo-folha { fill: #ffffff; opacity: 0.8; }
 html[data-tema] .documento blockquote,
 [data-cor]:not([data-cor="menta"]) .documento blockquote { background: var(--primaria-suave); }
 html[data-tema] .documento blockquote::before,
