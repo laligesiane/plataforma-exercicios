@@ -17,9 +17,19 @@ type Props = {
   salvar: boolean;
   producoes: Record<string, ProducaoSalva>;
   duvidas?: Record<string, DuvidaSalva[]>;
+  idioma?: string | null;
 };
 
-export function ResolverAtividade({ atividadeId, exercicios, respostasAnteriores, primeirasAnteriores, salvar, producoes, duvidas }: Props) {
+export function ResolverAtividade({
+  atividadeId,
+  exercicios,
+  respostasAnteriores,
+  primeirasAnteriores,
+  salvar,
+  producoes,
+  duvidas,
+  idioma,
+}: Props) {
   const [falhou, setFalhou] = useState(false);
 
   async function aoResponder(r: RespostaDada) {
@@ -58,6 +68,7 @@ export function ResolverAtividade({ atividadeId, exercicios, respostasAnteriores
         onProducao={salvar ? aoProduzir : undefined}
         duvidas={duvidas}
         onDuvida={salvar ? (exercicioId, texto) => enviarDuvida(atividadeId, exercicioId, texto) : undefined}
+        idioma={idioma}
       />
     </>
   );

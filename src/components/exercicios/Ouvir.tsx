@@ -1,0 +1,47 @@
+"use client";
+
+import { createContext, useContext, useEffect, useState } from "react";
+
+const vozes: Record<string, string> = { es: "es-ES", en: "en-US", fr: "fr-FR", it: "it-IT", de: "de-DE", pt: "pt-BR" };
+
+/** Idioma ensinado na atividade. Sem ele (outras matérias), o botão de ouvir não aparece. */
+export const IdiomaFala = createContext<string | null>(null);
+
+/** Texto pronto para ler: a lacuna vira a resposta, quando já se sabe, ou uma pausa. */
+export function textoParaFala(enunciado: string, resposta?: string) {
+  return enunciado.replace(/_{3,}/g, resposta?.trim() ? resposta : "…").replace(/\s+/g, " ").trim();
+}
+
+/** 🔊 Lê o texto com a voz do próprio navegador, no idioma da atividade. Não grava nem envia nada. */
+export function Ouvir({ texto }: { texto: string }) {
+  const idioma = useContext(IdiomaFala);
+  const [disponivel, setDisponivel] = useState(false);
+  useEffect(() => setDisponivel(typeof window !== "undefined" && "speechSynthesis" in window), []);
+  if (!idioma || !vozes[idioma] || !disponivel || !texto.trim()) return null;
+
+  function falar() {
+    const fala = new SpeechSynthesisUtterance(texto);
+    fala.lang = vozes[idioma!];
+    fala.rate = 0.9;
+    const voz = speechSynthesis.getVoices().find((v) => v.lang.toLowerCase().startsWith(idioma!));
+    if (voz) fala.voice = voz;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(fala);
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={falar}
+      title="Ouvir"
+      aria-label={`Ouvir: ${texto}`}
+      className="ml-1 inline-flex size-7 shrink-0 items-center justify-center rounded-full align-middle text-base text-tinta-suave transition-colors hover:bg-suave hover:text-primaria"
+    >
+      <svg aria-hidden viewBox="0 0 24 24" className="size-4.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M11 5 6 9H3v6h3l5 4V5z" />
+        <path d="M15.5 8.5a5 5 0 0 1 0 7" />
+        <path d="M18.5 5.5a9 9 0 0 1 0 13" />
+      </svg>
+    </button>
+  );
+}

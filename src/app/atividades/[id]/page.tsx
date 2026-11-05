@@ -94,6 +94,7 @@ export default async function PaginaAtividade({ params }: Params) {
             salvar={salvar}
             producoes={producoes}
             duvidas={duvidas}
+            idioma={atividade.materia?.trim() ? null : atividade.idioma_ensinado}
           />
         </div>
       </main>

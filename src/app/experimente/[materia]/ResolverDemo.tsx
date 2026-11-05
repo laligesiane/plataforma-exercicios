@@ -15,6 +15,6 @@ const producaoLocal: EnviarProducao = async (_exercicioId, _itemId, dados) => ({
   },
 });
 
-export function ResolverDemo({ exercicios }: { exercicios: Exercicio[] }) {
-  return <AulaAtividade exercicios={exercicios} onProducao={producaoLocal} />;
+export function ResolverDemo({ exercicios, idioma }: { exercicios: Exercicio[]; idioma?: string | null }) {
+  return <AulaAtividade exercicios={exercicios} onProducao={producaoLocal} idioma={idioma} />;
 }

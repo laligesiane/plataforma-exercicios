@@ -42,7 +42,7 @@ export default async function AulaDeDemonstracao({ params }: Params) {
         <p className="mt-2 text-sm text-tinta-suave">Você está sem login, então nada fica salvo.</p>
 
         <div className="mt-8">
-          <ResolverDemo exercicios={aula.exercicios} />
+          <ResolverDemo exercicios={aula.exercicios} idioma={({ espanhol: "es", ingles: "en", portugues: "pt" } as Record<string, string>)[aula.slug] ?? null} />
         </div>
 
         <nav aria-label="Outras matérias" className="mt-12 border-t border-linha pt-6">

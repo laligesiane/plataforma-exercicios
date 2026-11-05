@@ -4,6 +4,7 @@ import { useState } from "react";
 import { corrigirLacuna, podeVerResposta, respostaCorreta, type ItemLacuna, type Resultado } from "@/lib/correcao";
 import { Dica } from "./Dica";
 import { Feedback } from "./Feedback";
+import { Ouvir, textoParaFala } from "./Ouvir";
 
 const estiloPorStatus = {
   certo: "border-certo bg-certo-fundo text-certo",
@@ -57,6 +58,7 @@ export function Lacuna({ item, valorInicial, onResultado }: Props) {
           className={`mx-1 w-32 rounded-[10px] border-2 px-2 py-0.5 text-center font-bold outline-none transition-colors ${estilo}`}
         />
         {depois}
+        <Ouvir texto={textoParaFala(item.enunciado, resultado && resultado.status !== "errado" ? valor : undefined)} />
       </p>
       {resultado?.status !== "certo" && resultado?.status !== "certo_com_aviso" && <Dica texto={item.dica} />}
       <Feedback resultado={resultado} />

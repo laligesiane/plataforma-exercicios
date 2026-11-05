@@ -4,6 +4,7 @@ import { useState } from "react";
 import { corrigirMultiplaEscolha, type ItemMultiplaEscolha, type Resultado } from "@/lib/correcao";
 import { Dica } from "./Dica";
 import { Feedback } from "./Feedback";
+import { Ouvir, textoParaFala } from "./Ouvir";
 
 type Props = {
   item: ItemMultiplaEscolha;
@@ -32,7 +33,15 @@ export function MultiplaEscolha({ item, valorInicial, onResultado }: Props) {
 
   return (
     <div className="py-4 first:pt-0 last:pb-0">
-      <p className="text-[17px]">{item.enunciado}</p>
+      <p className="text-[17px]">
+        {item.enunciado}
+        <Ouvir
+          texto={textoParaFala(
+            item.enunciado,
+            resultado && resultado.status !== "errado" ? item.alternativas.find((a) => a.id === escolhida)?.texto : undefined,
+          )}
+        />
+      </p>
       <div className="mt-3 flex flex-wrap gap-2">
         {item.alternativas.map((a) => (
           <button
