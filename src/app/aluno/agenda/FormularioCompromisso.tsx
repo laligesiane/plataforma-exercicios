@@ -1,5 +1,6 @@
 "use client";
 
+import { CampoData } from "@/components/ui/CampoData";
 import { useActionState, useEffect, useRef } from "react";
 import { Mensagem } from "@/components/ui/Mensagem";
 import { botaoPrimario, caixaMarcar, campo, rotulo } from "@/components/ui/estilos";
@@ -66,14 +67,7 @@ export function FormularioCompromisso({ compromisso, hoje }: { compromisso?: Com
           <label htmlFor={`${p}-data`} className={rotulo}>
             Dia ou prazo
           </label>
-          <input
-            id={`${p}-data`}
-            type="date"
-            name="data"
-            required
-            defaultValue={compromisso?.data ?? hoje}
-            className={campo}
-          />
+          <CampoData id={`${p}-data`} name="data" required defaultValue={compromisso?.data ?? hoje} />
         </div>
         <div>
           <label htmlFor={`${p}-hora`} className={rotulo}>

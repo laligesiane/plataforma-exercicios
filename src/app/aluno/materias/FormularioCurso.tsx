@@ -1,5 +1,6 @@
 "use client";
 
+import { CampoData } from "@/components/ui/CampoData";
 import { useActionState, useEffect, useRef } from "react";
 import { Mensagem } from "@/components/ui/Mensagem";
 import {
@@ -52,13 +53,7 @@ function CamposCurso({
             Quando começou{" "}
             <span className="font-normal text-tinta-suave">(opcional)</span>
           </label>
-          <input
-            id={`${prefixo}-inicio`}
-            name="inicio"
-            type="date"
-            defaultValue={curso?.inicio ?? ""}
-            className={campo}
-          />
+          <CampoData id={`${prefixo}-inicio`} name="inicio" defaultValue={curso?.inicio ?? ""} />
         </div>
         <div>
           <label htmlFor={`${prefixo}-duracao`} className={rotulo}>
