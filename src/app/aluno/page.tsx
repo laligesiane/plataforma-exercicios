@@ -106,7 +106,7 @@ export default async function MinhaConta() {
       numero: atividades.size,
       detalhe: atividades.size === 0 ? "Nenhuma ainda" : novas > 0 ? `${novas} ${novas === 1 ? "nova" : "novas"}` : "Todas começadas",
     },
-    { href: "/aluno/materias", titulo: "Matérias", numero: (materias ?? []).length, detalhe: "Plano grátis: até 3" },
+    { href: "/aluno/materias", titulo: "Matérias", numero: (materias ?? []).length, detalhe: "Seus resumos por matéria" },
     { href: "/aluno/resumos", titulo: "Resumos", numero: resumos.length, detalhe: "Seus e das turmas" },
     { href: "/aluno/mapas", titulo: "Mapas mentais", numero: mapas.length, detalhe: "Para revisar de relance" },
   ];

@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { sair } from "@/app/entrar/actions";
 import { Cabecalho } from "@/components/Cabecalho";
 import { botaoSecundario } from "@/components/ui/estilos";
+import { LIMITES_LIGADOS } from "@/lib/limites";
 import { exigirLogin } from "@/lib/perfil";
 import { loginGoogleLigado } from "@/lib/supabase/config";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
@@ -14,10 +15,10 @@ export const metadata: Metadata = { title: "Meu perfil · Repasa" };
 
 type Plano = {
   nome: string;
-  max_turmas: number;
-  max_alunos_por_turma: number;
-  max_atividades_por_turma?: number;
-  max_materias?: number;
+  max_turmas: number | null;
+  max_alunos_por_turma: number | null;
+  max_atividades_por_turma?: number | null;
+  max_materias?: number | null;
 };
 
 const nomesProvedor: Record<string, string> = { email: "E-mail", google: "Google" };
@@ -61,7 +62,7 @@ export default async function PaginaPerfil() {
       <main className="mx-auto w-full max-w-2xl space-y-6 px-4 pt-10 pb-16">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight">Meu perfil</h1>
-          <p className="mt-1 text-tinta-suave">Seus dados, seu plano e a segurança da conta.</p>
+          <p className="mt-1 text-tinta-suave">Seus dados, suas preferências e a segurança da conta.</p>
         </div>
 
         <Secao titulo="Seus dados">
@@ -82,6 +83,7 @@ export default async function PaginaPerfil() {
           <PainelLeitura />
         </Secao>
 
+        {LIMITES_LIGADOS && (
         <Secao titulo="Plano">
           <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
             <Item rotulo="Plano atual" valor={plano?.nome ?? perfil.plano_id} />
@@ -101,6 +103,7 @@ export default async function PaginaPerfil() {
             )}
           </dl>
         </Secao>
+        )}
 
         {professor && (
           <Secao titulo="Sua página pública">
