@@ -6,6 +6,7 @@ import { iaConfigurada } from "@/lib/pratica/gerar";
 import { obterPerfil, paginaInicial } from "@/lib/perfil";
 import { PreferenciasLeitura } from "@/components/PreferenciasLeitura";
 import { BarraInferior } from "@/components/BarraInferior";
+import { SincronizarTema } from "@/components/Tema";
 
 /** semMenu: só a marca (ex.: na verificação em duas etapas, antes de liberar a conta). */
 export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {}) {
@@ -15,6 +16,7 @@ export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {})
 
   return (
     <header className="border-b border-linha">
+      {perfil && <SincronizarTema tema={perfil.tema} />}
       <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3.5">
         <Link href={inicio} className="flex items-center gap-2.5" aria-label={perfil ? "Repasa, ir para o meu painel" : "Repasa, página inicial"}>
           <IconeLogo />

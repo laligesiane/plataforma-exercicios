@@ -73,11 +73,11 @@ export function Mascote({
 export function IconeLogo({ tamanho = 34 }: { tamanho?: number }) {
   return (
     <svg width={tamanho} height={tamanho} viewBox="0 0 64 64" className="brotinho-ocioso shrink-0" aria-hidden>
-      <rect width="64" height="64" rx="16" fill="#0f9d6b" />
+      <rect width="64" height="64" rx="16" fill="#0f9d6b" className="logo-fundo" />
       <path d="M32 50 V28" stroke="#fff" strokeWidth="5" strokeLinecap="round" />
       <g className="brotinho-folhas brotinho-folhas-icone">
         <path d="M32 31 C26 17 12 17 9 25 C17 34 27 35 32 31Z" fill="#fff" />
-        <path d="M32 31 C38 15 53 15 56 23 C48 33 37 35 32 31Z" fill="#e3f6ee" />
+        <path d="M32 31 C38 15 53 15 56 23 C48 33 37 35 32 31Z" fill="#e3f6ee" className="logo-folha" />
       </g>
     </svg>
   );

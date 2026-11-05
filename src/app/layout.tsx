@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Atkinson_Hyperlegible, Figtree } from "next/font/google";
 import { scriptLeitura } from "@/components/PreferenciasLeitura";
+import { scriptTema } from "@/components/Tema";
 import { FocoProvider } from "@/components/foco/FocoProvider";
 import { CelebracaoArvore } from "@/components/foco/CelebracaoArvore";
 import { MiniBrotinho } from "@/components/foco/MiniBrotinho";
@@ -50,6 +51,7 @@ export default function RootLayout({
           }}
         />
         <script dangerouslySetInnerHTML={{ __html: scriptLeitura }} />
+        <script dangerouslySetInnerHTML={{ __html: scriptTema }} />
       </head>
       <body className={`${figtree.variable} ${atkinson.variable} antialiased`}>
         <FocoProvider>
