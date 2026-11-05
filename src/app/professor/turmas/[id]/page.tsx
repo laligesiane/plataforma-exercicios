@@ -14,6 +14,7 @@ import { camposAula, formatarData, hojeNoFuso, tituloAula, ultimaAula, type Aula
 import { removerHorario } from "../../actions";
 import { apagarAula } from "./actions-aulas";
 import { FormularioAula } from "./FormularioAula";
+import { CodigoTurma } from "./CodigoTurma";
 import { FormularioConvite } from "./FormularioConvite";
 import { FormularioHorario } from "./FormularioHorario";
 import { PedidosAula, type PedidoDaTurma } from "./PedidosAula";
@@ -29,7 +30,7 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
     await Promise.all([
     supabase
       .from("turma")
-      .select("id, nome, materia, idioma_ensinado, idioma_instrucao, turma_aluno(perfil(id, nome, email))")
+      .select("id, nome, codigo, materia, idioma_ensinado, idioma_instrucao, turma_aluno(perfil(id, nome, email))")
       .eq("id", id)
       .maybeSingle(),
     supabase.from("plano").select("max_alunos_por_turma").eq("id", perfil.plano_id).single(),
@@ -214,7 +215,18 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
         </section>
 
         <section className="mt-6 rounded-2xl border border-linha p-5 sm:p-6">
-          <h2 className="mb-4 text-lg font-bold">Convidar aluno</h2>
+          <h2 className="mb-4 text-lg font-bold">Entrar com código</h2>
+          {cheia ? (
+            <p className="rounded-xl bg-suave px-3.5 py-2.5 text-sm text-tinta-suave">
+              A turma chegou ao limite de {limite} alunos do seu plano.
+            </p>
+          ) : (
+            <CodigoTurma turmaId={turma.id} codigo={turma.codigo} />
+          )}
+        </section>
+
+        <section className="mt-6 rounded-2xl border border-linha p-5 sm:p-6">
+          <h2 className="mb-4 text-lg font-bold">Convidar aluno por e-mail</h2>
           {cheia ? (
             <p className="rounded-xl bg-suave px-3.5 py-2.5 text-sm text-tinta-suave">
               A turma chegou ao limite de {limite} alunos do seu plano.
