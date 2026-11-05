@@ -83,7 +83,8 @@ export default async function Inicio() {
   const perfil = await obterPerfil();
 
   return (
-    <div className="flex min-h-screen flex-col">
+    // data-cores-repasa: a landing fica sempre no verde da Repasa, mesmo com a cor pessoal escolhida no perfil.
+    <div data-cores-repasa className="flex min-h-screen flex-col">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(dadosEstruturadosInicio()).replace(/</g, "\\u003c") }}
