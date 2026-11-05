@@ -4,6 +4,7 @@ import { sair } from "@/app/entrar/actions";
 import { NavConta } from "@/app/aluno/NavConta";
 import { iaConfigurada } from "@/lib/pratica/gerar";
 import { obterPerfil, paginaInicial } from "@/lib/perfil";
+import { PreferenciasLeitura } from "@/components/PreferenciasLeitura";
 
 /** semMenu: só a marca (ex.: na verificação em duas etapas, antes de liberar a conta). */
 export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {}) {
@@ -18,7 +19,10 @@ export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {})
           <IconeLogo />
           <span className="text-[17px] font-extrabold tracking-tight">Repasa</span>
         </Link>
-        {!semMenu && <nav className="esconder-no-foco flex items-center gap-4 text-sm font-semibold text-tinta-suave">
+        {!semMenu && <nav className="esconder-no-foco flex items-center gap-3 text-sm font-semibold text-tinta-suave sm:gap-4">
+          <span className="hidden sm:block">
+            <PreferenciasLeitura />
+          </span>
           {perfil ? (
             <>
               {perfil.papel === "professor" ? (
