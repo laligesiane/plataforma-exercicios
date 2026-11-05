@@ -16,18 +16,65 @@ export async function criarMateria(_estado: EstadoFormulario, formData: FormData
   await exigirPapel("aluno");
   const nome = String(formData.get("nome") ?? "").trim().slice(0, 80);
   const cor = String(formData.get("cor") ?? "menta");
+  const cursoId = String(formData.get("curso_id") ?? "") || null;
   if (!nome) return { erro: "Dê um nome para a matéria." };
 
   const supabase = await criarClienteServidor();
   const { data, error } = await supabase
     .from("materia")
-    .insert({ nome, cor: ordemCores.includes(cor as Cor) ? cor : "menta" })
+    .insert({ nome, cor: ordemCores.includes(cor as Cor) ? cor : "menta", curso_id: cursoId })
     .select("id")
     .single();
   if (error) return { erro: mensagemDeLimite(error.message) ?? "Não foi possível criar a matéria." };
 
   revalidatePath("/aluno");
   redirect(`/aluno/materias/${data.id}`);
+}
+
+export async function criarCurso(_estado: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
+  await exigirPapel("aluno");
+  const nome = String(formData.get("nome") ?? "").trim().slice(0, 80);
+  if (!nome) return { erro: "Dê um nome para o curso." };
+
+  const supabase = await criarClienteServidor();
+  const { error } = await supabase.from("curso").insert({ nome });
+  if (error) return { erro: "Não foi possível criar o curso." };
+
+  revalidatePath("/aluno/materias");
+  return { sucesso: `Curso "${nome}" criado. Agora coloque matérias nele.` };
+}
+
+export async function renomearCurso(_estado: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
+  await exigirPapel("aluno");
+  const id = String(formData.get("id") ?? "");
+  const nome = String(formData.get("nome") ?? "").trim().slice(0, 80);
+  if (!nome) return { erro: "Dê um nome para o curso." };
+
+  const supabase = await criarClienteServidor();
+  const { error } = await supabase.from("curso").update({ nome }).eq("id", id);
+  if (error) return { erro: "Não foi possível renomear o curso." };
+
+  revalidatePath("/aluno/materias");
+  return { sucesso: "Nome salvo." };
+}
+
+/** Apaga só o curso. As matérias dele continuam, agora sem curso. */
+export async function apagarCurso(formData: FormData) {
+  await exigirPapel("aluno");
+  const supabase = await criarClienteServidor();
+  await supabase.from("curso").delete().eq("id", String(formData.get("id") ?? ""));
+  revalidatePath("/aluno/materias");
+}
+
+/** Coloca a matéria num curso (ou tira, com curso vazio). */
+export async function moverMateria(materiaId: string, cursoId: string | null): Promise<{ erro: string } | void> {
+  await exigirPapel("aluno");
+  const supabase = await criarClienteServidor();
+  const { error } = await supabase.from("materia").update({ curso_id: cursoId || null }).eq("id", materiaId);
+  if (error) return { erro: "Não foi possível mudar o curso." };
+  revalidatePath("/aluno/materias");
+  revalidatePath(`/aluno/materias/${materiaId}`);
+  revalidatePath("/aluno");
 }
 
 export async function apagarMateria(formData: FormData) {
