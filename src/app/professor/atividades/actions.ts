@@ -13,6 +13,7 @@ import {
   type Atividade,
   type Exercicio,
 } from "@/lib/atividades/modelo";
+import { dataValida } from "@/lib/aulas";
 import { ehIdioma } from "@/lib/idiomas";
 import { mensagemDeLimite } from "@/lib/limites";
 import { exigirPapel } from "@/lib/perfil";
@@ -78,6 +79,9 @@ export async function salvarAtividade(dados: DadosAtividade): Promise<ResultadoS
     return { ok: false, erro: "Os exercícios vieram num formato inesperado. Recarregue a página." };
   }
 
+  const prazo = atividade.prazo ?? null;
+  if (prazo !== null && !dataValida(prazo)) return { ok: false, erro: "Prazo inválido." };
+
   const exercicios = dados.exercicios.map(limparExercicio);
   const titulo = atividade.titulo.trim();
 
@@ -103,6 +107,7 @@ export async function salvarAtividade(dados: DadosAtividade): Promise<ResultadoS
       explicacao: atividade.explicacao.trim(),
       publicada: atividade.publicada,
       publica: atividade.publica,
+      prazo,
     })
     .eq("id", atividade.id)
     .select("id")
@@ -206,7 +211,7 @@ export async function duplicarAtividade(formData: FormData) {
   if (!original) redirect("/professor/atividades?erro=duplicar");
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { id: _id, criada_em, atualizada_em, publicada, publica, ...campos } = original;
+  const { id: _id, criada_em, atualizada_em, publicada, publica, prazo: _prazo, ...campos } = original;
   const { data: copia, error } = await supabase
     .from("atividade")
     .insert({ ...campos, titulo: `Cópia de ${original.titulo}`.slice(0, 200), publicada: false, publica: false })

@@ -4,6 +4,7 @@ import { formatarData, hojeNoFuso, tituloAula } from "@/lib/aulas";
 import { proximasAulas, temMapa } from "@/lib/pedidos";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
+import { montarParaFazer, rotuloPrazo, type CompromissoAluno } from "@/lib/parafazer";
 import { CartaoMateria } from "./CartaoMateria";
 import { carregarResumosDoAluno } from "./dados";
 import { LayoutConta } from "./LayoutConta";
@@ -15,10 +16,10 @@ export default async function MinhaConta() {
   const supabase = await criarClienteServidor();
   const hoje = hojeNoFuso();
 
-  const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }, { data: aulasDb }, { data: materias }, { count: pendentes }, { count: paraRepassar }, resumos] =
+  const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }, { data: aulasDb }, { data: materias }, { count: pendentes }, { count: paraRepassar }, { data: envios }, { data: compromissosDb }, resumos] =
     await Promise.all([
       supabase.from("turma").select("id, nome"),
-      supabase.from("atividade_turma").select("atividade(id)"),
+      supabase.from("atividade_turma").select("turma(nome), atividade(id, titulo, prazo, publicada)"),
       supabase.from("resposta").select("atividade_id").eq("aluno_id", perfil.id),
       supabase.from("turma_horario").select("turma_id, dia_semana, hora_inicio, duracao_min, fuso"),
       supabase.from("aula").select("id, turma_id, data, titulo").gte("data", hoje).order("data"),
@@ -30,11 +31,25 @@ export default async function MinhaConta() {
         .eq("aluno_id", perfil.id)
         .is("concluida_em", null)
         .lte("proxima_em", hoje),
+      supabase.from("envio").select("atividade_id").eq("aluno_id", perfil.id),
+      supabase.from("compromisso").select("id, titulo, data, feito, tipo, materia").eq("aluno_id", perfil.id).eq("feito", false),
       carregarResumosDoAluno(),
     ]);
 
   const nomeTurma = new Map((turmas ?? []).map((t) => [t.id, t.nome]));
-  const atividades = new Set((atribuicoes ?? []).flatMap((a) => (a.atividade ? [(a.atividade as unknown as { id: string }).id] : [])));
+  type Atribuicao = { turma: { nome: string } | null; atividade: { id: string; titulo: string; prazo: string | null; publicada: boolean } | null };
+  const atribuidas = ((atribuicoes ?? []) as unknown as Atribuicao[]).filter((a) => a.atividade?.publicada !== false);
+  const atividades = new Set(atribuidas.flatMap((a) => (a.atividade ? [a.atividade.id] : [])));
+  const porAtividade = new Map(
+    atribuidas.flatMap((a) =>
+      a.atividade ? [[a.atividade.id, { ...a.atividade, turma: a.turma?.nome ?? "" }] as const] : [],
+    ),
+  );
+  const paraFazer = montarParaFazer(
+    [...porAtividade.values()],
+    new Set((envios ?? []).map((e) => e.atividade_id as string)),
+    (compromissosDb ?? []) as CompromissoAluno[],
+  );
   const comecadas = new Set((respostas ?? []).map((r) => r.atividade_id).filter((id) => atividades.has(id)));
   const novas = atividades.size - comecadas.size;
   const mapas = resumos.filter(temMapa);
@@ -96,6 +111,38 @@ export default async function MinhaConta() {
           )}
         </div>
       </section>
+
+      {paraFazer.length > 0 && (
+        <section className="mt-6 rounded-2xl border border-linha p-5 sm:p-6">
+          <h2 className="text-lg font-bold">Para fazer</h2>
+          <ul className="mt-2 divide-y divide-linha">
+            {paraFazer.slice(0, 6).map((p) => {
+              const prazo = rotuloPrazo(p.data, hoje);
+              return (
+                <li key={p.chave}>
+                  <Link href={p.href} className="flex items-baseline justify-between gap-4 py-2.5 hover:text-primaria">
+                    <span className="min-w-0">
+                      <span className="block font-semibold">{p.titulo}</span>
+                      <span className="block text-sm text-tinta-suave">
+                        {p.origem === "atividade" ? "Atividade" : "Compromisso"}
+                        {p.detalhe ? ` · ${p.detalhe}` : ""}
+                      </span>
+                    </span>
+                    {prazo && (
+                      <span
+                        className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold ${prazo.atrasado ? "bg-erro-fundo text-erro" : "bg-suave text-tinta-suave"}`}
+                      >
+                        {prazo.texto}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+          {paraFazer.length > 6 && <p className="mt-2 text-sm text-tinta-suave">E mais {paraFazer.length - 6}.</p>}
+        </section>
+      )}
 
       {(paraRepassar ?? 0) > 0 && (
         <Link

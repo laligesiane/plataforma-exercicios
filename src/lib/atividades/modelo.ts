@@ -165,6 +165,8 @@ export type Atividade = {
   explicacao: string;
   publicada: boolean;
   publica: boolean;
+  /** "Entregar até" (AAAA-MM-DD), opcional. */
+  prazo?: string | null;
 };
 
 /** Etiquetas curtas da atividade: "A2 · Gramática · Espanhol" ou só "Matemática". */

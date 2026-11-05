@@ -366,6 +366,26 @@ export function EditorAtividade({ inicial, exerciciosIniciais, turmas, turmasIni
               )}
               <p className="mt-2 text-xs text-tinta-suave">Os alunos das turmas marcadas veem a atividade e as respostas deles ficam salvas para você.</p>
             </div>
+            <div>
+              <label htmlFor="prazo" className={rotulo}>
+                Entregar até <span className="font-normal text-tinta-suave">(opcional)</span>
+              </label>
+              <div className="flex flex-wrap items-center gap-3">
+                <input
+                  id="prazo"
+                  type="date"
+                  value={atividade.prazo ?? ""}
+                  onChange={(e) => editarAtividade("prazo", e.target.value || null)}
+                  className={`${campo} w-auto`}
+                />
+                {atividade.prazo && (
+                  <button type="button" onClick={() => editarAtividade("prazo", null)} className={botaoTexto}>
+                    Tirar prazo
+                  </button>
+                )}
+              </div>
+              <p className="mt-2 text-xs text-tinta-suave">Aparece na lista Para fazer dos alunos e na agenda deles. Não vale nota.</p>
+            </div>
             <label className="flex items-start gap-2.5 rounded-xl bg-suave px-3.5 py-3 text-sm">
               <input
                 type="checkbox"
