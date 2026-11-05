@@ -15,6 +15,26 @@ type Botao = {
   acao: (e: Editor) => void;
 };
 
+/**
+ * Liga/desliga a nota no trecho selecionado. Um item de lista precisa começar com
+ * um parágrafo, então a nota não cabe dentro dele: nesse caso o trecho sai da lista
+ * primeiro e vira uma nota logo abaixo dela.
+ */
+function alternarNota(e: Editor) {
+  if (e.isActive("blockquote")) {
+    e.chain().focus().lift("blockquote").run();
+    return;
+  }
+  if (e.can().wrapIn("blockquote")) {
+    e.chain().focus().wrapIn("blockquote").run();
+    return;
+  }
+  for (let i = 0; i < 10 && e.isActive("listItem"); i++) {
+    if (!e.chain().focus().liftListItem("listItem").run()) break;
+  }
+  e.chain().focus().wrapIn("blockquote").run();
+}
+
 const botoes: (Botao | "separador")[] = [
   {
     rotulo: "Texto",
@@ -81,9 +101,26 @@ const botoes: (Botao | "separador")[] = [
   {
     rotulo: "Nota",
     dica: "Nota em destaque",
-    conteudo: "✎ Nota",
+    conteudo: (
+      <span className="inline-flex items-center gap-1">
+        <svg
+          viewBox="0 0 24 24"
+          className="size-3.5"
+          aria-hidden
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+        </svg>
+        Nota
+      </span>
+    ),
     ativo: (e) => e.isActive("blockquote"),
-    acao: (e) => e.chain().focus().toggleBlockquote().run(),
+    acao: alternarNota,
   },
   {
     rotulo: "Divisória",
