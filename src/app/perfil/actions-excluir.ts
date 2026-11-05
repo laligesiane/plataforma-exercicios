@@ -46,7 +46,7 @@ export async function excluirConta(_estado: EstadoFormulario, formData: FormData
 
   const admin = criarClienteAdmin();
   try {
-    await Promise.all([apagarPasta(admin, "midia", user.id), apagarPasta(admin, "producao", user.id)]);
+    await Promise.all([apagarPasta(admin, "midia", user.id), apagarPasta(admin, "producao", user.id), apagarPasta(admin, "avatar", user.id)]);
   } catch {
     // Arquivos que sobrarem não impedem a exclusão; sem a conta, ninguém mais chega neles pelo app.
   }

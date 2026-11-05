@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { sair } from "@/app/entrar/actions";
+import { Avatar } from "@/components/Avatar";
 import { abaAtiva, abasAluno, abasProfessor, icones, maisAluno, type Item } from "@/components/navegacao";
 
 /** Fecha um menu suspenso ao clicar fora, apertar Esc ou trocar de página. */
@@ -111,10 +112,9 @@ export function MenuPrincipal({ papel, comPraticas = false }: { papel: "aluno" |
   );
 }
 
-/** Bolinha com a inicial, no canto direito: Perfil e Sair. */
-export function MenuConta({ nome }: { nome: string | null }) {
+/** Foto (ou bolinha com a inicial), no canto direito: Perfil e Sair. */
+export function MenuConta({ nome, foto }: { nome: string | null; foto?: string | null }) {
   const caminho = usePathname();
-  const inicial = (nome?.trim()[0] ?? "?").toUpperCase();
 
   return (
     <div className="esconder-no-foco">
@@ -123,9 +123,7 @@ export function MenuConta({ nome }: { nome: string | null }) {
         ativo={caminho.startsWith("/perfil")}
         largura="w-52"
         botao={
-          <span className="flex size-8 items-center justify-center rounded-full bg-primaria text-sm font-extrabold text-white" aria-hidden>
-            {inicial}
-          </span>
+          <Avatar nome={nome} foto={foto} />
         }
       >
         {nome && <p className="truncate px-3 pt-1 pb-2 text-xs font-bold text-tinta-suave">{nome}</p>}

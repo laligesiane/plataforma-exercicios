@@ -12,6 +12,7 @@ import { criarClienteServidor } from "@/lib/supabase/servidor";
 import Link from "next/link";
 import { EMAIL_CONTATO } from "@/lib/contato";
 import { ExcluirConta } from "./ExcluirConta";
+import { FotoPerfil } from "./FotoPerfil";
 import { FormularioPagina, type PaginaSalva } from "./FormularioPagina";
 import { AtivarMfa, BotaoDesligarMfa, FormularioNome, FormularioSenhaPerfil } from "./Formularios";
 
@@ -53,7 +54,7 @@ export default async function PaginaPerfil() {
       ? Promise.resolve({ count: null })
       : supabase.from("materia").select("id", { count: "exact", head: true }).eq("aluno_id", perfil.id),
     professor
-      ? supabase.from("pagina_professor").select("apelido, nome, bio, materias, contato, publicada").eq("professor_id", perfil.id).maybeSingle<PaginaSalva>()
+      ? supabase.from("pagina_professor").select("*").eq("professor_id", perfil.id).maybeSingle<PaginaSalva>()
       : Promise.resolve({ data: null }),
   ]);
   const user = usuario.user;
@@ -70,6 +71,9 @@ export default async function PaginaPerfil() {
         </div>
 
         <Secao titulo="Seus dados">
+          <div className="mb-5">
+            <FotoPerfil nome={perfil.nome} foto={perfil.foto ?? null} />
+          </div>
           <FormularioNome nome={perfil.nome ?? ""} />
           <dl className="mt-5 grid gap-x-6 gap-y-3 sm:grid-cols-2">
             <Item rotulo="E-mail" valor={perfil.email} />
