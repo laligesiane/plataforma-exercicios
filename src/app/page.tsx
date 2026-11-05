@@ -332,6 +332,8 @@ export default async function Inicio() {
 
       <footer className="border-t border-linha py-6 text-center text-xs text-tinta-suave">
         Repasa · repasa.com.br · Sem anúncios, nunca.
+        <br />
+        A Repasa está em versão beta: ela é nova e continua melhorando a cada semana.
       </footer>
     </div>
   );
