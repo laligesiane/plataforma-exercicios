@@ -29,7 +29,7 @@ function useSuspenso() {
 }
 
 const estiloAba = (ativa: boolean) =>
-  `flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-bold transition-colors [&_svg]:size-5 ${
+  `flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm lg:px-3.5 font-bold transition-colors [&_svg]:size-5 ${
     ativa ? "bg-primaria-suave text-primaria" : "text-tinta-suave hover:bg-suave hover:text-tinta"
   }`;
 
@@ -65,28 +65,26 @@ function ItemMenu({ item, caminho }: { item: Item; caminho: string }) {
 }
 
 /**
- * Menu do topo no computador e no tablet: as abas principais com ícone (o texto aparece a partir de 768px),
- * "Mais" com o resto das páginas do aluno e o menu da conta (Perfil e Sair).
+ * Abas do topo no computador e no tablet, no centro do cabeçalho: as principais com ícone
+ * (o texto aparece a partir de 768px) e "Mais" com o resto das páginas do aluno.
  */
-export function MenuTopo({ papel, nome, comPraticas = false }: { papel: "aluno" | "professor"; nome: string | null; comPraticas?: boolean }) {
+export function MenuPrincipal({ papel, comPraticas = false }: { papel: "aluno" | "professor"; comPraticas?: boolean }) {
   const caminho = usePathname();
   const abas = papel === "aluno" ? abasAluno : abasProfessor.filter((a) => a.href !== "/perfil");
   const mais = papel === "aluno" ? maisAluno(comPraticas) : [];
-  const inicial = (nome?.trim()[0] ?? "?").toUpperCase();
 
   return (
-    <div className="flex items-center gap-1">
-      <nav aria-label="Menu principal">
-        <ul className="flex items-center gap-0.5">
-          {abas.map((a) => {
-            const ativa = abaAtiva(caminho, a.href);
-            return (
-              <li key={a.href}>
-                <Link href={a.href} aria-current={ativa ? "page" : undefined} title={a.rotulo} className={estiloAba(ativa)}>
-                  {a.icone}
-                  <span className="sr-only md:not-sr-only">{a.rotulo}</span>
-                </Link>
-              </li>
+    <nav aria-label="Menu principal">
+      <ul className="flex items-center gap-0.5 lg:gap-2">
+        {abas.map((a) => {
+          const ativa = abaAtiva(caminho, a.href);
+          return (
+            <li key={a.href}>
+              <Link href={a.href} aria-current={ativa ? "page" : undefined} title={a.rotulo} className={estiloAba(ativa)}>
+                {a.icone}
+                <span className="sr-only md:not-sr-only">{a.rotulo}</span>
+              </Link>
+            </li>
             );
           })}
           {mais.length > 0 && (
@@ -110,31 +108,39 @@ export function MenuTopo({ papel, nome, comPraticas = false }: { papel: "aluno" 
           )}
         </ul>
       </nav>
-      <div className="esconder-no-foco ml-1">
-        <Suspenso
-          rotulo="Minha conta"
-          ativo={caminho.startsWith("/perfil")}
-          largura="w-52"
-          botao={
-            <span className="flex size-8 items-center justify-center rounded-full bg-primaria text-sm font-extrabold text-white" aria-hidden>
-              {inicial}
-            </span>
-          }
-        >
-          {nome && <p className="truncate px-3 pt-1 pb-2 text-xs font-bold text-tinta-suave">{nome}</p>}
-          <ItemMenu item={{ href: "/perfil", rotulo: "Perfil", icone: icones.perfil }} caminho={caminho} />
-          <form action={sair}>
-            <button
-              type="submit"
-              role="menuitem"
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-bold text-tinta hover:bg-suave [&_svg]:size-5 [&_svg]:text-tinta-suave"
-            >
-              {icones.sair}
-              Sair
-            </button>
-          </form>
-        </Suspenso>
-      </div>
+  );
+}
+
+/** Bolinha com a inicial, no canto direito: Perfil e Sair. */
+export function MenuConta({ nome }: { nome: string | null }) {
+  const caminho = usePathname();
+  const inicial = (nome?.trim()[0] ?? "?").toUpperCase();
+
+  return (
+    <div className="esconder-no-foco">
+      <Suspenso
+        rotulo="Minha conta"
+        ativo={caminho.startsWith("/perfil")}
+        largura="w-52"
+        botao={
+          <span className="flex size-8 items-center justify-center rounded-full bg-primaria text-sm font-extrabold text-white" aria-hidden>
+            {inicial}
+          </span>
+        }
+      >
+        {nome && <p className="truncate px-3 pt-1 pb-2 text-xs font-bold text-tinta-suave">{nome}</p>}
+        <ItemMenu item={{ href: "/perfil", rotulo: "Perfil", icone: icones.perfil }} caminho={caminho} />
+        <form action={sair}>
+          <button
+            type="submit"
+            role="menuitem"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-bold text-tinta hover:bg-suave [&_svg]:size-5 [&_svg]:text-tinta-suave"
+          >
+            {icones.sair}
+            Sair
+          </button>
+        </form>
+      </Suspenso>
     </div>
   );
 }
