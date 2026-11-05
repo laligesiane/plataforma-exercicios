@@ -1,6 +1,6 @@
 -- Práticas: atividades que o próprio aluno gera a partir de um resumo, para treinar sozinho.
 -- Só o aluno vê, edita e apaga as dele. Não tem nota nem vai para o professor.
--- Rodar uma vez no SQL Editor do Supabase, depois da 0020.
+-- Rodar uma vez no SQL Editor do Supabase, depois da 0022.
 
 create table if not exists public.pratica (
   id uuid primary key default gen_random_uuid(),
