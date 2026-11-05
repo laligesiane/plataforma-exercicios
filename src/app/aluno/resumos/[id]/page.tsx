@@ -6,7 +6,8 @@ import { ExportarPdf } from "@/components/ExportarPdf";
 import { VerResumo } from "@/components/VerResumo";
 import { documentoTemConteudo } from "@/lib/documento";
 import { validarMapa } from "@/lib/mapas";
-import { apagarResumoAluno } from "@/app/aluno/materias/actions";
+import { apagarResumoAluno, gerarMapaDoResumo } from "@/app/aluno/materias/actions";
+import { BotaoGerarMapa } from "@/components/BotaoGerarMapa";
 import { formatarData, tituloAula } from "@/lib/aulas";
 import { exigirPapel } from "@/lib/perfil";
 import { camposResumo, documentoDoResumo, type Resumo } from "@/lib/resumos";
@@ -43,7 +44,8 @@ export default async function ResumoDoAluno({ params }: { params: Promise<{ id: 
           >
             ← {materia ? materia.nome : "Meus resumos"}
           </Link>
-          <span className="flex items-baseline gap-4">
+          <span className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            {materia && temTexto && <BotaoGerarMapa acao={gerarMapaDoResumo.bind(null, data.id)} temMapa={temMapa} />}
             <ExportarPdf id={data.id} temTexto={temTexto} temMapa={temMapa} />
             {materia && (
               <>
