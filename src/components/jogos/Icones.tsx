@@ -42,8 +42,8 @@ const caminhos = {
   ),
   "verdadeiro-falso": (
     <>
-      <path d="m3 12 3 3 5-6" />
-      <path d="m14 9 6 6m0-6-6 6" />
+      <path d="m1.5 12.5 3.5 3.5 6-8" />
+      <path d="m14 7.5 8 8m0-8-8 8" />
     </>
   ),
   ligar: (
