@@ -6,7 +6,7 @@ export function LayoutConta({ titulo, descricao, children }: { titulo: string; d
   return (
     <>
       <Cabecalho />
-      <main className="mx-auto w-full max-w-3xl px-4 pt-8 pb-16">
+      <main className="mx-auto w-full max-w-7xl px-4 pt-8 pb-16 sm:px-6 lg:px-8">
         <p className="esconder-no-foco text-sm font-bold text-primaria">Minha conta</p>
         <h1 className="mt-1 text-3xl font-extrabold tracking-tight">{titulo}</h1>
         {descricao && <p className="esconder-no-foco mt-2 text-tinta-suave">{descricao}</p>}

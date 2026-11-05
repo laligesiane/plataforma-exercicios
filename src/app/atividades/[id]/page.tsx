@@ -76,7 +76,7 @@ export default async function PaginaAtividade({ params }: Params) {
   return (
     <>
       <Cabecalho />
-      <main className="mx-auto w-full max-w-3xl px-4 pt-8 pb-16">
+      <main className="mx-auto w-full max-w-7xl px-4 pt-8 pb-16 sm:px-6 lg:px-8">
         {ehDono && (
           <p className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-suave px-3.5 py-2.5 text-sm">
             <span>{atividade.publicada ? "Você está vendo sua atividade como o aluno vê." : "Rascunho: só você vê esta página."}</span>

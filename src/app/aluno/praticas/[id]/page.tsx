@@ -18,7 +18,7 @@ export default async function FazerPratica({ params }: { params: Promise<{ id: s
   return (
     <>
       <Cabecalho />
-      <main className="mx-auto w-full max-w-3xl px-4 pt-8 pb-16">
+      <main className="mx-auto w-full max-w-7xl px-4 pt-8 pb-16 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <Link
             href={pratica.resumo_id ? `/aluno/resumos/${pratica.resumo_id}` : "/aluno/praticas"}
