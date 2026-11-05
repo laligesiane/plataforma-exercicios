@@ -1,15 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Cabecalho } from "@/components/Cabecalho";
-import { BotaoExcluir } from "@/components/BotaoExcluir";
-import { ExportarPdf } from "@/components/ExportarPdf";
 import { VerResumo } from "@/components/VerResumo";
+import { AcoesResumo } from "@/components/AcoesResumo";
 import { botaoPrimario } from "@/components/ui/estilos";
 import { documentoTemConteudo } from "@/lib/documento";
 import { validarMapa } from "@/lib/mapas";
 import { apagarResumoAluno, gerarMapaDoResumo } from "@/app/aluno/materias/actions";
-import { Icone } from "@/components/jogos/Icones";
-import { BotaoGerarMapa } from "@/components/BotaoGerarMapa";
 import { formatarData, tituloAula } from "@/lib/aulas";
 import { iaConfigurada } from "@/lib/pratica/gerar";
 import { exigirPapel } from "@/lib/perfil";
@@ -43,41 +40,26 @@ export default async function ResumoDoAluno({ params }: { params: Promise<{ id: 
     <>
       <Cabecalho />
       <main className="mx-auto w-full max-w-5xl px-4 pt-8 pb-16">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <Link
             href={materia ? `/aluno/materias/${materia.id}` : "/aluno/resumos"}
-            className="text-sm font-bold text-primaria hover:underline"
+            className="inline-flex min-w-0 items-center gap-1.5 text-sm font-bold text-tinta-suave hover:text-primaria"
           >
-            ← {materia ? materia.nome : "Meus resumos"}
+            <svg viewBox="0 0 24 24" className="size-4 shrink-0" aria-hidden fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 5l-7 7 7 7" />
+            </svg>
+            <span className="truncate">{materia ? materia.nome : "Meus resumos"}</span>
           </Link>
-          <span className="esconder-no-foco flex flex-wrap items-baseline gap-x-4 gap-y-1">
-            {materia && temTexto && <BotaoGerarMapa acao={gerarMapaDoResumo.bind(null, data.id)} temMapa={temMapa} />}
-            {temTexto && (
-              <Link href={`/aluno/resumos/${data.id}/jogar`} className="inline-flex items-center gap-1.5 text-sm font-bold text-primaria hover:underline">
-                <Icone nome="jogos" className="size-4" /> Cartões e jogos
-              </Link>
-            )}
-            {materia && (
-              <>
-              <Link
-                href={`/aluno/materias/${materia.id}/resumos/${data.id}`}
-                className="text-sm font-bold text-primaria hover:underline"
-              >
-                Editar
-              </Link>
-              <BotaoExcluir
-                acao={apagarResumoAluno}
-                campos={{ id: data.id, materia_id: materia.id }}
-                pergunta="Excluir este resumo e o mapa mental dele? Não dá para desfazer."
-                discreto
-              />
-              </>
-            )}
-          </span>
-          {/* Baixar em PDF continua disponível no modo foco. */}
-          <ExportarPdf id={data.id} temTexto={temTexto} temMapa={temMapa} />
+          <AcoesResumo
+            id={data.id}
+            materiaId={materia?.id ?? null}
+            temTexto={temTexto}
+            temMapa={temMapa}
+            gerarMapa={materia ? gerarMapaDoResumo.bind(null, data.id) : undefined}
+            excluir={materia ? apagarResumoAluno : undefined}
+          />
         </div>
-        <div className="mt-3">
+        <div className="mt-5">
           <VerResumo resumo={data as unknown as Resumo} subtitulo={subtitulo} />
         </div>
 
