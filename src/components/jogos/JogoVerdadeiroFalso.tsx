@@ -43,7 +43,7 @@ export function JogoVerdadeiroFalso({ afirmacoes, acoes }: { afirmacoes: Afirmac
         total={afirmacoes.length}
         extra={sequencia >= 2 ? <span className="inline-flex items-center gap-1 font-bold text-primaria"><Icone nome="fogo" className="size-4" /> {sequencia} seguidas</span> : undefined}
       />
-      <p className="mt-5 text-center text-sm font-bold text-tinta-suave">Esta explicação combina com o termo?</p>
+      <p className="mt-5 text-center text-sm font-bold text-tinta-suave">Esta explicação é do termo? Verdadeiro ou falso?</p>
       <div className="mt-2 overflow-hidden rounded-3xl border-2 border-linha bg-fundo">
         <div className="border-b-2 border-linha bg-primaria-suave px-5 py-4 text-center">
           <p className="text-xs font-bold tracking-wide text-tinta-suave uppercase">Termo</p>
@@ -62,20 +62,20 @@ export function JogoVerdadeiroFalso({ afirmacoes, acoes }: { afirmacoes: Afirmac
             onClick={() => responder(false)}
             className="rounded-2xl border-2 border-erro bg-erro-fundo py-4 text-lg font-extrabold text-erro transition-transform active:scale-95"
           >
-            <span className="inline-flex items-center justify-center gap-2"><Icone nome="errado" /> Não combina</span>
+            <span className="inline-flex items-center justify-center gap-2"><Icone nome="errado" /> Falso</span>
           </button>
           <button
             type="button"
             onClick={() => responder(true)}
             className="rounded-2xl border-2 border-certo bg-certo-fundo py-4 text-lg font-extrabold text-certo transition-transform active:scale-95"
           >
-            <span className="inline-flex items-center justify-center gap-2"><Icone nome="certo" /> Combina</span>
+            <span className="inline-flex items-center justify-center gap-2"><Icone nome="certo" /> Verdadeiro</span>
           </button>
         </div>
       ) : (
         <div aria-live="polite" className="mt-4 rounded-2xl bg-suave p-4">
           <p className={`font-bold ${acertou ? "text-certo" : "text-erro"}`}>
-            {acertou ? "Acertou!" : "Não foi dessa vez."} {atual.verdadeira ? "A explicação era dele mesmo." : "Essa explicação era de outro termo."}
+            {acertou ? "Acertou!" : "Não foi dessa vez."} {atual.verdadeira ? "Era verdadeiro." : "Era falso: essa explicação é de outro termo."}
           </p>
           {!atual.verdadeira && (
             <p className="mt-1 text-sm text-tinta-suave">
