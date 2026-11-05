@@ -22,7 +22,12 @@ export default async function AtividadesProfessor({ searchParams }: { searchPara
       <main className="mx-auto w-full max-w-3xl px-4 pt-8 pb-16">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h1 className="text-3xl font-extrabold tracking-tight">Atividades</h1>
-          <BotaoNovaAtividade />
+          <div className="flex items-center gap-4">
+            <Link href="/biblioteca" className="text-sm font-bold text-primaria hover:underline">
+              Biblioteca pública
+            </Link>
+            <BotaoNovaAtividade />
+          </div>
         </div>
 
         {error ? (
