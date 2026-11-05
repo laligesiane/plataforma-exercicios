@@ -1,6 +1,6 @@
 "use server";
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { EstadoFormulario } from "@/components/ui/Mensagem";
 import { destinoDepoisDoLogin } from "@/lib/auth/depois-do-login";
@@ -71,5 +71,7 @@ export async function entrarComGoogle(formData: FormData) {
 export async function sair() {
   const supabase = await criarClienteServidor();
   await supabase.auth.signOut();
+  // A cor escolhida é da conta: sem login, a Repasa volta ao verde padrão.
+  (await cookies()).delete("repasa-tema");
   redirect("/");
 }

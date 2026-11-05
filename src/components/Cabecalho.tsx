@@ -17,7 +17,7 @@ export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {})
 
   return (
     <header className="border-b border-linha">
-      {perfil && <SincronizarTema tema={perfil.tema} />}
+      {!semMenu && <SincronizarTema tema={perfil?.tema ?? null} />}
       <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3.5">
         <Link href={inicio} className="flex items-center gap-2.5" aria-label={perfil ? "Repasa, ir para o meu painel" : "Repasa, página inicial"}>
           <IconeLogo />
