@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { adivinharTipo, lerCalendario, lerIcs, lerTexto, validarItensImportados } from ".";
+import { linhasDaPagina } from "./pdf";
 
 const hoje = "2026-11-05";
 const resumo = (itens: ReturnType<typeof lerTexto>) => itens.map((i) => [i.data, i.titulo, i.ate, i.hora, i.tipo]);
@@ -94,6 +95,86 @@ describe("lerTexto", () => {
   it("calendário que vira o ano continua em ordem", () => {
     const itens = lerTexto("Calendário 2026\n10/08 Início do semestre\n15/12 Fim das aulas\n10/02 Volta", "2026-07-01");
     expect(itens.map((i) => i.data)).toEqual(["2026-08-10", "2026-12-15", "2027-02-10"]);
+  });
+});
+
+describe("calendário em PDF com colunas lado a lado", () => {
+  // Formato comum de faculdade: grade dos meses à esquerda, cronograma à direita
+  // e uma tabela de feriados com o mês numa coluna, centralizado nas suas linhas.
+  const item = (str: string, x: number, y: number, width: number, height = 9) => ({ str, transform: [height, 0, 0, height, x, y], width, height });
+  const pagina = [
+    item("Calendário Acadêmico - 2026.2", 335, 691, 250, 18),
+    item("JULHO", 117, 616, 30),
+    item("CRONOGRAMA", 784, 616, 70),
+    item("D", 57, 601, 7),
+    item("S", 82, 601, 5),
+    item("JULHO", 623, 601, 30),
+    item("Dias Letivos:", 872, 601, 52),
+    item("0", 932, 601, 5),
+    item("1", 129, 586, 6),
+    item("2", 153, 586, 6),
+    item("20 a 25/07 - Entre esses dias ocorrerá a Semana Acadêmica.", 623, 587, 246),
+    item("12", 55, 557, 11),
+    item("13", 79, 557, 11),
+    item("03/08 - Início do Período Letivo 2026.2", 623, 558, 159),
+    item("31/10 a 14/11 - Semana de Prova para a 1ª Chamada - PARALELA ONLINE / ADAPTAÇÃO E", 623, 441, 370),
+    item("DEPENDÊNCIA", 623, 428, 60),
+    item("FERIADOS, RECESSOS E FÉRIAS", 255, 353, 125),
+    item("JULHO", 238, 340, 22),
+    item("Segundas - Feiras", 447, 339, 65),
+    item("17", 548, 339, 8),
+    item("07/12 a 12/12 - Semana de Prova para a 2ª CHAMADA", 623, 339, 333),
+    item("SETEMBRO", 230, 312, 37),
+    item("07 - Independência do Brasil", 284, 311, 93),
+    item("12 - Nossa Senhora da Aparecida / 15 -", 284, 295, 127),
+    item("19/12 - Fim do Período Letivo 2026.2", 623, 296, 152),
+    item("OUTUBRO", 232, 289, 34),
+    item("Dia do Professor", 284, 284, 54),
+    item("Sextas - Feiras", 447, 281, 53),
+    item("19", 548, 281, 8),
+    item("22/12 - Divulgação do Boletim", 623, 281, 124),
+    item("02 - Finados / 15 - Proc. República", 284, 270, 112),
+    item("NOVEMBRO", 228, 259, 41),
+    item("/ 20 - Dia Nacional de Zumbi e da", 284, 259, 109),
+    item("Consciência Negra", 284, 249, 60),
+    item("DEZEMBRO", 229, 237, 38),
+    item("25 - Natal", 284, 237, 32),
+    item("Total de dias letivos", 447, 237, 75),
+    item("115", 546, 237, 12),
+  ];
+
+  it("separa as colunas, junta linhas quebradas e põe o mês antes dos feriados dele", () => {
+    const linhas = linhasDaPagina(pagina);
+    expect(linhas).toContain("OUTUBRO 12 - Nossa Senhora da Aparecida / 15 - Dia do Professor\t19/12 - Fim do Período Letivo 2026.2");
+    expect(linhas).toContain("NOVEMBRO 02 - Finados / 15 - Proc. República / 20 - Dia Nacional de Zumbi e da Consciência Negra");
+    expect(linhas.some((l) => l.endsWith("ADAPTAÇÃO E DEPENDÊNCIA"))).toBe(true);
+  });
+
+  it("lê o cronograma e os feriados sem misturar com a grade nem com os dias letivos", () => {
+    const itens = lerTexto(linhasDaPagina(pagina).join("\n"), hoje);
+    expect(resumo(itens)).toEqual([
+      ["2026-07-20", "Entre esses dias ocorrerá a Semana Acadêmica.", "2026-07-25", null, "outro"],
+      ["2026-08-03", "Início do Período Letivo 2026.2", null, null, "aula"],
+      ["2026-09-07", "Independência do Brasil", null, null, "sem_aula"],
+      ["2026-10-12", "Nossa Senhora da Aparecida", null, null, "sem_aula"],
+      ["2026-10-15", "Dia do Professor", null, null, "sem_aula"],
+      ["2026-10-31", "Semana de Prova para a 1ª Chamada - PARALELA ONLINE / ADAPTAÇÃO E DEPENDÊNCIA", "2026-11-14", null, "prova"],
+      ["2026-11-02", "Finados", null, null, "sem_aula"],
+      ["2026-11-15", "Proc. República", null, null, "sem_aula"],
+      ["2026-11-20", "Dia Nacional de Zumbi e da Consciência Negra", null, null, "sem_aula"],
+      ["2026-12-07", "Semana de Prova para a 2ª CHAMADA", "2026-12-12", null, "prova"],
+      ["2026-12-19", "Fim do Período Letivo 2026.2", null, null, "aula"],
+      ["2026-12-22", "Divulgação do Boletim", null, null, "outro"],
+      ["2026-12-25", "Natal", null, null, "sem_aula"],
+    ]);
+  });
+
+  it("tabela colada com tab: a data se junta ao nome da coluna ao lado", () => {
+    const itens = lerTexto("Calendário 2027\nProva 1\t10/04\nMAIO\n15\tEntrega do relatório", hoje);
+    expect(resumo(itens)).toEqual([
+      ["2027-04-10", "Prova 1", null, null, "prova"],
+      ["2027-05-15", "Entrega do relatório", null, null, "entrega"],
+    ]);
   });
 });
 
