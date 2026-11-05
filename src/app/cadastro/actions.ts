@@ -11,13 +11,14 @@ export async function cadastrar(_estado: EstadoFormulario, formData: FormData): 
   const papel = formData.get("papel") === "aluno" ? "aluno" : "professor";
   if (!nome || !email) return { erro: "Preencha nome e e-mail." };
   if (senha.length < 8) return { erro: "A senha precisa ter pelo menos 8 caracteres." };
+  if (formData.get("aceite") !== "on") return { erro: "Para criar a conta, marque que aceita os termos e a política de privacidade." };
 
   const origem = (await headers()).get("origin") ?? "";
   const supabase = await criarClienteServidor();
   const { data, error } = await supabase.auth.signUp({
     email,
     password: senha,
-    options: { data: { nome, papel }, emailRedirectTo: `${origem}/auth/confirmar?next=/${papel}` },
+    options: { data: { nome, papel, aceite_termos_em: new Date().toISOString() }, emailRedirectTo: `${origem}/auth/confirmar?next=/${papel}` },
   });
 
   if (error) {

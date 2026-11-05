@@ -9,6 +9,9 @@ import { LIMITES_LIGADOS } from "@/lib/limites";
 import { exigirLogin } from "@/lib/perfil";
 import { loginGoogleLigado } from "@/lib/supabase/config";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
+import Link from "next/link";
+import { EMAIL_CONTATO } from "@/lib/contato";
+import { ExcluirConta } from "./ExcluirConta";
 import { FormularioPagina, type PaginaSalva } from "./FormularioPagina";
 import { AtivarMfa, BotaoDesligarMfa, FormularioNome, FormularioSenhaPerfil } from "./Formularios";
 
@@ -152,6 +155,24 @@ export default async function PaginaPerfil() {
               <AtivarMfa />
             </>
           )}
+        </Secao>
+
+        <Secao titulo="Ajuda e sugestões">
+          <p className="text-sm text-tinta-suave">
+            A Repasa é nova e está em testes, por isso tudo está grátis e sem limites. O que mais nos ajuda agora são as suas
+            sugestões, elogios e reclamações.{" "}
+            <Link href="/sugestoes" className="font-bold text-primaria hover:underline">Mandar minha opinião</Link> ou escrever para{" "}
+            <a href={`mailto:${EMAIL_CONTATO}`} className="font-bold text-primaria hover:underline">{EMAIL_CONTATO}</a>.
+          </p>
+        </Secao>
+
+        <Secao titulo="Excluir conta">
+          <ExcluirConta professor={professor} />
+          <p className="mt-4 text-xs text-tinta-suave">
+            Saiba como cuidamos dos seus dados na{" "}
+            <Link href="/privacidade" className="font-bold text-primaria hover:underline">política de privacidade</Link> e nos{" "}
+            <Link href="/termos" className="font-bold text-primaria hover:underline">termos de uso</Link>.
+          </p>
         </Secao>
 
         <form action={sair}>
