@@ -27,6 +27,7 @@ import {
   type TipoExercicio,
 } from "@/lib/atividades/modelo";
 import { idiomas } from "@/lib/idiomas";
+import { ColarItens } from "./ColarItens";
 import { sugestoesMateria } from "@/lib/turmas";
 import { apagarAtividade, salvarAtividade, type ResultadoSalvar } from "../actions";
 import {
@@ -509,6 +510,7 @@ export function EditorExercicio({
           <button type="button" onClick={() => onChange(comItemNovo(exercicio))} className={`${botaoSecundario} mt-4`}>
             + {rotuloDoItem[exercicio.tipo]}
           </button>
+          <ColarItens exercicio={exercicio} onChange={onChange} />
         </>
       )}
     </section>
