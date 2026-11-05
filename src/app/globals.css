@@ -238,3 +238,33 @@ body {
     break-inside: avoid;
   }
 }
+
+/* Modo foco: a plantinha do Brotinho balança de leve e pisca enquanto o aluno estuda. */
+@keyframes foco-balanca {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+.foco-vivo .foco-balanca {
+  transform-box: view-box;
+  animation: foco-balanca 3s ease-in-out infinite;
+}
+.foco-vivo .foco-olhos {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: brotinho-pisca 4.5s infinite;
+}
+@keyframes foco-cresce {
+  from { transform: scale(0.92); opacity: 0.4; }
+  to { transform: scale(1); opacity: 1; }
+}
+.foco-nova-fase {
+  transform-origin: 50% 70%;
+  animation: foco-cresce 0.7s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .foco-vivo .foco-balanca,
+  .foco-vivo .foco-olhos,
+  .foco-nova-fase {
+    animation: none;
+  }
+}
