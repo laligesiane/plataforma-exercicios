@@ -87,6 +87,16 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
           </span>
           <span aria-hidden className="shrink-0 text-xl font-bold text-primaria">→</span>
         </Link>
+        <Link
+          href={`/professor/turmas/${turma.id}/ao-vivo`}
+          className="mt-3 flex items-center justify-between gap-4 rounded-2xl border border-linha p-4 transition-colors hover:border-primaria"
+        >
+          <span>
+            <span className="block font-extrabold">Aula ao vivo</span>
+            <span className="block text-sm text-tinta-suave">Durante a aula, veja a turma respondendo e onde estão errando, na hora.</span>
+          </span>
+          <span aria-hidden className="shrink-0 text-xl font-bold text-primaria">→</span>
+        </Link>
 
         <PedidosAula pedidos={(pedidosDb ?? []) as unknown as PedidoDaTurma[]} turmaId={turma.id} />
 
