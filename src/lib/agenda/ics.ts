@@ -9,6 +9,8 @@ export type EventoUnico = {
   titulo: string;
   descricao?: string;
   data: string; // "AAAA-MM-DD"
+  /** Último dia, para períodos de dia inteiro (férias, semana de provas). */
+  ate?: string | null;
   hora?: string | null; // "HH:MM" ou "HH:MM:SS"
   duracao_min?: number;
   fuso?: string;
@@ -87,7 +89,9 @@ function linhasEventoUnico(e: EventoUnico, carimboUtc: string) {
     fim = `DTEND;TZID=${fuso}:${local(termino)}`;
   } else {
     inicio = `DTSTART;VALUE=DATE:${dia(new Date(Date.UTC(a, m - 1, d)))}`;
-    fim = `DTEND;VALUE=DATE:${dia(new Date(Date.UTC(a, m - 1, d + 1)))}`;
+    // DTEND de dia inteiro é o dia seguinte ao último.
+    const [aa, ma, da] = (e.ate && e.ate > e.data ? e.ate : e.data).split("-").map(Number);
+    fim = `DTEND;VALUE=DATE:${dia(new Date(Date.UTC(aa, ma - 1, da + 1)))}`;
   }
   return [
     "BEGIN:VEVENT",

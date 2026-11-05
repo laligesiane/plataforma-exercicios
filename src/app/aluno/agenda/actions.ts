@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import type { EstadoFormulario } from "@/components/ui/Mensagem";
 import { hojeNoFuso } from "@/lib/aulas";
 import { validarCompromisso } from "@/lib/compromissos";
+import { tipoDoCompromisso, tituloComPeriodo, validarItensImportados } from "@/lib/importar-calendario";
 import { validarPedido } from "@/lib/pedidos";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
@@ -83,4 +84,34 @@ export async function excluirCompromisso(formData: FormData) {
   await supabase.from("compromisso").delete().eq("id", String(formData.get("id") ?? ""));
   revalidatePath("/aluno/agenda");
   revalidatePath("/aluno");
+}
+
+/** Salva o que o aluno revisou e deixou marcado na importação do calendário. */
+export async function importarCompromissos(itensJson: string, materia: string): Promise<EstadoFormulario> {
+  const perfil = await exigirPapel("aluno");
+  let bruto: unknown;
+  try {
+    bruto = JSON.parse(itensJson);
+  } catch {
+    return { erro: "Não foi possível ler a lista. Tente de novo." };
+  }
+  const r = validarItensImportados(bruto);
+  if ("erro" in r) return { erro: r.erro };
+
+  const onde = materia.trim().slice(0, 100);
+  const linhas = r.itens.map((i) => ({
+    aluno_id: perfil.id,
+    tipo: tipoDoCompromisso[i.tipo],
+    titulo: tituloComPeriodo(i),
+    materia: onde,
+    data: i.data,
+    hora: i.hora,
+  }));
+  const supabase = await criarClienteServidor();
+  const { error } = await supabase.from("compromisso").insert(linhas);
+  if (error) return { erro: "Não foi possível salvar. Nada foi salvo; tente de novo." };
+
+  revalidatePath("/aluno/agenda");
+  revalidatePath("/aluno");
+  return { sucesso: `Pronto: ${linhas.length} ${linhas.length === 1 ? "data foi salva" : "datas foram salvas"} na sua agenda.` };
 }

@@ -1,5 +1,6 @@
 import { gerarIcs, type EventoTurma, type EventoUnico } from "@/lib/agenda/ics";
 import { camposCompromisso, eventoDoCompromisso, type Compromisso } from "@/lib/compromissos";
+import { camposDataTurma, eventoDaDataTurma, type DataTurma } from "@/lib/importar-calendario";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
 
 // Assinatura .ics: o Google Agenda busca este endereço sem login, então o token secreto é a chave.
@@ -65,8 +66,17 @@ export async function GET(_req: Request, { params }: { params: Promise<{ arquivo
     }
   }
 
+  // Calendário das turmas (provas, feriados, férias) que o professor importou.
+  const datasTurma: EventoUnico[] = [];
+  if (turmaIds.length) {
+    const { data } = await admin.from("data_turma").select(`${camposDataTurma}, turma(nome)`).in("turma_id", turmaIds);
+    for (const d of (data ?? []) as unknown as (DataTurma & { turma: { nome: string } | null })[]) {
+      datasTurma.push(eventoDaDataTurma(d, d.turma?.nome ?? "Turma"));
+    }
+  }
+
   const nome = perfil.papel === "aluno" ? "Minha agenda na Repasa" : "Aulas na Repasa";
-  return new Response(gerarIcs(eventos, nome, new Date(), [...compromissos.map(eventoDoCompromisso), ...prazos]), {
+  return new Response(gerarIcs(eventos, nome, new Date(), [...compromissos.map(eventoDoCompromisso), ...prazos, ...datasTurma]), {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
       "Content-Disposition": 'inline; filename="repasa.ics"',

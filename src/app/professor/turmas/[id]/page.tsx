@@ -21,6 +21,9 @@ import { CodigoTurma } from "./CodigoTurma";
 import { FormularioConvite } from "./FormularioConvite";
 import { FormularioHorario } from "./FormularioHorario";
 import { PedidosAula, type PedidoDaTurma } from "./PedidosAula";
+import { ImportarCalendario } from "@/components/ImportarCalendario";
+import { camposDataTurma, datasPelaFrente, quandoTexto, rotuloTipoImportado, type DataTurma } from "@/lib/importar-calendario";
+import { apagarDataTurma, importarDatasTurma } from "./actions-calendario";
 
 type Aluno = { id: string; nome: string | null; email: string };
 
@@ -29,8 +32,16 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
   const perfil = await exigirPapel("professor");
   const supabase = await criarClienteServidor();
 
-  const [{ data: turma }, { data: plano }, { data: atribuicoes }, { data: horarios }, { data: aulasDb }, { data: resumosDb }, { data: pedidosDb }] =
-    await Promise.all([
+  const [
+    { data: turma },
+    { data: plano },
+    { data: atribuicoes },
+    { data: horarios },
+    { data: aulasDb },
+    { data: resumosDb },
+    { data: pedidosDb },
+    { data: datasDb },
+  ] = await Promise.all([
     supabase
       .from("turma")
       .select("id, nome, codigo, trilha, materia, idioma_ensinado, idioma_instrucao, turma_aluno(perfil(id, nome, email))")
@@ -47,6 +58,7 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
       .eq("turma_id", id)
       .eq("status", "pendente")
       .order("data"),
+    supabase.from("data_turma").select(camposDataTurma).eq("turma_id", id).order("data"),
   ]);
   if (!turma) notFound();
 
@@ -61,6 +73,8 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
   const hoje = hojeNoFuso();
   const ultima = ultimaAula(aulas, hoje);
   const resumos = (resumosDb ?? []) as Resumo[];
+  const datasTurma = (datasDb ?? []) as DataTurma[];
+  const proximasDatas = datasPelaFrente(datasTurma, hoje);
   const resumosDaAula = (aulaId: string) =>
     resumos
       .filter((r) => r.aula_id === aulaId)
@@ -122,6 +136,45 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
             />
             <FormularioHorario turmaId={turma.id} />
           </div>
+        </section>
+
+        <section className="mt-6 rounded-2xl border border-linha p-5 sm:p-6">
+          <h2 className="text-lg font-bold">Calendário da turma</h2>
+          <p className="mt-1 mb-4 text-sm text-tinta-suave">
+            Provas, entregas, feriados e férias. Os alunos veem na agenda deles e no Google Agenda.
+          </p>
+          {proximasDatas.length > 0 && (
+            <ul className="mb-4 divide-y divide-linha rounded-xl border border-linha">
+              {proximasDatas.map((d) => (
+                <li key={d.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-3">
+                  <span>
+                    <span className="block font-semibold">{d.titulo}</span>
+                    <span className="text-sm text-tinta-suave">
+                      {rotuloTipoImportado[d.tipo]} · {quandoTexto(d)}
+                    </span>
+                  </span>
+                  <BotaoExcluir
+                    acao={apagarDataTurma}
+                    campos={{ id: d.id, turma_id: turma.id }}
+                    rotulo="Apagar"
+                    pergunta={`Apagar "${d.titulo}" do calendário da turma?`}
+                    discreto
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
+          <details className="rounded-xl bg-suave p-4" open={datasTurma.length === 0}>
+            <summary className="cursor-pointer font-bold text-primaria">Importar calendário acadêmico</summary>
+            <div className="mt-4">
+              <ImportarCalendario
+                hoje={hoje}
+                existentes={datasTurma}
+                salvar={importarDatasTurma.bind(null, turma.id)}
+                ondeSalva="na turma"
+              />
+            </div>
+          </details>
         </section>
 
         <section className="mt-6 rounded-2xl border border-linha p-5 sm:p-6">
