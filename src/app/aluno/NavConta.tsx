@@ -10,6 +10,7 @@ const abas = [
   { href: "/aluno/materias", rotulo: "Matérias" },
   { href: "/aluno/resumos", rotulo: "Resumos" },
   { href: "/aluno/mapas", rotulo: "Mapas mentais" },
+  { href: "/aluno/praticas", rotulo: "Práticas" },
   { href: "/aluno/agenda", rotulo: "Agenda" },
   { href: "/aluno/foco", rotulo: "Modo foco" },
 ];

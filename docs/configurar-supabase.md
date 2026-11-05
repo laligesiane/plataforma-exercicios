@@ -56,6 +56,7 @@ Em **Vercel → plataforma-exercicios → Settings → Environment Variables**, 
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://eafuupcfaemtfahqdnyh.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | a publishable key (`sb_publishable_...`) |
 | `SUPABASE_SERVICE_ROLE_KEY` | a secret key (`sb_secret_...`), em Project Settings → API Keys |
+| `ANTHROPIC_API_KEY` | chave da Claude API (`sk-ant-...`), em console.anthropic.com → API Keys. Liga o "Gerar atividade" do aluno; sem ela, o botão avisa que ainda não está ligado. |
 
 A secret key dá acesso total ao banco: cole só na Vercel, nunca em chat, e-mail ou código.
 Depois de salvar, faça um **Redeploy** para valer.
