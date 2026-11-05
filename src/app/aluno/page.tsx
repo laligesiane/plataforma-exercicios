@@ -5,7 +5,9 @@ import { proximasAulas, temMapa } from "@/lib/pedidos";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { montarParaFazer, rotuloPrazo, type CompromissoAluno } from "@/lib/parafazer";
+import { diasDeEstudo } from "@/lib/sequencia";
 import { CartaoMateria } from "./CartaoMateria";
+import { SequenciaBrotinho } from "./SequenciaBrotinho";
 import { carregarResumosDoAluno } from "./dados";
 import { LayoutConta } from "./LayoutConta";
 
@@ -16,7 +18,7 @@ export default async function MinhaConta() {
   const supabase = await criarClienteServidor();
   const hoje = hojeNoFuso();
 
-  const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }, { data: aulasDb }, { data: materias }, { count: pendentes }, { count: paraRepassar }, { data: envios }, { data: compromissosDb }, resumos] =
+  const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }, { data: aulasDb }, { data: materias }, { count: pendentes }, { count: paraRepassar }, { data: envios }, { data: compromissosDb }, { data: momentosResposta }, { data: momentosRevisao }, resumos] =
     await Promise.all([
       supabase.from("turma").select("id, nome"),
       supabase.from("atividade_turma").select("turma(nome), atividade(id, titulo, prazo, publicada)"),
@@ -33,6 +35,18 @@ export default async function MinhaConta() {
         .lte("proxima_em", hoje),
       supabase.from("envio").select("atividade_id").eq("aluno_id", perfil.id),
       supabase.from("compromisso").select("id, titulo, data, feito, tipo, materia").eq("aluno_id", perfil.id).eq("feito", false),
+      supabase
+        .from("resposta")
+        .select("criada_em")
+        .eq("aluno_id", perfil.id)
+        .gte("criada_em", new Date(Date.now() - 40 * 86_400_000).toISOString())
+        .order("criada_em", { ascending: false })
+        .limit(1000),
+      supabase
+        .from("revisao")
+        .select("atualizada_em")
+        .eq("aluno_id", perfil.id)
+        .gte("atualizada_em", new Date(Date.now() - 40 * 86_400_000).toISOString()),
       carregarResumosDoAluno(),
     ]);
 
@@ -53,6 +67,12 @@ export default async function MinhaConta() {
   const comecadas = new Set((respostas ?? []).map((r) => r.atividade_id).filter((id) => atividades.has(id)));
   const novas = atividades.size - comecadas.size;
   const mapas = resumos.filter(temMapa);
+  // Conta como estudo: responder atividade, repassar erros e mexer nos próprios resumos.
+  const diasEstudados = diasDeEstudo([
+    ...(momentosResposta ?? []).map((r) => r.criada_em as string),
+    ...(momentosRevisao ?? []).map((r) => r.atualizada_em as string),
+    ...resumos.filter((r) => !r.turma_id).map((r) => r.atualizado_em),
+  ]);
 
   // Próximo compromisso: a aula marcada mais próxima ou o próximo horário semanal.
   const aulaMarcada = proximasAulas(aulasDb ?? [], hoje)[0] ?? null;
@@ -111,6 +131,8 @@ export default async function MinhaConta() {
           )}
         </div>
       </section>
+
+      <SequenciaBrotinho dias={diasEstudados} hoje={hoje} />
 
       {paraFazer.length > 0 && (
         <section className="mt-6 rounded-2xl border border-linha p-5 sm:p-6">
