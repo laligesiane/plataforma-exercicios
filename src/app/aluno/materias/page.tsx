@@ -7,9 +7,10 @@ import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { CartaoMateria } from "../CartaoMateria";
 import { LayoutConta } from "../LayoutConta";
 import { apagarCurso } from "./actions";
-import { FormularioCurso, FormularioRenomearCurso } from "./FormularioCurso";
+import { FormularioCurso, FormularioEditarCurso, type CursoCompleto } from "./FormularioCurso";
+import { ProgressoCurso } from "./ProgressoCurso";
 import { FormularioMateria } from "./FormularioMateria";
-import { SeletorCurso, type CursoSimples } from "./SeletorCurso";
+import { SeletorCurso } from "./SeletorCurso";
 
 type MateriaLista = { id: string; nome: string; cor: string; curso_id: string | null; resumo: unknown };
 
@@ -19,11 +20,11 @@ export default async function MateriasDoAluno({ searchParams }: { searchParams: 
   const supabase = await criarClienteServidor();
   const [{ data }, { data: cursosDb }, { data: plano }] = await Promise.all([
     supabase.from("materia").select("id, nome, cor, curso_id, resumo(count)").order("criada_em"),
-    supabase.from("curso").select("id, nome").order("nome"),
+    supabase.from("curso").select("id, nome, inicio, duracao_meses, etapa").order("nome"),
     supabase.from("plano").select("max_materias").eq("id", perfil.plano_id).single(),
   ]);
   const materias = (data ?? []) as MateriaLista[];
-  const cursos = (cursosDb ?? []) as CursoSimples[];
+  const cursos = (cursosDb ?? []) as CursoCompleto[];
   const maxMaterias = limite(plano?.max_materias);
   const idsCursos = new Set(cursos.map((c) => c.id));
   const semCurso = materias.filter((m) => !m.curso_id || !idsCursos.has(m.curso_id));
@@ -33,13 +34,15 @@ export default async function MateriasDoAluno({ searchParams }: { searchParams: 
   const grade = (lista: MateriaLista[]) => (
     <ul className="mt-3 grid gap-3 sm:grid-cols-3">
       {lista.map((m) => (
-        <li key={m.id}>
-          <CartaoMateria
-            id={m.id}
-            nome={m.nome}
-            cor={m.cor}
-            total={(m.resumo as { count: number }[] | null)?.[0]?.count ?? 0}
-          />
+        <li key={m.id} className="flex flex-col">
+          <div className="grow">
+            <CartaoMateria
+              id={m.id}
+              nome={m.nome}
+              cor={m.cor}
+              total={(m.resumo as { count: number }[] | null)?.[0]?.count ?? 0}
+            />
+          </div>
           {cursos.length > 0 && <SeletorCurso materiaId={m.id} cursoId={m.curso_id} cursos={cursos} compacto />}
         </li>
       ))}
@@ -73,6 +76,7 @@ export default async function MateriasDoAluno({ searchParams }: { searchParams: 
                 </Link>
               )}
             </div>
+            <ProgressoCurso curso={c} />
             {doCurso.length > 0 ? (
               grade(doCurso)
             ) : (
@@ -80,9 +84,9 @@ export default async function MateriasDoAluno({ searchParams }: { searchParams: 
                 Nenhuma matéria neste curso ainda. Crie uma nova ou mude o curso de uma matéria que você já tem.
               </p>
             )}
-            <details className="mt-2 text-sm">
-              <summary className="cursor-pointer text-tinta-suave hover:text-tinta">Renomear ou excluir curso</summary>
-              <FormularioRenomearCurso id={c.id} nome={c.nome} />
+            <details className="mt-4 text-sm">
+              <summary className="cursor-pointer text-tinta-suave hover:text-tinta">Editar ou excluir curso</summary>
+              <FormularioEditarCurso curso={c} />
               <BotaoExcluir
                 acao={apagarCurso}
                 campos={{ id: c.id }}
@@ -124,7 +128,7 @@ export default async function MateriasDoAluno({ searchParams }: { searchParams: 
           <summary className="cursor-pointer font-bold text-primaria">Novo curso</summary>
           <p className="mt-2 mb-4 text-sm text-tinta-suave">
             Um curso junta várias matérias. Por exemplo: o curso “Faculdade” com as matérias Cálculo e Física, ou
-            “Espanhol” com Gramática e Vocabulário.
+            “Espanhol” com Gramática e Vocabulário. Se quiser, diga quando começou e quanto dura para ver quanto falta.
           </p>
           <FormularioCurso />
         </details>
