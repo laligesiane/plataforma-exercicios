@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const abas = [
   { href: "/aluno", rotulo: "Visão geral" },
   { href: "/aluno/atividades", rotulo: "Atividades" },
+  { href: "/aluno/revisar", rotulo: "Repasar erros" },
   { href: "/aluno/materias", rotulo: "Matérias" },
   { href: "/aluno/resumos", rotulo: "Resumos" },
   { href: "/aluno/mapas", rotulo: "Mapas mentais" },
