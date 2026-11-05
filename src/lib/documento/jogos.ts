@@ -121,7 +121,8 @@ export function montarComplete(cartoes: Cartao[], semente: string): Pergunta[] {
 
 // ---------- Verdadeiro ou falso ----------
 
-export type Afirmacao = { id: string; termo: string; explicacao: string; verdadeira: boolean; explicacaoCerta: string };
+/** "de" é o termo dono da explicação mostrada (o próprio termo quando a afirmação é verdadeira). */
+export type Afirmacao = { id: string; termo: string; explicacao: string; verdadeira: boolean; explicacaoCerta: string; de: string };
 
 /** Metade (mais ou menos) das afirmações troca a explicação pela de outro cartão. */
 export function montarVerdadeiroFalso(cartoes: Cartao[], semente: string): Afirmacao[] {
@@ -130,7 +131,7 @@ export function montarVerdadeiroFalso(cartoes: Cartao[], semente: string): Afirm
     const outro = ordem[(i + 1) % ordem.length];
     const verdadeira = ordem.length < 2 || embaralhar([true, false], `${semente}:vf:${c.id}`)[0];
     const explicacao = verdadeira ? pistaDe(c) : pistaDe(outro);
-    return { id: c.id, termo: c.frente, explicacao, verdadeira, explicacaoCerta: pistaDe(c) };
+    return { id: c.id, termo: c.frente, explicacao, verdadeira, explicacaoCerta: pistaDe(c), de: verdadeira ? c.frente : outro.frente };
   });
 }
 
