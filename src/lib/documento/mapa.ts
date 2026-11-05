@@ -23,6 +23,31 @@ export function encurtar(texto: string, max: number = LIMITES.texto) {
   return `${(espaco > max / 2 ? corte.slice(0, espaco) : corte).replace(/[\s,.;:–-]+$/, "")}…`;
 }
 
+/**
+ * Texto de um ponto (item de lista ou parágrafo) para o mapa. Se o ponto tem trechos em negrito, eles são
+ * o resumo; senão, vale a primeira frase. Um rótulo do começo ("Complemento:", "Exemplo:") fica sempre
+ * junto do conteúdo.
+ */
+export function resumirPonto(inlines: No[]): string {
+  const completo = inlines.map(textoDe).join("").replace(/\s+/g, " ").trim();
+  if (!completo) return "";
+  const rotulo = completo.match(/^([^:.!?]{1,30}):\s/)?.[1].trim() ?? "";
+  const negrito = inlines
+    .filter((n) => n.type === "text" && n.marks?.some((m) => m.type === "bold"))
+    .map((n) => (n.type === "text" ? n.text : ""))
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/[\s,;:]+$/, "");
+  const nucleo = rotulo && negrito.startsWith(rotulo) ? negrito.slice(rotulo.length).replace(/^[:\s]+/, "") : negrito;
+  if (!rotulo) {
+    return nucleo.length >= 3 ? encurtar(nucleo.charAt(0).toLocaleUpperCase("pt-BR") + nucleo.slice(1)) : encurtar(completo);
+  }
+  // Com rótulo, encurta só o conteúdo, para o rótulo nunca ficar sozinho.
+  const conteudo = nucleo.length >= 3 ? nucleo : completo.slice(completo.indexOf(":") + 1).trim();
+  return `${rotulo}: ${encurtar(conteudo, LIMITES.texto - rotulo.length - 2)}`;
+}
+
 /** Pontos de um bloco: cada item de lista, cada parágrafo, cada linha de nota. */
 function pontosDe(no: No): string[] {
   switch (no.type) {
@@ -30,13 +55,13 @@ function pontosDe(no: No): string[] {
     case "orderedList":
       return (no.content ?? []).flatMap((item) => {
         const primeiro = (item.type !== "text" && item.content?.find((f) => f.type === "paragraph")) || null;
-        const t = primeiro ? textoDe(primeiro).trim() : "";
+        const t = primeiro && primeiro.type !== "text" ? resumirPonto(primeiro.content ?? []) : "";
         return t ? [t] : [];
       });
     case "blockquote":
       return (no.content ?? []).flatMap(pontosDe);
     case "paragraph": {
-      const t = textoDe(no).trim();
+      const t = resumirPonto(no.content ?? []);
       return t ? [t] : [];
     }
     default:
@@ -44,9 +69,14 @@ function pontosDe(no: No): string[] {
   }
 }
 
-/** Monta o esboço do documento: títulos (nível 2) com subtítulos (nível 3) e os pontos de cada um. */
+/**
+ * Monta o esboço do documento. O nível de título mais alto usado vira seção e os menores viram subseções:
+ * com Título e Subtítulo, o Subtítulo fica dentro do Título; só com Subtítulos, cada um é uma seção.
+ */
 export function esbocoDoDocumento(doc: Documento): Parte {
   const raiz: Parte = { titulo: "", pontos: [], partes: [] };
+  const niveis = doc.content.flatMap((n) => (n.type === "heading" && textoDe(n).trim() ? [n.attrs?.level ?? 2] : []));
+  const topo = niveis.length ? Math.min(...niveis) : 2;
   let secao: Parte | null = null;
   let sub: Parte | null = null;
   for (const no of doc.content) {
@@ -54,14 +84,9 @@ export function esbocoDoDocumento(doc: Documento): Parte {
       const titulo = textoDe(no).trim();
       if (!titulo) continue;
       const parte: Parte = { titulo, pontos: [], partes: [] };
-      if (no.attrs?.level === 3 && secao) {
+      if ((no.attrs?.level ?? 2) > topo && secao) {
         secao.partes.push(parte);
         sub = parte;
-      } else if (no.attrs?.level === 3) {
-        // Subtítulo sem título antes: vira seção.
-        raiz.partes.push(parte);
-        secao = parte;
-        sub = null;
       } else {
         raiz.partes.push(parte);
         secao = parte;

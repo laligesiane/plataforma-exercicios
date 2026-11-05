@@ -55,6 +55,43 @@ describe("mapaDoDocumento", () => {
   });
 });
 
+describe("resumo só com Subtítulos (caso do resumo de IA)", () => {
+  const t = (text: string, marks?: ("bold" | "italic")[]): No => ({ type: "text", text, marks: marks?.map((type) => ({ type })) });
+  const item = (...partes: No[]): No => ({ type: "listItem", content: [{ type: "paragraph", content: partes }] });
+  const ia = doc(
+    h("1. O que é Inteligência Artificial", 3),
+    {
+      type: "bulletList",
+      content: [
+        item(t("A IA pode ser definida como "), t("um ramo da ciência da computação que se ocupa da automação do comportamento inteligente", ["bold"]), t(".")),
+        item(t("Complemento:", ["italic"]), t(" essa definição é de George Luger, autor de um dos livros-base da disciplina. A ideia central é outra.")),
+      ],
+    },
+    h("2. Aprendizado de máquina por indução de hipóteses", 3),
+    { type: "bulletList", content: [item(t("O aprendizado parte de uma "), t("amostra conhecida", ["bold"]), t(" (conjunto de treinamento)."))] },
+    h("3. Aplicações", 3),
+    p("Visão computacional."),
+  );
+  const m = mapaDoDocumento(ia, "Introdução à Inteligência Artificial");
+
+  it("cada Subtítulo vira um ramo, inclusive o primeiro", () => {
+    expect(m.centro).toBe("Introdução à Inteligência Artificial");
+    expect(m.ramos.map((r) => r.texto)).toEqual([
+      "1. O que é Inteligência Artificial",
+      "2. Aprendizado de máquina por indução de hipóteses",
+      "3. Aplicações",
+    ]);
+  });
+
+  it("o negrito resume o ponto e o rótulo fica junto do conteúdo", () => {
+    const [def, comp] = m.ramos[0].filhos.map((f) => f.texto);
+    expect(def.startsWith("Um ramo da ciência da computação")).toBe(true);
+    expect(def.length).toBeLessThanOrEqual(80);
+    expect(comp.startsWith("Complemento: essa definição é de George Luger")).toBe(true);
+    expect(m.ramos[1].filhos[0].texto).toBe("Amostra conhecida");
+  });
+});
+
 describe("encurtar", () => {
   it("prefere a primeira frase e corta em palavra", () => {
     expect(encurtar("Frase curta. Depois vem um texto bem longo que passaria do limite de oitenta letras com folga.")).toBe(
