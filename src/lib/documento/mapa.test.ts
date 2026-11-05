@@ -56,6 +56,16 @@ describe("mapaDoDocumento", () => {
 });
 
 describe("encurtar", () => {
+  it("não deixa só o rótulo antes dos dois-pontos", () => {
+    const t = encurtar(
+      "Complemento: essa definição é de George Luger, autor de um dos livros-base da disciplina. A ideia central é outra.",
+    );
+    expect(t.startsWith("Complemento: essa definição")).toBe(true);
+    expect(t.length).toBeLessThanOrEqual(80);
+    expect(encurtar("Complemento (ajuste da amostra): o modelo melhora com mais dados. Depois vem muito mais texto aqui para passar do limite.")).toBe(
+      "Complemento (ajuste da amostra): o modelo melhora com mais dados.",
+    );
+  });
   it("prefere a primeira frase e corta em palavra", () => {
     expect(encurtar("Frase curta. Depois vem um texto bem longo que passaria do limite de oitenta letras com folga.")).toBe(
       "Frase curta.",
