@@ -13,6 +13,8 @@ import { NaoEntendi, type DuvidaSalva, type EnviarDuvida } from "./NaoEntendi";
 import { IdiomaFala } from "./Ouvir";
 import { BarraAtividade } from "./BarraAtividade";
 import { idExercicio, proximoPendente } from "@/lib/atividades/proximo";
+import { BotaoSom } from "./BotaoSom";
+import { tocarResultado } from "@/lib/som";
 import { Lacuna } from "./Lacuna";
 import { MultiplaEscolha } from "./MultiplaEscolha";
 import { ExercicioArrastar } from "./arrastar/ExercicioArrastar";
@@ -74,6 +76,7 @@ export function AulaAtividade({
   function registrar(exercicioId: string, itemId: string) {
     return (resultado: Resultado, valor: string) => {
       const certo = resultado.status !== "errado";
+      tocarResultado(certo);
       setCertos((atual) => ({ ...atual, [itemId]: certo }));
       setPrimeira((atual) => (itemId in atual ? atual : { ...atual, [itemId]: certo }));
       onResposta?.({ exercicioId, itemId, valor, status: resultado.status });
@@ -109,6 +112,7 @@ export function AulaAtividade({
                 style={{ width: `${(acertos / totalItens) * 100}%` }}
               />
             </div>
+            <BotaoSom />
           </div>
         )}
 

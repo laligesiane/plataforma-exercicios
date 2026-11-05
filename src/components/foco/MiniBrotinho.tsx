@@ -94,7 +94,7 @@ function Alca(props: ReturnType<typeof usePosicao>["alca"]) {
  * Some na própria página do modo foco.
  */
 export function MiniBrotinho() {
-  const { sessao, agora, concluida, pausar, retomar, dispensarConclusao } = useFoco();
+  const { sessao, agora, concluida, pausar, retomar, dispensarConclusao, verArvore, celebrando } = useFoco();
   const caminho = usePathname();
   const { ref, estilo, alca } = usePosicao();
   if (caminho === PAGINA_FOCO) return null;
@@ -103,6 +103,7 @@ export function MiniBrotinho() {
     "fixed z-50 flex items-center gap-2 rounded-2xl border border-linha bg-fundo py-1 pr-2.5 pl-1 shadow-lg shadow-black/10";
 
   if (concluida !== null && !sessao) {
+    if (celebrando) return null;
     return (
       <div ref={ref} style={estilo} role="status" className={caixa}>
         <Alca {...alca} />
@@ -110,9 +111,9 @@ export function MiniBrotinho() {
         <div className="text-left">
           <p className="text-sm font-extrabold">Sua árvore cresceu!</p>
           <p className="text-xs text-tinta-suave">{concluida} minutos de foco.</p>
-          <Link href={PAGINA_FOCO} onClick={dispensarConclusao} className="text-xs font-bold text-primaria hover:underline">
-            Ver meu jardim
-          </Link>
+          <button type="button" onClick={verArvore} className="text-xs font-bold text-primaria hover:underline">
+            Ver árvore
+          </button>
         </div>
         <button
           type="button"
