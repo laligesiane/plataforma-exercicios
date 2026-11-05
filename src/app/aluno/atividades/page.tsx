@@ -8,11 +8,13 @@ import { camposAula, hojeNoFuso, ultimaAula, type Aula } from "@/lib/aulas";
 import { descreverTurma } from "@/lib/turmas";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
+import { CampoCodigoTurma } from "@/components/CampoCodigoTurma";
 import { LayoutConta } from "../LayoutConta";
 
 type AtividadeResumo = { id: string; titulo: string; nivel: string; categoria: string; atualizada_em: string };
 
-export default async function AtividadesDoAluno() {
+export default async function AtividadesDoAluno({ searchParams }: { searchParams: Promise<{ codigo?: string }> }) {
+  const { codigo } = await searchParams;
   const perfil = await exigirPapel("aluno");
   const supabase = await criarClienteServidor();
 
@@ -52,6 +54,7 @@ export default async function AtividadesDoAluno() {
 
   return (
     <LayoutConta titulo="Minhas atividades" descricao="As atividades e aulas das turmas em que você está.">
+      <CampoCodigoTurma invalido={codigo === "invalido"} />
       {(turmas ?? []).map((turma) => {
         const atividades = (porTurma.get(turma.id) ?? []).sort((x, y) => y.atualizada_em.localeCompare(x.atualizada_em));
         const aulas = aulasPorTurma.get(turma.id) ?? [];
