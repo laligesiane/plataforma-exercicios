@@ -1,4 +1,4 @@
-import { gerarIcs, type EventoTurma } from "@/lib/agenda/ics";
+import { gerarIcs, type EventoTurma, type EventoUnico } from "@/lib/agenda/ics";
 import { camposCompromisso, eventoDoCompromisso, type Compromisso } from "@/lib/compromissos";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
 
@@ -40,8 +40,33 @@ export async function GET(_req: Request, { params }: { params: Promise<{ arquivo
     compromissos = (data ?? []) as Compromisso[];
   }
 
+  // Prazos das atividades das turmas: o aluno vê os que ainda não enviou; o professor, todos.
+  const prazos: EventoUnico[] = [];
+  if (turmaIds.length) {
+    const { data: atribuicoes } = await admin
+      .from("atividade_turma")
+      .select("turma(nome), atividade(id, titulo, prazo, publicada)")
+      .in("turma_id", turmaIds)
+      .not("atividade.prazo", "is", null);
+    let enviadas = new Set<string>();
+    if (perfil.papel === "aluno") {
+      const { data: envios } = await admin.from("envio").select("atividade_id").eq("aluno_id", perfil.id);
+      enviadas = new Set((envios ?? []).map((e) => e.atividade_id as string));
+    }
+    type Linha = { turma: { nome: string } | null; atividade: { id: string; titulo: string; prazo: string | null; publicada: boolean } | null };
+    for (const a of (atribuicoes ?? []) as unknown as Linha[]) {
+      if (!a.atividade?.prazo || !a.atividade.publicada || enviadas.has(a.atividade.id)) continue;
+      prazos.push({
+        id: `prazo-${a.atividade.id}-${a.turma?.nome ?? ""}`,
+        titulo: `Entregar: ${a.atividade.titulo}${a.turma ? ` (${a.turma.nome})` : ""}`,
+        descricao: "Atividade na Repasa",
+        data: a.atividade.prazo,
+      });
+    }
+  }
+
   const nome = perfil.papel === "aluno" ? "Minha agenda na Repasa" : "Aulas na Repasa";
-  return new Response(gerarIcs(eventos, nome, new Date(), compromissos.map(eventoDoCompromisso)), {
+  return new Response(gerarIcs(eventos, nome, new Date(), [...compromissos.map(eventoDoCompromisso), ...prazos]), {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
       "Content-Disposition": 'inline; filename="repasa.ics"',
