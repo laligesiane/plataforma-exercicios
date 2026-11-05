@@ -43,6 +43,11 @@ export default async function PaginaEntrar({ searchParams }: { searchParams: Pro
             {loginGoogleLigado && (
               <>
                 <BotaoGoogle proximo={proximo} />
+                <p className="mt-2 text-center text-xs text-tinta-suave">
+                  Ao continuar com o Google, você aceita os{" "}
+                  <Link href="/termos" className="font-bold text-primaria hover:underline">termos</Link> e a{" "}
+                  <Link href="/privacidade" className="font-bold text-primaria hover:underline">política de privacidade</Link>.
+                </p>
                 <Divisor />
               </>
             )}

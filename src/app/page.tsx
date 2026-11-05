@@ -341,10 +341,18 @@ export default async function Inicio() {
       <footer className="border-t border-linha py-6 text-center text-xs text-tinta-suave">
         Repasa · repasa.com.br · Sem anúncios, nunca. ·{" "}
         <Link href="/privacidade" className="hover:underline">
-          Privacidade e cookies
+          Privacidade
+        </Link>{" "}
+        ·{" "}
+        <Link href="/termos" className="hover:underline">
+          Termos de uso
+        </Link>{" "}
+        ·{" "}
+        <Link href="/sugestoes" className="hover:underline">
+          Sugestões e contato
         </Link>
         <br />
-        A Repasa está em versão beta: ela é nova e continua melhorando a cada semana.
+        A Repasa está em versão beta: nova, grátis e sem limites enquanto está em testes. Conte o que achou em Sugestões.
       </footer>
     </div>
   );

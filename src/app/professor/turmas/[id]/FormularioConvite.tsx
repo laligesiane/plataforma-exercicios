@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import { Mensagem } from "@/components/ui/Mensagem";
-import { botaoPrimario, campo, rotulo } from "@/components/ui/estilos";
+import { botaoPrimario, caixaMarcar, campo, rotulo } from "@/components/ui/estilos";
 import { convidarAluno } from "../../actions";
 
 export function FormularioConvite({ turmaId }: { turmaId: string }) {
@@ -10,7 +10,12 @@ export function FormularioConvite({ turmaId }: { turmaId: string }) {
   const formulario = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    if (estado?.sucesso) formulario.current?.reset();
+    // Limpa só nome e e-mail: a confirmação de autorização continua marcada para o próximo convite.
+    if (!estado?.sucesso || !formulario.current) return;
+    for (const nome of ["nome", "email"]) {
+      const campo = formulario.current.elements.namedItem(nome);
+      if (campo instanceof HTMLInputElement) campo.value = "";
+    }
   }, [estado]);
 
   return (
@@ -30,6 +35,10 @@ export function FormularioConvite({ turmaId }: { turmaId: string }) {
           <input id="email" name="email" type="email" required className={campo} />
         </div>
       </div>
+      <label className="flex items-start gap-2.5 text-sm text-tinta-suave">
+        <input type="checkbox" name="autorizacao" required className={`${caixaMarcar} mt-0.5`} />
+        <span>Esse aluno quer participar da turma e, se for menor de idade, a escola ou a família autorizou.</span>
+      </label>
       <Mensagem estado={estado} />
       <button type="submit" disabled={enviando} className={botaoPrimario}>
         {enviando ? "Enviando..." : "Enviar convite"}

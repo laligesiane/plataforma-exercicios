@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useEffect } from "react";
 import { registrarEvento } from "@/lib/analytics/cliente";
 import { Mensagem } from "@/components/ui/Mensagem";
-import { botaoPrimario, campo, rotulo } from "@/components/ui/estilos";
+import { botaoPrimario, caixaMarcar, campo, rotulo } from "@/components/ui/estilos";
 import { cadastrar } from "./actions";
 
 export function FormularioCadastro({ papel }: { papel: "professor" | "aluno" }) {
@@ -36,6 +37,15 @@ export function FormularioCadastro({ papel }: { papel: "professor" | "aluno" }) 
         </label>
         <input id="senha" name="senha" type="password" autoComplete="new-password" minLength={8} required className={campo} />
       </div>
+      <label className="flex items-start gap-2.5 text-sm text-tinta-suave">
+        <input type="checkbox" name="aceite" required className={`${caixaMarcar} mt-0.5`} />
+        <span>
+          Li e aceito os{" "}
+          <Link href="/termos" target="_blank" className="font-bold text-primaria hover:underline">termos de uso</Link> e a{" "}
+          <Link href="/privacidade" target="_blank" className="font-bold text-primaria hover:underline">política de privacidade</Link>.
+          Tenho 18 anos ou mais, ou meu responsável sabe e autorizou.
+        </span>
+      </label>
       <Mensagem estado={estado} />
       <button type="submit" disabled={enviando} className={`${botaoPrimario} w-full`}>
         {enviando ? "Criando..." : "Criar conta grátis"}

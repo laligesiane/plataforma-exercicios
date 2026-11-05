@@ -16,6 +16,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${URL_SITE}/cadastro`, changeFrequency: "yearly", priority: 0.6 },
     { url: `${URL_SITE}/entrar`, changeFrequency: "yearly", priority: 0.3 },
     { url: `${URL_SITE}/privacidade`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${URL_SITE}/termos`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${URL_SITE}/sugestoes`, changeFrequency: "yearly", priority: 0.3 },
   ];
   if (!supabaseConfigurado) return fixas;
 

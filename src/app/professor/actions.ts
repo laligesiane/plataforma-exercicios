@@ -42,13 +42,19 @@ export async function criarTurma(_estado: EstadoFormulario, formData: FormData):
   redirect(`/professor/turmas/${data.id}`);
 }
 
+/** Convites por e-mail (contas novas) que cada professor pode mandar em 24 horas. */
+const LIMITE_CONVITES_POR_DIA = 50;
+
 export async function convidarAluno(_estado: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
-  await exigirPapel("professor");
+  const professor = await exigirPapel("professor");
 
   const turmaId = String(formData.get("turma_id") ?? "");
   const nome = String(formData.get("nome") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   if (!nome || !email) return { erro: "Preencha nome e e-mail do aluno." };
+  if (formData.get("autorizacao") !== "on") {
+    return { erro: "Confirme que o aluno quer participar e, se for menor de idade, que a escola ou a família autorizou." };
+  }
 
   // Confere pelo RLS que a turma é deste professor antes de usar o cliente admin.
   const supabase = await criarClienteServidor();
@@ -62,6 +68,21 @@ export async function convidarAluno(_estado: EstadoFormulario, formData: FormDat
   if (existente && existente.papel !== "aluno") return { erro: "Esse e-mail é de uma conta de professor." };
 
   if (!alunoId) {
+    // Cada convite novo manda um e-mail: limite por dia para ninguém usar a Repasa para mandar spam.
+    const desde = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { count, error: erroContagem } = await admin
+      .from("convite_envio")
+      .select("id", { count: "exact", head: true })
+      .eq("professor_id", professor.id)
+      .gte("criado_em", desde);
+    if (erroContagem) return { erro: "Não foi possível enviar o convite agora. Tente de novo em instantes." };
+    if ((count ?? 0) >= LIMITE_CONVITES_POR_DIA) {
+      return {
+        erro: `Você já enviou ${LIMITE_CONVITES_POR_DIA} convites por e-mail nas últimas 24 horas. Para mais alunos agora, use o código da turma.`,
+      };
+    }
+    await admin.from("convite_envio").insert({ professor_id: professor.id, email });
+
     const origem = (await headers()).get("origin") ?? "";
     const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
       data: { nome, papel: "aluno" },
