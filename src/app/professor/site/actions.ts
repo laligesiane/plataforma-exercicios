@@ -59,7 +59,7 @@ export async function salvarPaginaProfessor(_estado: EstadoFormulario, formData:
     if (error.code === "PGRST204" || error.code === "42703") return { erro: "Falta rodar o SQL 0038 no Supabase para salvar os campos novos." };
     return { erro: "Não foi possível salvar a página." };
   }
-  revalidatePath("/perfil");
+  revalidatePath("/professor/site");
   revalidatePath(`/p/${apelido}`);
   return { sucesso: formData.get("publicada") === "on" ? `Página salva e no ar em repasa.com.br/p/${apelido}.` : "Página salva como rascunho." };
 }
