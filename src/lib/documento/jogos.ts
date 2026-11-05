@@ -46,15 +46,23 @@ export const pistaDe = (c: Cartao) => esconderTermo(c).replace(/[ \t]+/g, " ").t
 /** A pista curta: só a primeira frase, inteira. */
 export const pistaCurta = (c: Cartao) => primeiraFrase(esconderTermo(c));
 
-/** Cartões que servem para "Complete a frase": o termo aparece dentro da frase do verso. */
+/** Cartões que servem para "Complete a frase": negritos cuja frase traz o termo. */
 export function cartoesParaCompletar(cartoes: Cartao[]): Cartao[] {
-  return cartoes.filter((c) => c.tipo === "negrito" && c.verso.toLowerCase().includes(c.frente.toLowerCase()));
+  return cartoes.filter((c) => c.frase && c.frase.toLowerCase().includes(c.frente.toLowerCase()));
+}
+
+/** Cartões de termo e explicação. As lacunas (negrito no meio da frase) não entram: não são definições. */
+export const cartoesDeConceito = (cartoes: Cartao[]) => cartoes.filter((c) => c.tipo !== "lacuna");
+
+/** Os cartões que cada jogo usa. */
+export function cartoesDoJogo(modo: ModoJogo, cartoes: Cartao[]): Cartao[] {
+  if (modo === "complete") return cartoesParaCompletar(cartoes);
+  if (modo === "cartoes") return cartoes;
+  return cartoesDeConceito(cartoes);
 }
 
 /** Quantos cartões cada jogo consegue usar, para a tela inicial saber o que mostrar. */
-export function cartoesUteis(modo: ModoJogo, cartoes: Cartao[]): number {
-  return modo === "complete" ? cartoesParaCompletar(cartoes).length : cartoes.length;
-}
+export const cartoesUteis = (modo: ModoJogo, cartoes: Cartao[]) => cartoesDoJogo(modo, cartoes).length;
 
 // ---------- Jogo da memória ----------
 
@@ -103,11 +111,11 @@ export function montarComplete(cartoes: Cartao[], semente: string): Pergunta[] {
   const usaveis = cartoesParaCompletar(cartoes);
   return embaralhar(usaveis, semente).map((c) => ({
     id: c.id,
-    enunciado: esconderTermo(c, "_____"),
+    enunciado: esconderTermo({ frente: c.frente, verso: c.frase ?? c.verso }, "_____"),
     // Os distratores vêm dos outros termos em negrito, que são palavras do mesmo tamanho de ideia.
     opcoes: embaralhar([c.frente, ...distratores(c, usaveis.length >= 3 ? usaveis : cartoes, semente, 2)], `${semente}:op:${c.id}`),
     certa: c.frente,
-    explicacao: c.verso,
+    explicacao: c.frase ?? c.verso,
   }));
 }
 
