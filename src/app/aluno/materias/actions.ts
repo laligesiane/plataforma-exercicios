@@ -9,6 +9,7 @@ import { exigirPapel } from "@/lib/perfil";
 import { validarDocumento } from "@/lib/documento";
 import { mapaDoDocumento } from "@/lib/documento/mapa";
 import { camposResumo, documentoDoResumo, lerConteudo, type Resumo, lerCorResumo } from "@/lib/resumos";
+import { marcarEvento } from "@/lib/analytics/servidor";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
 export async function criarMateria(_estado: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
@@ -65,6 +66,7 @@ export async function salvarResumoAluno(_estado: EstadoFormulario, formData: For
         .eq("id", id)
     : await supabase.from("resumo").insert({ materia_id: materiaId, ...valores });
   if (error) return { erro: "Não foi possível salvar o resumo." };
+  if (!id) await marcarEvento("resumo_criado", { papel: "aluno" });
 
   revalidatePath(`/aluno/materias/${materiaId}`);
   redirect(`/aluno/materias/${materiaId}`);

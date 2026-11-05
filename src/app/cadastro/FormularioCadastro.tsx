@@ -1,12 +1,17 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { registrarEvento } from "@/lib/analytics/cliente";
 import { Mensagem } from "@/components/ui/Mensagem";
 import { botaoPrimario, campo, rotulo } from "@/components/ui/estilos";
 import { cadastrar } from "./actions";
 
 export function FormularioCadastro({ papel }: { papel: "professor" | "aluno" }) {
   const [estado, acao, enviando] = useActionState(cadastrar, null);
+
+  useEffect(() => {
+    if (estado?.sucesso) registrarEvento("sign_up", { method: "email", papel });
+  }, [estado, papel]);
 
   if (estado?.sucesso) return <Mensagem estado={estado} />;
 

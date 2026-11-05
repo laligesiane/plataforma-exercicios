@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Atkinson_Hyperlegible, Figtree } from "next/font/google";
+import { Analytics } from "@/components/Analytics";
 import { scriptLeitura } from "@/components/PreferenciasLeitura";
 import { scriptTema } from "@/components/Tema";
 import { FocoProvider } from "@/components/foco/FocoProvider";
@@ -58,6 +59,7 @@ export default function RootLayout({
           {children}
           <MiniBrotinho />
           <CelebracaoArvore />
+          <Analytics />
         </FocoProvider>
       </body>
     </html>

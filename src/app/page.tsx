@@ -331,7 +331,10 @@ export default async function Inicio() {
       </main>
 
       <footer className="border-t border-linha py-6 text-center text-xs text-tinta-suave">
-        Repasa · repasa.com.br · Sem anúncios, nunca.
+        Repasa · repasa.com.br · Sem anúncios, nunca. ·{" "}
+        <Link href="/privacidade" className="hover:underline">
+          Privacidade e cookies
+        </Link>
       </footer>
     </div>
   );

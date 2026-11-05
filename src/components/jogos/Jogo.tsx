@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { BotaoSom } from "@/components/exercicios/BotaoSom";
+import { registrarEvento } from "@/lib/analytics/cliente";
 import { rodadaDeCartoes, totalDeRodadas, type Cartao } from "@/lib/documento/cartoes";
 import { cartoesDoJogo, montarComplete, montarLigar, montarQuiz, montarVerdadeiroFalso, type ModoJogo } from "@/lib/documento/jogos";
 import { EstudarCartoes } from "./EstudarCartoes";
@@ -34,6 +35,7 @@ export function Jogo({ modo, cartoes, resumoId }: { modo: ModoJogo; cartoes: Car
           }
         : undefined,
     hrefJogos: `/aluno/resumos/${resumoId}/jogar`,
+    aoTerminar: () => registrarEvento("jogo_concluido", { modo, cartoes: daRodada.length }),
   };
 
   const jogo = (() => {

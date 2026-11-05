@@ -1,5 +1,6 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
+import { marcarEvento } from "@/lib/analytics/servidor";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
 // Retorno dos e-mails do Supabase.
@@ -15,7 +16,9 @@ export async function GET(request: NextRequest) {
   const supabase = await criarClienteServidor();
 
   if (codigo) {
-    const { error } = await supabase.auth.exchangeCodeForSession(codigo);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(codigo);
+    // Volta do Google (quem é novo vira "sign_up" em /bem-vindo) ou do link de confirmação do cadastro.
+    if (!error) await marcarEvento("login", { method: data.user?.app_metadata?.provider === "google" ? "google" : "email" });
     if (!error) return NextResponse.redirect(`${origin}${destinoSeguro(proximo, "/entrar")}`);
   } else if (tokenHash && tipo) {
     const { error } = await supabase.auth.verifyOtp({ type: tipo, token_hash: tokenHash });
