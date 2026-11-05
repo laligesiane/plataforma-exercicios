@@ -191,3 +191,39 @@ export async function corrigirProducao(c: NovaCorrecao): Promise<{ ok: true; cor
   revalidatePath(`/atividades/${c.atividadeId}`);
   return { ok: true, corrigidaEm };
 }
+
+/** Copia uma atividade do professor, com todos os exercícios, como rascunho sem turma. */
+export async function duplicarAtividade(formData: FormData) {
+  const professor = await exigirPapel("professor");
+  const id = String(formData.get("id") ?? "");
+  if (!ehUuid(id)) redirect("/professor/atividades?erro=duplicar");
+  const supabase = await criarClienteServidor();
+
+  const [{ data: original }, { data: exercicios }] = await Promise.all([
+    supabase.from("atividade").select("*").eq("id", id).eq("professor_id", professor.id).maybeSingle(),
+    supabase.from("exercicio").select("ordem, tipo, titulo, instrucoes, itens, config").eq("atividade_id", id).order("ordem"),
+  ]);
+  if (!original) redirect("/professor/atividades?erro=duplicar");
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { id: _id, criada_em, atualizada_em, publicada, publica, ...campos } = original;
+  const { data: copia, error } = await supabase
+    .from("atividade")
+    .insert({ ...campos, titulo: `Cópia de ${original.titulo}`.slice(0, 200), publicada: false, publica: false })
+    .select("id")
+    .single();
+  if (error) redirect("/professor/atividades?erro=duplicar");
+
+  if (exercicios?.length) {
+    const { error: erroExercicios } = await supabase
+      .from("exercicio")
+      .insert(exercicios.map((e) => ({ ...e, atividade_id: copia.id })));
+    if (erroExercicios) {
+      await supabase.from("atividade").delete().eq("id", copia.id);
+      redirect("/professor/atividades?erro=duplicar");
+    }
+  }
+
+  revalidatePath("/professor/atividades");
+  redirect(`/professor/atividades/${copia.id}?copia=1`);
+}
