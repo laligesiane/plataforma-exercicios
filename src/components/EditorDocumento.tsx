@@ -128,12 +128,12 @@ export function EditorDocumento({
   });
 
   return (
-    <div className="overflow-hidden rounded-2xl border-2 border-linha focus-within:border-primaria">
+    <div className="rounded-2xl border-2 border-linha focus-within:border-primaria">
       <input type="hidden" name={nome} value={json} />
       <div
         role="toolbar"
         aria-label="Formatação"
-        className="sticky top-0 z-10 flex flex-wrap items-center gap-1 border-b border-linha bg-suave px-2 py-1.5"
+        className="sticky top-0 z-20 flex flex-wrap items-center gap-1 rounded-t-[14px] border-b border-linha bg-suave px-2 py-1.5 shadow-[0_1px_0_var(--linha)]"
       >
         {botoes.map((b, i) =>
           b === "separador" ? (
@@ -155,7 +155,7 @@ export function EditorDocumento({
           ),
         )}
       </div>
-      <div className="documento bg-fundo">
+      <div className="documento rounded-b-[14px] bg-fundo">
         <EditorContent editor={editor} />
       </div>
     </div>

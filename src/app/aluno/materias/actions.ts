@@ -6,7 +6,9 @@ import type { EstadoFormulario } from "@/components/ui/Mensagem";
 import { mensagemDeLimite } from "@/lib/limites";
 import { ordemCores, validarMapa, type Cor } from "@/lib/mapas";
 import { exigirPapel } from "@/lib/perfil";
-import { lerConteudo } from "@/lib/resumos";
+import { validarDocumento } from "@/lib/documento";
+import { mapaDoDocumento } from "@/lib/documento/mapa";
+import { camposResumo, documentoDoResumo, lerConteudo, type Resumo } from "@/lib/resumos";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
 export async function criarMateria(_estado: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
@@ -75,4 +77,21 @@ export async function apagarResumoAluno(formData: FormData) {
   await supabase.from("resumo").delete().eq("id", String(formData.get("id") ?? ""));
   revalidatePath(`/aluno/materias/${materiaId}`);
   redirect(`/aluno/materias/${materiaId}`);
+}
+
+/** Gera o mapa mental a partir do texto do resumo, sem abrir o editor. Troca o mapa que já existir. */
+export async function gerarMapaDoResumo(id: string): Promise<{ erro: string } | void> {
+  await exigirPapel("aluno");
+  const supabase = await criarClienteServidor();
+  const { data } = await supabase.from("resumo").select(`${camposResumo}, materia_id`).eq("id", id).maybeSingle();
+  if (!data?.materia_id) return { erro: "Não encontramos este resumo." };
+
+  const resumo = data as unknown as Resumo;
+  const doc = validarDocumento(documentoDoResumo(resumo));
+  const mapa = doc ? mapaDoDocumento(doc, resumo.titulo) : null;
+  if (!mapa || mapa.ramos.length === 0) return { erro: "Use títulos, subtítulos ou listas no resumo para gerar o mapa." };
+
+  const { error } = await supabase.from("resumo").update({ mapa, atualizado_em: new Date().toISOString() }).eq("id", id);
+  if (error) return { erro: "Não foi possível salvar o mapa." };
+  revalidatePath(`/aluno/resumos/${id}`);
 }
