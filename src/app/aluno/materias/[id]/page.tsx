@@ -8,6 +8,7 @@ import { exigirPapel } from "@/lib/perfil";
 import { camposResumo, tituloResumo, type Resumo } from "@/lib/resumos";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { apagarMateria, apagarResumoAluno } from "../actions";
+import { SeletorCurso, type CursoSimples } from "../SeletorCurso";
 
 const formatoData = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short" });
 
@@ -21,10 +22,12 @@ export default async function PaginaMateria({ params }: { params: Promise<{ id: 
   const { id } = await params;
   await exigirPapel("aluno");
   const supabase = await criarClienteServidor();
-  const [{ data: materia }, { data: resumosDb }] = await Promise.all([
-    supabase.from("materia").select("id, nome, cor").eq("id", id).maybeSingle(),
+  const [{ data: materia }, { data: resumosDb }, { data: cursosDb }] = await Promise.all([
+    supabase.from("materia").select("id, nome, cor, curso_id").eq("id", id).maybeSingle(),
     supabase.from("resumo").select(camposResumo).eq("materia_id", id).order("atualizado_em", { ascending: false }),
+    supabase.from("curso").select("id, nome").order("nome"),
   ]);
+  const cursos = (cursosDb ?? []) as CursoSimples[];
   if (!materia) notFound();
   const resumos = ((resumosDb ?? []) as Resumo[]).filter((r) => r && r.id);
   const cor = cores[typeof materia.cor === "string" && materia.cor in cores ? (materia.cor as Cor) : "menta"];
@@ -41,6 +44,11 @@ export default async function PaginaMateria({ params }: { params: Promise<{ id: 
           {materia.nome}
         </h1>
         <p className="mt-2 text-tinta-suave">Seus resumos e mapas mentais desta matéria. Só você vê.</p>
+        {cursos.length > 0 && (
+          <div className="mt-3">
+            <SeletorCurso materiaId={materia.id} cursoId={(materia.curso_id as string | null) ?? null} cursos={cursos} />
+          </div>
+        )}
 
         <Link href={`/aluno/materias/${materia.id}/resumos/novo`} className={`${botaoPrimario} mt-6 inline-block`}>
           Novo resumo ou mapa mental
