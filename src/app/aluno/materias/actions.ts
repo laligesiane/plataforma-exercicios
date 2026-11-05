@@ -11,6 +11,7 @@ import { mapaDoDocumento } from "@/lib/documento/mapa";
 import { camposResumo, documentoDoResumo, lerConteudo, type Resumo, lerCorResumo } from "@/lib/resumos";
 import { marcarEvento } from "@/lib/analytics/servidor";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
+import { duracaoEmMeses, lerData } from "@/lib/cursos";
 
 export async function criarMateria(_estado: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
   await exigirPapel("aluno");
@@ -31,31 +32,44 @@ export async function criarMateria(_estado: EstadoFormulario, formData: FormData
   redirect(`/aluno/materias/${data.id}`);
 }
 
+/** Lê nome, início, duração e etapa do formulário de curso. */
+function lerCurso(formData: FormData) {
+  const nome = String(formData.get("nome") ?? "").trim().slice(0, 80);
+  const inicioTexto = String(formData.get("inicio") ?? "");
+  const inicio = lerData(inicioTexto) ? inicioTexto : null;
+  const duracao_meses = duracaoEmMeses(formData.get("duracao"), formData.get("unidade"));
+  const etapa = String(formData.get("etapa") ?? "").trim().slice(0, 60) || null;
+  const temDuracao = String(formData.get("duracao") ?? "").trim() !== "";
+  return { nome, inicio, duracao_meses, etapa, duracaoInvalida: temDuracao && duracao_meses == null };
+}
+
 export async function criarCurso(_estado: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
   await exigirPapel("aluno");
-  const nome = String(formData.get("nome") ?? "").trim().slice(0, 80);
-  if (!nome) return { erro: "Dê um nome para o curso." };
+  const { duracaoInvalida, ...curso } = lerCurso(formData);
+  if (!curso.nome) return { erro: "Dê um nome para o curso." };
+  if (duracaoInvalida) return { erro: "A duração precisa ser um número entre 1 mês e 20 anos." };
 
   const supabase = await criarClienteServidor();
-  const { error } = await supabase.from("curso").insert({ nome });
+  const { error } = await supabase.from("curso").insert(curso);
   if (error) return { erro: "Não foi possível criar o curso." };
 
   revalidatePath("/aluno/materias");
-  return { sucesso: `Curso "${nome}" criado. Agora coloque matérias nele.` };
+  return { sucesso: `Curso "${curso.nome}" criado. Agora coloque matérias nele.` };
 }
 
-export async function renomearCurso(_estado: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
+export async function editarCurso(_estado: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
   await exigirPapel("aluno");
   const id = String(formData.get("id") ?? "");
-  const nome = String(formData.get("nome") ?? "").trim().slice(0, 80);
-  if (!nome) return { erro: "Dê um nome para o curso." };
+  const { duracaoInvalida, ...curso } = lerCurso(formData);
+  if (!curso.nome) return { erro: "Dê um nome para o curso." };
+  if (duracaoInvalida) return { erro: "A duração precisa ser um número entre 1 mês e 20 anos." };
 
   const supabase = await criarClienteServidor();
-  const { error } = await supabase.from("curso").update({ nome }).eq("id", id);
-  if (error) return { erro: "Não foi possível renomear o curso." };
+  const { error } = await supabase.from("curso").update(curso).eq("id", id);
+  if (error) return { erro: "Não foi possível salvar o curso." };
 
   revalidatePath("/aluno/materias");
-  return { sucesso: "Nome salvo." };
+  return { sucesso: "Curso salvo." };
 }
 
 /** Apaga só o curso. As matérias dele continuam, agora sem curso. */
