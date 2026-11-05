@@ -6,5 +6,6 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  // /api/voz fica de fora: o áudio é igual para todos e precisa ir para o cache sem cookie de sessão.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/voz|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };

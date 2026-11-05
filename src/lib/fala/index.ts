@@ -7,7 +7,8 @@ import type { Documento, No } from "@/lib/documento";
 export type VozDoAparelho = { name: string; lang: string; voiceURI: string; localService?: boolean; default?: boolean };
 
 /** Uma opção de voz mostrada ao aluno: uma voz do aparelho, com um tom. */
-export type OpcaoVoz = { id: string; rotulo: string; detalhe?: string; voiceURI?: string; tom: number };
+/** Uma opção de voz: do aparelho (voiceURI, tom) ou natural da Azure (natural = nome da voz lá). */
+export type OpcaoVoz = { id: string; rotulo: string; detalhe?: string; voiceURI?: string; tom: number; natural?: string };
 
 export const VELOCIDADES = [0.75, 1, 1.25, 1.5] as const;
 
@@ -141,7 +142,7 @@ export function opcoesDeVoz(vozes: VozDoAparelho[], idioma = "pt-BR", maximo = 6
   const voiceURI = unica?.voiceURI;
   const prefixo = unica ? `${unica.id}|` : "padrao|";
   return [
-    { id: `${prefixo}1`, rotulo: "Natural", detalhe: unica?.rotulo, voiceURI, tom: 1 },
+    { id: `${prefixo}1`, rotulo: "Normal", detalhe: unica?.rotulo, voiceURI, tom: 1 },
     { id: `${prefixo}grave`, rotulo: "Grave", detalhe: "tom mais baixo", voiceURI, tom: 0.7 },
     { id: `${prefixo}aguda`, rotulo: "Aguda", detalhe: "tom mais alto", voiceURI, tom: 1.35 },
   ];

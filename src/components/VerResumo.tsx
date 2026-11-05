@@ -5,6 +5,8 @@ import { Sumario, SumarioCompacto } from "@/components/Sumario";
 import { LerEmVozAlta } from "@/components/LerEmVozAlta";
 import { documentoTemConteudo, secoesDoDocumento } from "@/lib/documento";
 import { trechosDoDocumento } from "@/lib/fala";
+import { AMOSTRA } from "@/lib/fala/natural";
+import { assinaturasDaLeitura, vozNaturalConfigurada } from "@/lib/fala/servidor";
 import { validarMapa } from "@/lib/mapas";
 import { documentoDoResumo, tituloResumo, type Resumo } from "@/lib/resumos";
 
@@ -15,6 +17,7 @@ export function VerResumo({ resumo, subtitulo }: { resumo: Resumo; subtitulo?: s
   const doc = documentoDoResumo(resumo);
   const temTexto = documentoTemConteudo(doc);
   const secoes = temTexto ? secoesDoDocumento(doc) : [];
+  const trechos = temTexto ? trechosDoDocumento(doc) : [];
   const temSumario = secoes.length >= 2;
 
   return (
@@ -23,7 +26,12 @@ export function VerResumo({ resumo, subtitulo }: { resumo: Resumo; subtitulo?: s
       {subtitulo && <p className="mt-2 text-tinta-suave">{subtitulo}</p>}
       {temTexto && (
         <div className="mt-3">
-          <LerEmVozAlta titulo={tituloResumo(resumo)} trechos={trechosDoDocumento(doc)} alvo="resumo-texto" />
+          <LerEmVozAlta
+            titulo={tituloResumo(resumo)}
+            trechos={trechos}
+            alvo="resumo-texto"
+            assinaturas={vozNaturalConfigurada() ? assinaturasDaLeitura([tituloResumo(resumo), ...trechos, AMOSTRA]) : undefined}
+          />
         </div>
       )}
 
