@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useFoco } from "@/components/foco/FocoProvider";
 import { PlantaFoco } from "@/components/PlantaFoco";
@@ -12,7 +13,7 @@ import { DURACAO_PADRAO, DURACOES_MIN, FASES, ULTIMA_FASE, faseDoProgresso, form
  * lá ele vê o mini-Brotinho no canto da tela.
  */
 export function ModoFoco() {
-  const { sessao, agora, jardim, concluida, iniciar, pausar, retomar, desistir, dispensarConclusao } = useFoco();
+  const { sessao, agora, jardim, concluida, iniciar, pausar, retomar, desistir, dispensarConclusao, verArvore } = useFoco();
   const [duracao, setDuracao] = useState<number>(DURACAO_PADRAO);
 
   // Quem vê a comemoração aqui não precisa vê-la de novo no mini-Brotinho.
@@ -25,7 +26,7 @@ export function ModoFoco() {
   const fase = sessao ? faseDoProgresso(progressoDa(sessao, agora)) : concluida !== null ? ULTIMA_FASE : 0;
 
   let frase: string;
-  if (concluida !== null && !sessao) frase = `Sessão de ${concluida} minutos concluída. Você plantou uma árvore!`;
+  if (concluida !== null && !sessao) frase = `Sessão de ${concluida} minutos concluída. Sua árvore cresceu!`;
   else if (!sessao) frase = "Plante a sementinha e comece a estudar.";
   else if (pausado) frase = "Pausado. O Brotinho está tirando um cochilo.";
   else frase = FASES[fase].frase;
@@ -69,8 +70,13 @@ export function ModoFoco() {
       )}
 
       <div className="mt-6 flex flex-wrap justify-center gap-3">
+        {!sessao && concluida !== null && (
+          <button type="button" className={`${botaoPrimario} foco-revela`} onClick={verArvore}>
+            Ver árvore
+          </button>
+        )}
         {!sessao && (
-          <button type="button" className={botaoPrimario} onClick={() => iniciar(duracao)}>
+          <button type="button" className={concluida !== null ? botaoSecundario : botaoPrimario} onClick={() => iniciar(duracao)}>
             {concluida !== null ? "Plantar outra" : "Começar a estudar"}
           </button>
         )}
@@ -96,6 +102,17 @@ export function ModoFoco() {
           celular.
         </p>
       </div>
+
+      <Link
+        href="/aluno/foco/colecao"
+        className="mt-6 flex w-full items-center justify-between rounded-2xl border border-linha p-4 text-left hover:border-tinta"
+      >
+        <span>
+          <span className="block font-extrabold">Minha coleção de árvores</span>
+          <span className="block text-sm text-tinta-suave">Cada sessão vira uma árvore diferente. Junte todas e ganhe selos.</span>
+        </span>
+        <span aria-hidden className="text-xl text-tinta-suave">›</span>
+      </Link>
 
       {jardim && jardim.arvores > 0 && (
         <section className="mt-6 w-full rounded-2xl border border-linha p-4 text-left">

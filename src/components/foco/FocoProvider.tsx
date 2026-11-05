@@ -15,6 +15,8 @@ import {
   type Jardim,
   type Sessao,
 } from "@/lib/foco";
+import { escolherEspecie } from "@/lib/foco/colecao";
+import { colherArvore, type Colheita } from "@/app/aluno/foco/actions";
 
 type Foco = {
   sessao: Sessao | null;
@@ -27,7 +29,24 @@ type Foco = {
   retomar: () => void;
   desistir: () => void;
   dispensarConclusao: () => void;
+  /** A árvore que acabou de crescer (espécie e selos); null enquanto ainda está sendo guardada. */
+  colheita: Colheita | null;
+  celebrando: boolean;
+  verArvore: () => void;
+  fecharCelebracao: () => void;
 };
+
+const CHAVE_COLHEITA = "repasa:colheita";
+
+function lerColheita(bruto: string | null): Colheita | null {
+  if (!bruto) return null;
+  try {
+    const c = JSON.parse(bruto) as Colheita;
+    return typeof c.especie === "string" && typeof c.minutos === "number" ? c : null;
+  } catch {
+    return null;
+  }
+}
 
 const ContextoFoco = createContext<Foco | null>(null);
 
@@ -57,6 +76,8 @@ export function FocoProvider({ children }: { children: ReactNode }) {
   const [jardim, setJardim] = useState<Jardim | null>(null);
   const [concluida, setConcluida] = useState<number | null>(null);
   const [agora, setAgora] = useState(() => Date.now());
+  const [colheita, setColheita] = useState<Colheita | null>(null);
+  const [celebrando, setCelebrando] = useState(false);
 
   const salvar = useCallback((s: Sessao | null) => {
     setSessao(s);
@@ -70,12 +91,17 @@ export function FocoProvider({ children }: { children: ReactNode }) {
     function aoMudar(e: StorageEvent) {
       if (e.key === CHAVE_SESSAO) setSessao(lerSessao(e.newValue));
       if (e.key === CHAVE_JARDIM) setJardim(lerJardim(e.newValue, diaLocal()));
+      if (e.key === CHAVE_COLHEITA) setColheita(lerColheita(e.newValue));
     }
     window.addEventListener("storage", aoMudar);
     return () => window.removeEventListener("storage", aoMudar);
   }, []);
 
-  const dispensarConclusao = useCallback(() => setConcluida(null), []);
+  const dispensarConclusao = useCallback(() => {
+    setConcluida(null);
+    setCelebrando(false);
+    setColheita(null);
+  }, []);
 
   const rodando = sessao !== null && sessao.fimEm !== null;
 
@@ -96,6 +122,24 @@ export function FocoProvider({ children }: { children: ReactNode }) {
       const novo = plantarArvore(lerJardim(ler(CHAVE_JARDIM), diaLocal()), sessao.duracaoMin, diaLocal());
       gravar(CHAVE_JARDIM, JSON.stringify(novo));
       setJardim(novo);
+      // Guarda a árvore na coleção da conta; sem conta ou sem rede, a comemoração acontece do mesmo jeito.
+      const minutos = sessao.duracaoMin;
+      gravar(CHAVE_COLHEITA, null);
+      setColheita(null);
+      colherArvore(minutos, diaLocal())
+        .catch(() => null)
+        .then((c) => {
+          const final: Colheita = c ?? {
+            especie: escolherEspecie([], null),
+            minutos,
+            especieNova: false,
+            selos: [],
+            proxima: null,
+            salva: false,
+          };
+          setColheita(final);
+          gravar(CHAVE_COLHEITA, JSON.stringify(final));
+        });
     }
   }, [sessao, agora]);
 
@@ -111,8 +155,14 @@ export function FocoProvider({ children }: { children: ReactNode }) {
     agora,
     jardim,
     concluida,
+    colheita,
+    celebrando,
+    verArvore: () => setCelebrando(true),
+    fecharCelebracao: dispensarConclusao,
     iniciar: (min) => {
       setConcluida(null);
+      setCelebrando(false);
+      setColheita(null);
       const t = Date.now();
       setAgora(t);
       salvar(novaSessao(min, t));
