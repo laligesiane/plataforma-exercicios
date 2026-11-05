@@ -1,4 +1,5 @@
 import { PainelLeitura } from "@/components/PreferenciasLeitura";
+import { EscolherTema } from "@/components/Tema";
 import type { Metadata } from "next";
 import { sair } from "@/app/entrar/actions";
 import { Cabecalho } from "@/components/Cabecalho";
@@ -71,6 +72,10 @@ export default async function PaginaPerfil() {
             <Item rotulo="Na Repasa desde" valor={data(perfil.criado_em ?? user?.created_at)} />
             <Item rotulo="Último acesso" valor={dataHora(user?.last_sign_in_at)} />
           </dl>
+        </Secao>
+
+        <Secao titulo="Cor da sua Repasa">
+          <EscolherTema inicial={perfil.tema} />
         </Secao>
 
         <Secao titulo="Leitura">

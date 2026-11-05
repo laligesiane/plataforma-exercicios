@@ -86,3 +86,16 @@ export async function desligarMfa(formData: FormData) {
   await supabase.auth.mfa.unenroll({ factorId: fatorId });
   revalidatePath("/perfil");
 }
+
+/** Cor da Repasa escolhida no perfil (mesma paleta da cor dos destaques do resumo). */
+export async function salvarTema(tema: string): Promise<{ erro?: string }> {
+  if (!["menta", "azul", "rosa", "roxo", "laranja"].includes(tema)) return { erro: "Cor inválida." };
+  const supabase = await criarClienteServidor();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { erro: "Entre de novo para salvar." };
+  const { error } = await supabase.from("perfil").update({ tema }).eq("id", user.id);
+  if (error) return { erro: "Não foi possível salvar a cor. Tente de novo." };
+  return {};
+}

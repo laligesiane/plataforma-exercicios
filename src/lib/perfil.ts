@@ -14,6 +14,8 @@ export type Perfil = {
   criado_em: string;
   /** false só para quem entrou pela primeira vez com o Google e ainda não disse se é professor ou aluno. */
   papel_escolhido: boolean;
+  /** Cor da Repasa escolhida no perfil (0031); sem a coluna, fica o verde menta. */
+  tema?: string;
 };
 
 /** Perfil de quem está logado, ou null. */
