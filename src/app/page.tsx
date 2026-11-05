@@ -343,6 +343,8 @@ export default async function Inicio() {
         <Link href="/privacidade" className="hover:underline">
           Privacidade e cookies
         </Link>
+        <br />
+        A Repasa está em versão beta: ela é nova e continua melhorando a cada semana.
       </footer>
     </div>
   );
