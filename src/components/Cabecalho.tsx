@@ -25,6 +25,13 @@ export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {})
             <IconeLogo />
             <span className="text-[17px] font-extrabold tracking-tight">Repasa</span>
           </Link>
+          {/* A Repasa acabou de abrir para o público: o selo avisa que ela ainda está mudando. */}
+          <span
+            className="ml-2 rounded-full bg-primaria-suave px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-primaria"
+            title="A Repasa é nova e está em construção: algumas coisas ainda podem mudar."
+          >
+            Beta
+          </span>
         </div>
         {!semMenu && perfil && perfil.papel_escolhido && (
           <div className="hidden justify-center sm:flex">
