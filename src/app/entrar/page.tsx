@@ -5,7 +5,7 @@ import { Cabecalho } from "@/components/Cabecalho";
 import { destinoDepoisDoLogin } from "@/lib/auth/depois-do-login";
 import { caminhoInterno } from "@/lib/auth/destino";
 import { obterPerfil } from "@/lib/perfil";
-import { supabaseConfigurado } from "@/lib/supabase/config";
+import { loginGoogleLigado, supabaseConfigurado } from "@/lib/supabase/config";
 import { FormularioEntrar } from "./FormularioEntrar";
 
 export default async function PaginaEntrar({ searchParams }: { searchParams: Promise<{ erro?: string; proximo?: string }> }) {
@@ -33,8 +33,12 @@ export default async function PaginaEntrar({ searchParams }: { searchParams: Pro
         )}
         {supabaseConfigurado ? (
           <>
-            <BotaoGoogle proximo={proximo} />
-            <Divisor />
+            {loginGoogleLigado && (
+              <>
+                <BotaoGoogle proximo={proximo} />
+                <Divisor />
+              </>
+            )}
             <FormularioEntrar proximo={proximo} />
           </>
         ) : (

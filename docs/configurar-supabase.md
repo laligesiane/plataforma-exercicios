@@ -122,6 +122,10 @@ No Google Cloud (https://console.cloud.google.com), entrando com a conta Google 
 6. No Supabase, **Authentication → Sign In / Providers → Google**: ligue **Enable Sign in with Google**, cole o
    **Client ID** e o **Client Secret** e salve. A chave secreta vai só aqui: nunca em chat, e-mail ou código.
 
+7. Na **Vercel → plataforma-exercicios → Settings → Environment Variables**, adicione `NEXT_PUBLIC_LOGIN_GOOGLE`
+   com o valor `1` (todos os ambientes) e faça um **Redeploy**. Só então o botão "Continuar com Google" aparece
+   nas telas de entrar e de cadastro. Antes disso ele fica escondido, para ninguém cair no erro "provider is not enabled".
+
 Quem já tem conta com o mesmo e-mail cai na mesma conta ao entrar pelo Google.
 
 ### Verificação em duas etapas

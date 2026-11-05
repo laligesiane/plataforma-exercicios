@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { BotaoGoogle, Divisor } from "@/components/auth/BotaoGoogle";
 import { Cabecalho } from "@/components/Cabecalho";
 import { obterPerfil, paginaInicial } from "@/lib/perfil";
-import { supabaseConfigurado } from "@/lib/supabase/config";
+import { loginGoogleLigado, supabaseConfigurado } from "@/lib/supabase/config";
 import { FormularioCadastro } from "./FormularioCadastro";
 
 export default async function PaginaCadastro({ searchParams }: { searchParams: Promise<{ papel?: string }> }) {
@@ -43,8 +43,12 @@ export default async function PaginaCadastro({ searchParams }: { searchParams: P
         </p>
         {supabaseConfigurado ? (
           <>
-            <BotaoGoogle />
-            <Divisor />
+            {loginGoogleLigado && (
+              <>
+                <BotaoGoogle />
+                <Divisor />
+              </>
+            )}
             <FormularioCadastro papel={papel} />
           </>
         ) : (
