@@ -131,19 +131,20 @@ export function AulaAtividade({
   );
 }
 
-type Registrar = (itemId: string) => (resultado: Resultado, valor: string) => void;
+export type Registrar = (itemId: string) => (resultado: Resultado, valor: string) => void;
 
-function ConteudoExercicio({
+/** Itens de um exercício, no componente do tipo dele. */
+export function ConteudoExercicio({
   exercicio,
   anteriores,
   registrar,
-  producoes,
+  producoes = {},
   onProducao,
 }: {
   exercicio: Exercicio;
   anteriores: Record<string, string>;
   registrar: Registrar;
-  producoes: Record<string, ProducaoSalva>;
+  producoes?: Record<string, ProducaoSalva>;
   onProducao?: EnviarProducao;
 }) {
   const aoResultado = (itemId: string, resultado: Resultado, valor: string) => registrar(itemId)(resultado, valor);

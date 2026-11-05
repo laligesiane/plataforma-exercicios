@@ -15,7 +15,7 @@ export default async function MinhaConta() {
   const supabase = await criarClienteServidor();
   const hoje = hojeNoFuso();
 
-  const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }, { data: aulasDb }, { data: materias }, { count: pendentes }, resumos] =
+  const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }, { data: aulasDb }, { data: materias }, { count: pendentes }, { count: paraRepassar }, resumos] =
     await Promise.all([
       supabase.from("turma").select("id, nome"),
       supabase.from("atividade_turma").select("atividade(id)"),
@@ -24,6 +24,12 @@ export default async function MinhaConta() {
       supabase.from("aula").select("id, turma_id, data, titulo").gte("data", hoje).order("data"),
       supabase.from("materia").select("id, nome, cor, resumo(count)").order("criada_em"),
       supabase.from("pedido_aula").select("id", { count: "exact", head: true }).eq("aluno_id", perfil.id).eq("status", "pendente"),
+      supabase
+        .from("revisao")
+        .select("id", { count: "exact", head: true })
+        .eq("aluno_id", perfil.id)
+        .is("concluida_em", null)
+        .lte("proxima_em", hoje),
       carregarResumosDoAluno(),
     ]);
 
@@ -90,6 +96,21 @@ export default async function MinhaConta() {
           )}
         </div>
       </section>
+
+      {(paraRepassar ?? 0) > 0 && (
+        <Link
+          href="/aluno/revisar"
+          className="mt-6 flex items-center justify-between gap-4 rounded-2xl border-2 border-primaria p-4 transition-colors hover:bg-primaria-suave"
+        >
+          <span>
+            <span className="block font-extrabold">Repasar meus erros</span>
+            <span className="block text-sm text-tinta-suave">
+              {paraRepassar} {paraRepassar === 1 ? "item que você errou volta" : "itens que você errou voltam"} hoje. Leva poucos minutos.
+            </span>
+          </span>
+          <span className="shrink-0 rounded-full bg-primaria px-4 py-1.5 text-sm font-bold text-white">Começar</span>
+        </Link>
+      )}
 
       <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {atalhos.map((a) => (
