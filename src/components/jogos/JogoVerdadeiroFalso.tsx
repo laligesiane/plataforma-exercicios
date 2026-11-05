@@ -43,10 +43,16 @@ export function JogoVerdadeiroFalso({ afirmacoes, acoes }: { afirmacoes: Afirmac
         total={afirmacoes.length}
         extra={sequencia >= 2 ? <span className="inline-flex items-center gap-1 font-bold text-primaria"><Icone nome="fogo" className="size-4" /> {sequencia} seguidas</span> : undefined}
       />
-      <div className="mt-5 rounded-3xl border-2 border-linha bg-fundo p-6 text-center">
-        <p className="text-2xl font-extrabold">{atual.termo}</p>
-        <p className="mt-3 text-sm font-bold tracking-wide text-tinta-suave uppercase">é…</p>
-        <p className="mt-2 text-lg leading-relaxed">{atual.explicacao}</p>
+      <p className="mt-5 text-center text-sm font-bold text-tinta-suave">Esta explicação combina com o termo?</p>
+      <div className="mt-2 overflow-hidden rounded-3xl border-2 border-linha bg-fundo">
+        <div className="border-b-2 border-linha bg-primaria-suave px-5 py-4 text-center">
+          <p className="text-xs font-bold tracking-wide text-tinta-suave uppercase">Termo</p>
+          <p className="mt-1 text-2xl font-extrabold">{atual.termo}</p>
+        </div>
+        <div className="px-5 py-4">
+          <p className="text-xs font-bold tracking-wide text-tinta-suave uppercase">Explicação</p>
+          <p className="mt-1 text-lg leading-relaxed whitespace-pre-line">{atual.explicacao}</p>
+        </div>
       </div>
 
       {resposta === null ? (
@@ -56,24 +62,24 @@ export function JogoVerdadeiroFalso({ afirmacoes, acoes }: { afirmacoes: Afirmac
             onClick={() => responder(false)}
             className="rounded-2xl border-2 border-erro bg-erro-fundo py-4 text-lg font-extrabold text-erro transition-transform active:scale-95"
           >
-            <span className="inline-flex items-center justify-center gap-2"><Icone nome="errado" /> Falso</span>
+            <span className="inline-flex items-center justify-center gap-2"><Icone nome="errado" /> Não combina</span>
           </button>
           <button
             type="button"
             onClick={() => responder(true)}
             className="rounded-2xl border-2 border-certo bg-certo-fundo py-4 text-lg font-extrabold text-certo transition-transform active:scale-95"
           >
-            <span className="inline-flex items-center justify-center gap-2"><Icone nome="certo" /> Verdadeiro</span>
+            <span className="inline-flex items-center justify-center gap-2"><Icone nome="certo" /> Combina</span>
           </button>
         </div>
       ) : (
         <div aria-live="polite" className="mt-4 rounded-2xl bg-suave p-4">
           <p className={`font-bold ${acertou ? "text-certo" : "text-erro"}`}>
-            {acertou ? "Acertou!" : "Não foi dessa vez."} {atual.verdadeira ? "Era verdadeiro." : "Era falso."}
+            {acertou ? "Acertou!" : "Não foi dessa vez."} {atual.verdadeira ? "A explicação era dele mesmo." : "Essa explicação era de outro termo."}
           </p>
           {!atual.verdadeira && (
             <p className="mt-1 text-sm text-tinta-suave">
-              <strong>{atual.termo}</strong>: {atual.explicacaoCerta}
+              A explicação de <strong>{atual.termo}</strong> é: {atual.explicacaoCerta}
             </p>
           )}
           <button

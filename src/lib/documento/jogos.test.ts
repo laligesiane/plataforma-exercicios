@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { esconderTermo, rodadaDeCartoes, totalDeRodadas, type Cartao } from "./cartoes";
-import { primeiraFrase, cartoesParaCompletar, montarComplete, montarLigar, montarMemoria, montarQuiz, montarVerdadeiroFalso, resumir } from "./jogos";
+import { primeiraFrase, cartoesDoJogo, cartoesParaCompletar, montarComplete, montarLigar, montarMemoria, montarQuiz, montarVerdadeiroFalso, resumir } from "./jogos";
 
-const cartao = (i: number, tipo: Cartao["tipo"] = "negrito"): Cartao => ({
+const cartao = (i: number, tipo: Cartao["tipo"] = "definicao"): Cartao => ({
   id: `c${i}`,
   frente: `termo${i}`,
-  verso: tipo === "negrito" ? `A frase com termo${i} no meio.` : `Explicação do título ${i}.`,
+  verso: tipo === "titulo" ? `Explicação do título ${i}.` : `Coisa número ${i} com termo${i} citado.`,
   tipo,
+  ...(tipo === "titulo" ? {} : { frase: `O termo${i} é a coisa número ${i}.` }),
 });
 const muitos = [...Array.from({ length: 8 }, (_, i) => cartao(i, "titulo")), ...Array.from({ length: 15 }, (_, i) => cartao(i + 8))];
 
@@ -47,6 +48,15 @@ describe("pistas sem entregar a resposta", () => {
   });
 });
 
+describe("lacunas não viram termo e explicação", () => {
+  it("só entram no Complete e nos Cartões", () => {
+    const lista = [cartao(1, "titulo"), cartao(2, "lacuna"), cartao(3)];
+    expect(cartoesDoJogo("memoria", lista).map((c) => c.id)).toEqual(["c1", "c3"]);
+    expect(cartoesDoJogo("complete", lista).map((c) => c.id)).toEqual(["c2", "c3"]);
+    expect(cartoesDoJogo("cartoes", lista)).toHaveLength(3);
+  });
+});
+
 describe("jogos", () => {
   const rodada = rodadaDeCartoes(muitos);
 
@@ -70,7 +80,7 @@ describe("jogos", () => {
 
   it("complete: só negritos que estão na frase, com 3 opções", () => {
     const usaveis = cartoesParaCompletar(rodada);
-    expect(usaveis.every((c) => c.tipo === "negrito")).toBe(true);
+    expect(usaveis.every((c) => c.tipo !== "titulo")).toBe(true);
     const perguntas = montarComplete(rodada, "s");
     expect(perguntas).toHaveLength(usaveis.length);
     for (const p of perguntas) {

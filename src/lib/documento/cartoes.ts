@@ -1,7 +1,13 @@
 import type { Documento, No } from ".";
 
-/** "titulo": veio de um título e do texto embaixo dele. "negrito": veio de um trecho em negrito e da frase dele. */
-export type Cartao = { id: string; frente: string; verso: string; tipo: "titulo" | "negrito" };
+/**
+ * De onde o cartão veio:
+ * - "titulo": um título e o texto embaixo dele;
+ * - "definicao": um negrito que abre uma definição ("**Indução** é ...", "**Indução**: ...");
+ * - "lacuna": um negrito no meio de uma frase. Não é termo e explicação: serve para completar a frase.
+ * Nos negritos, "frase" guarda a frase inteira em que o termo aparece.
+ */
+export type Cartao = { id: string; frente: string; verso: string; tipo: "titulo" | "definicao" | "lacuna"; frase?: string };
 
 /** Quantos cartões entram numa rodada, para o estudo não ficar maçante. */
 export const CARTOES_POR_RODADA = 10;
@@ -20,6 +26,52 @@ const encurtar = (t: string) => {
   return fim > 0 ? corte.slice(0, fim + 1).trim() : `${corte.slice(0, LIMITE_VERSO - 1).trimEnd()}…`;
 };
 
+/** Palavrinhas soltas que não fazem um bom cartão quando aparecem sozinhas em negrito. */
+const PALAVRAS_FRACAS = new Set(
+  "a o as os um uma uns umas de da do das dos em no na nos nas e ou mas que se por para com sem não sim é são foi ser ter isso isto esse essa este esta muito mais menos também já ainda sempre nunca todo toda todos todas cada".split(" "),
+);
+
+const SUBSTANTIVOS_EM_R = new Set("mulher colher prazer poder dever ser saber talher alter elixir faquir nadir".split(" "));
+
+/**
+ * Um negrito vira cartão só se for um termo de verdade: nem curto demais, nem comprido demais,
+ * e não uma palavra solta qualquer, como um verbo no infinitivo ("avaliar") ou um "não".
+ * Termos com mais de uma palavra, siglas e nomes com maiúscula sempre passam.
+ */
+export function termoBom(termo: string): boolean {
+  const t = termo.trim().replace(/[.,;:!?]+$/, "");
+  if (t.length < 2 || t.length > 80) return false;
+  if (/\s/.test(t)) return true;
+  if (/^\p{Lu}/u.test(t) || /\d/.test(t)) return true;
+  const minusculo = t.toLowerCase();
+  if (PALAVRAS_FRACAS.has(minusculo) || minusculo.length < 4) return false;
+  // Verbo solto no infinitivo (avaliar, fazer, definir, pôr) quase nunca é o conceito que se quer estudar.
+  // Ficam de fora os substantivos e adjetivos comuns com a mesma terminação (celular, nuclear, mulher...).
+  if (/(ar|er|ir)$/.test(minusculo) && !/(ular|olar|lear|unar|gar|mar)$/.test(minusculo) && !SUBSTANTIVOS_EM_R.has(minusculo)) return false;
+  return true;
+}
+
+/** A frase do parágrafo em que o termo aparece (ou o parágrafo inteiro, se não achar). */
+export function fraseCom(texto: string, termo: string): string {
+  const frases = texto.split(/(?<=[.!?…])\s+|\n+/);
+  return (frases.find((f) => f.toLowerCase().includes(termo.toLowerCase())) ?? texto).trim();
+}
+
+const escaparRegex = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * Se a frase começa pelo termo e logo define ("Indução é ...", "Indução: ...", "Indução – ..."),
+ * devolve só a explicação, com a primeira letra maiúscula. Senão, nada.
+ */
+export function definicaoDe(frase: string, termo: string): string | null {
+  const m = frase
+    .trim()
+    .match(new RegExp(`^${escaparRegex(termo)}\\s*(?:[:–—-]|,?\\s*(?:é|são|significa|consiste em|refere-se a|representa)(?=\\s))\\s*(.{8,})$`, "iu"));
+  if (!m) return null;
+  const resto = m[1].trim();
+  return resto.charAt(0).toLocaleUpperCase() + resto.slice(1);
+}
+
 /**
  * Cartões de estudo montados do próprio resumo, sem IA:
  * - cada título ou subtítulo vira a frente, e o texto logo abaixo dele vira o verso;
@@ -28,17 +80,18 @@ const encurtar = (t: string) => {
 export function cartoesDoDocumento(doc: Documento): Cartao[] {
   const cartoes: Cartao[] = [];
   const frentes = new Set<string>();
-  const adicionar = (frente: string, verso: string, tipo: Cartao["tipo"]) => {
+  const adicionar = (frente: string, verso: string, tipo: Cartao["tipo"], frase?: string) => {
     // Tira a numeração dos títulos ("2. Indução", "II - Indução") e os dois-pontos do fim.
     const f = frente
       .trim()
-      .replace(/^(\d+(\.\d+)*|[IVX]{1,4})\s*[.)\-–]\s+/, "")
+      .replace(/^\d+(\.\d+)*(\s*[.)\-–]\s*|\s+)(?=\p{L})/u, "")
+      .replace(/^[IVX]{1,4}\s*[.)\-–]\s+/, "")
       .replace(/[:：]\s*$/, "");
     const v = encurtar(verso);
     const chave = f.toLowerCase();
     if (!f || !v || v.toLowerCase() === chave || frentes.has(chave)) return;
     frentes.add(chave);
-    cartoes.push({ id: `c${cartoes.length + 1}`, frente: f, verso: v, tipo });
+    cartoes.push({ id: `c${cartoes.length + 1}`, frente: f, verso: v, tipo, ...(frase ? { frase: encurtar(frase) } : {}) });
   };
 
   // Títulos: junta o que vem até o próximo título.
@@ -59,15 +112,19 @@ export function cartoesDoDocumento(doc: Documento): Cartao[] {
   }
   fecharTitulo();
 
-  // Negritos: o termo na frente e a frase dele no verso.
+  // Negritos: se abrem uma definição, viram termo e explicação; se estão no meio da frase, viram lacuna.
   const visitar = (no: No) => {
     if (no.type === "paragraph" || no.type === "listItem") {
       const filhos = no.content ?? [];
-      const frase = textoDe(no);
+      const texto = textoDe(no);
       for (const f of filhos) {
         if (f.type === "text" && f.marks?.some((m) => m.type === "bold")) {
           const termo = f.text.trim();
-          if (termo.length >= 2 && termo.length <= 80) adicionar(termo, frase, "negrito");
+          if (!termoBom(termo)) continue;
+          const frase = fraseCom(texto, termo);
+          const definicao = definicaoDe(frase, termo);
+          if (definicao) adicionar(termo, definicao, "definicao", frase);
+          else adicionar(termo, frase, "lacuna", frase);
         }
       }
       if (no.type === "listItem") filhos.forEach(visitar);
@@ -88,7 +145,7 @@ export function cartoesDoDocumento(doc: Documento): Cartao[] {
 export function rodadaDeCartoes(cartoes: Cartao[], rodada = 0, maximo = CARTOES_POR_RODADA): Cartao[] {
   if (cartoes.length <= maximo) return cartoes;
   const titulos = cartoes.filter((c) => c.tipo === "titulo");
-  const negritos = cartoes.filter((c) => c.tipo === "negrito");
+  const negritos = cartoes.filter((c) => c.tipo !== "titulo");
   const misturados: Cartao[] = [];
   for (let i = 0; i < Math.max(titulos.length, negritos.length); i++) {
     if (titulos[i]) misturados.push(titulos[i]);
@@ -100,8 +157,6 @@ export function rodadaDeCartoes(cartoes: Cartao[], rodada = 0, maximo = CARTOES_
 
 /** Quantas rodadas diferentes dá para fazer com esses cartões. */
 export const totalDeRodadas = (cartoes: Cartao[], maximo = CARTOES_POR_RODADA) => Math.max(1, Math.ceil(cartoes.length / maximo));
-
-const escaparRegex = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /** Troca o termo da frente por "____" no verso, para a pista não entregar a resposta. */
 export function esconderTermo(cartao: Pick<Cartao, "frente" | "verso">, lacuna = "____"): string {

@@ -58,7 +58,7 @@ export default async function JogosDoResumo({ params }: { params: Promise<{ id: 
                         <span className="mt-0.5 block text-sm text-tinta-suave">
                           {j.modo === "complete"
                             ? "Precisa de pelo menos 2 palavras em negrito dentro de frases."
-                            : `Precisa de pelo menos ${j.minimo} cartões. Marque mais títulos ou negritos no resumo.`}
+                            : `Precisa de pelo menos ${j.minimo} termos com explicação: títulos com texto embaixo, ou um negrito no começo de uma definição ("**Indução** é...").`}
                         </span>
                       </span>
                     </div>

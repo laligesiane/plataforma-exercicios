@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { BotaoSom } from "@/components/exercicios/BotaoSom";
 import { rodadaDeCartoes, totalDeRodadas, type Cartao } from "@/lib/documento/cartoes";
-import { cartoesParaCompletar, montarComplete, montarLigar, montarQuiz, montarVerdadeiroFalso, type ModoJogo } from "@/lib/documento/jogos";
+import { cartoesDoJogo, montarComplete, montarLigar, montarQuiz, montarVerdadeiroFalso, type ModoJogo } from "@/lib/documento/jogos";
 import { EstudarCartoes } from "./EstudarCartoes";
 import { JogoLigar } from "./JogoLigar";
 import { JogoMemoria } from "./JogoMemoria";
@@ -18,8 +18,8 @@ import type { AcoesFim } from "./comum";
 export function Jogo({ modo, cartoes, resumoId }: { modo: ModoJogo; cartoes: Cartao[]; resumoId: string }) {
   const [rodada, setRodada] = useState(0);
   const [vez, setVez] = useState(0);
-  // "Complete a frase" só usa os negritos que aparecem dentro da frase.
-  const usaveis = useMemo(() => (modo === "complete" ? cartoesParaCompletar(cartoes) : cartoes), [modo, cartoes]);
+  // Cada jogo usa só os cartões que fazem sentido para ele (ex.: lacunas só no "Complete a frase").
+  const usaveis = useMemo(() => cartoesDoJogo(modo, cartoes), [modo, cartoes]);
   const daRodada = useMemo(() => rodadaDeCartoes(usaveis, rodada), [usaveis, rodada]);
   const semente = `${resumoId}:${modo}:${rodada}:${vez}`;
   const rodadas = totalDeRodadas(usaveis);

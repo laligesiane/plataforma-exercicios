@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Documento } from ".";
-import { cartoesDoDocumento } from "./cartoes";
+import { cartoesDoDocumento, termoBom } from "./cartoes";
 
 const t = (text: string, negrito = false) => ({ type: "text" as const, text, ...(negrito ? { marks: [{ type: "bold" as const }] } : {}) });
 const p = (...content: ReturnType<typeof t>[]) => ({ type: "paragraph" as const, content });
@@ -43,8 +43,35 @@ describe("cartões do resumo", () => {
         p(t("Parte de exemplos.")),
         { type: "heading", attrs: { level: 2 }, content: [t("Civil: regras")] },
         p(t("Normas da vida privada.")),
+        { type: "heading", attrs: { level: 3 }, content: [t("2.1) Indução")] },
+        p(t("Parte de casos.")),
+        { type: "heading", attrs: { level: 3 }, content: [t("III - Dedução")] },
+        p(t("Parte da regra.")),
+        { type: "heading", attrs: { level: 3 }, content: [t("4 Abdução")] },
+        p(t("Parte do efeito.")),
+        { type: "heading", attrs: { level: 3 }, content: [t("5G")] },
+        p(t("Normas da vida privada.")),
       ],
     };
-    expect(cartoesDoDocumento(numerado).map((c) => c.frente)).toEqual(["Aprendizado de máquina", "Civil: regras"]);
+    expect(cartoesDoDocumento(numerado).map((c) => c.frente)).toEqual(["Aprendizado de máquina", "Civil: regras", "Indução", "Dedução", "Abdução", "5G"]);
+  });
+
+  it("descarta negritos fracos e mantém termos de verdade", () => {
+    expect(["avaliar", "definir", "não", "de", "mais"].filter(termoBom)).toEqual([]);
+    expect(["fotossíntese", "celular", "nuclear", "mulher", "Turing", "IA", "aprendizado de máquina", "osmose"].every(termoBom)).toBe(true);
+  });
+
+  it("negrito que abre definição vira termo e explicação; no meio da frase vira lacuna", () => {
+    const d: Documento = {
+      type: "doc",
+      content: [
+        p(t("Indução", true), t(" é o raciocínio que vai dos casos à regra. Depois testa.")),
+        p(t("A partir dela, o algoritmo cria uma regra capaz de "), t("classificar dados novos", true), t(", que ele não viu.")),
+      ],
+    };
+    const [def, lac] = cartoesDoDocumento(d);
+    expect(def).toMatchObject({ tipo: "definicao", frente: "Indução", verso: "O raciocínio que vai dos casos à regra." });
+    expect(lac).toMatchObject({ tipo: "lacuna", frente: "classificar dados novos" });
+    expect(lac.frase).toContain("classificar dados novos");
   });
 });

@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { botaoPrimario, botaoSecundario } from "@/components/ui/estilos";
-import type { Cartao } from "@/lib/documento/cartoes";
+import { esconderTermo, type Cartao } from "@/lib/documento/cartoes";
 import { FimDeJogo, Progresso, type AcoesFim } from "./comum";
 
 /** Quanto o dedo precisa andar para o deslize valer como resposta. */
@@ -98,11 +98,25 @@ export function EstudarCartoes({ cartoes, acoes }: { cartoes: Cartao[]; acoes: A
                 : "border-linha bg-fundo hover:border-primaria"
         }`}
       >
-        <span className="text-xs font-bold tracking-wide text-tinta-suave uppercase">{virado ? "Verso" : "Frente"}</span>
-        {virado ? (
-          <span className="mt-3 text-lg whitespace-pre-line">{atual.verso}</span>
+        {atual.tipo === "lacuna" ? (
+          // Negrito no meio da frase: a frente é a frase com a lacuna e o verso, a palavra que falta.
+          <>
+            <span className="text-xs font-bold tracking-wide text-tinta-suave uppercase">{virado ? "Resposta" : "Complete a frase"}</span>
+            {virado ? (
+              <span className="mt-3 text-2xl font-extrabold">{atual.frente}</span>
+            ) : (
+              <span className="mt-3 text-lg leading-relaxed">{esconderTermo({ frente: atual.frente, verso: atual.frase ?? atual.verso }, "_____")}</span>
+            )}
+          </>
         ) : (
-          <span className="mt-3 text-2xl font-extrabold">{atual.frente}</span>
+          <>
+            <span className="text-xs font-bold tracking-wide text-tinta-suave uppercase">{virado ? "Explicação" : "Termo"}</span>
+            {virado ? (
+              <span className="mt-3 text-lg whitespace-pre-line">{atual.verso}</span>
+            ) : (
+              <span className="mt-3 text-2xl font-extrabold">{atual.frente}</span>
+            )}
+          </>
         )}
         {!virado && <span className="mt-4 text-sm text-tinta-suave">Pense na resposta e toque para virar.</span>}
       </button>
