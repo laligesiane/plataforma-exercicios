@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Atkinson_Hyperlegible, Figtree } from "next/font/google";
 import { scriptLeitura } from "@/components/PreferenciasLeitura";
 import { FocoProvider } from "@/components/foco/FocoProvider";
+import { CelebracaoArvore } from "@/components/foco/CelebracaoArvore";
 import { MiniBrotinho } from "@/components/foco/MiniBrotinho";
 import { CHAVE_SESSAO } from "@/lib/foco";
 import "./globals.css";
@@ -44,6 +45,7 @@ export default function RootLayout({
         <FocoProvider>
           {children}
           <MiniBrotinho />
+          <CelebracaoArvore />
         </FocoProvider>
       </body>
     </html>

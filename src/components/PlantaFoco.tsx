@@ -1,4 +1,5 @@
 import { FASES, ULTIMA_FASE } from "@/lib/foco";
+import { especiePorId, type Especie } from "@/lib/foco/colecao";
 
 const TINTA = "#10233a";
 
@@ -68,14 +69,93 @@ function Folha({ d, cor }: { d: string; cor: string }) {
   return <path d={d} fill={cor} />;
 }
 
-function Flor({ x, y }: { x: number; y: number }) {
+function Flor({ x, y, cor = "#ffc2cf", miolo = "#ffd166" }: { x: number; y: number; cor?: string; miolo?: string }) {
   return (
     <g transform={`translate(${x} ${y})`}>
       {[0, 72, 144, 216, 288].map((a) => (
-        <circle key={a} cx={Math.cos((a * Math.PI) / 180) * 4} cy={Math.sin((a * Math.PI) / 180) * 4} r="3.4" fill="#ffc2cf" />
+        <circle key={a} cx={Math.cos((a * Math.PI) / 180) * 4} cy={Math.sin((a * Math.PI) / 180) * 4} r="3.4" fill={cor} />
       ))}
-      <circle r="2.4" fill="#ffd166" />
+      <circle r="2.4" fill={miolo} />
     </g>
+  );
+}
+
+/** O enfeite de cada espécie: flor, fruta, folha caindo, pinha ou brilho. */
+function Enfeite({ esp, x, y }: { esp: Especie; x: number; y: number }) {
+  switch (esp.enfeite) {
+    case "flor":
+      return <Flor x={x} y={y} cor={esp.corEnfeite} miolo={esp.corMiolo} />;
+    case "fruta":
+      return (
+        <g transform={`translate(${x} ${y})`}>
+          <circle r="5.2" fill={esp.corEnfeite} />
+          <circle cx="-1.8" cy="-1.8" r="1.5" fill="#fff" opacity=".5" />
+          <path d="M0 -5 Q2 -8 4 -8" stroke={esp.corMiolo} strokeWidth="1.6" fill="none" strokeLinecap="round" />
+        </g>
+      );
+    case "folha":
+      return <path transform={`translate(${x} ${y}) rotate(${(x * 7) % 60 - 30})`} d="M0 -5 C5 -3 5 3 0 5 C-5 3 -5 -3 0 -5Z" fill={esp.corEnfeite} />;
+    case "pinha":
+      return <ellipse cx={x} cy={y} rx="3.4" ry="5" fill={esp.corEnfeite} stroke={esp.corMiolo} strokeWidth="1" />;
+    case "brilho":
+      return <path transform={`translate(${x} ${y})`} d="M0 -6 L1.6 -1.6 L6 0 L1.6 1.6 L0 6 L-1.6 1.6 L-6 0 L-1.6 -1.6Z" fill={esp.corEnfeite} />;
+  }
+}
+
+const PONTOS_REDONDA: [number, number][] = [[62, 64], [140, 70], [118, 28], [74, 100], [150, 98], [92, 22]];
+const PONTOS_PINHEIRO: [number, number][] = [[84, 54], [118, 70], [76, 98], [128, 112], [96, 132], [110, 30]];
+
+/** A árvore pronta (última fase), no jeitinho da espécie sorteada. */
+function ArvorePronta({ esp, pausado }: { esp: Especie; pausado: boolean }) {
+  if (esp.forma === "pinheiro") {
+    return (
+      <>
+        <Terra raizes={2} />
+        <path d="M92 162 L94 120 L106 120 L108 162Z" fill={esp.tronco} />
+        <g className="foco-balanca" style={{ transformOrigin: "100px 140px" }}>
+          <path d="M100 6 L136 62 L64 62Z" fill={esp.copa} />
+          <path d="M100 34 L150 102 L50 102Z" fill={esp.copa} />
+          <path d="M100 70 L162 142 L38 142Z" fill={esp.copa} />
+          <path d="M100 6 L112 26 L88 26Z" fill={esp.copaClara} opacity=".7" />
+          <path d="M100 34 L84 58 L74 56Z" fill={esp.copaClara} opacity=".55" />
+          <path d="M100 70 L72 104 L60 100Z" fill={esp.copaClara} opacity=".5" />
+          {PONTOS_PINHEIRO.map(([x, y]) => (
+            <Enfeite key={`${x}-${y}`} esp={esp} x={x} y={y} />
+          ))}
+        </g>
+        <Rosto x={100} y={112} escala={1.1} dormindo={pausado} />
+      </>
+    );
+  }
+  return (
+    <>
+      <Terra raizes={2} />
+      <path d="M88 162 C92 136 90 118 94 96 L106 96 C110 118 108 136 112 162Z" fill={esp.tronco} />
+      <path d="M98 130 Q80 118 72 104" stroke={esp.tronco} strokeWidth="6" strokeLinecap="round" fill="none" />
+      <path d="M102 120 Q120 112 128 98" stroke={esp.tronco} strokeWidth="6" strokeLinecap="round" fill="none" />
+      {esp.id === "jabuticabeira" && [[96, 140], [104, 128], [94, 116], [106, 150]].map(([x, y]) => (
+        <circle key={`${x}-${y}`} cx={x} cy={y} r="3.6" fill={esp.corEnfeite} />
+      ))}
+      <g className="foco-balanca" style={{ transformOrigin: "100px 100px" }}>
+        <circle cx="100" cy="64" r="48" fill={esp.copa} />
+        <circle cx="60" cy="86" r="28" fill={esp.copa} />
+        <circle cx="140" cy="86" r="28" fill={esp.copa} />
+        <circle cx="78" cy="40" r="24" fill={esp.copa} />
+        <circle cx="122" cy="40" r="24" fill={esp.copa} />
+        <circle cx="82" cy="44" r="18" fill={esp.copaClara} opacity=".55" />
+        <circle cx="56" cy="80" r="12" fill={esp.copaClara} opacity=".45" />
+        {PONTOS_REDONDA.map(([x, y]) => (
+          <Enfeite key={`${x}-${y}`} esp={esp} x={x} y={y} />
+        ))}
+      </g>
+      {esp.enfeite === "folha" && (
+        <g opacity=".85">
+          <Enfeite esp={esp} x={44} y={140} />
+          <Enfeite esp={esp} x={160} y={128} />
+        </g>
+      )}
+      <Rosto x={100} y={74} escala={1.15} dormindo={pausado} />
+    </>
   );
 }
 
@@ -89,9 +169,12 @@ export function PlantaFoco({
   pausado = false,
   tamanho = 240,
   animado = true,
+  especie,
   className = "",
 }: {
   fase: number;
+  /** Espécie da árvore pronta (última fase); sem ela, a Árvore do Brotinho. */
+  especie?: string | null;
   pausado?: boolean;
   tamanho?: number;
   animado?: boolean;
@@ -105,7 +188,7 @@ export function PlantaFoco({
       viewBox="0 0 200 240"
       className={`${animado && !pausado ? "foco-vivo" : ""} ${className}`}
       role="img"
-      aria-label={`Brotinho na fase ${FASES[f].nome.toLowerCase()}`}
+      aria-label={f === ULTIMA_FASE && especie ? especiePorId(especie).nome : `Brotinho na fase ${FASES[f].nome.toLowerCase()}`}
     >
       {f === 0 && (
         <>
@@ -175,30 +258,7 @@ export function PlantaFoco({
         </>
       )}
 
-      {f === 5 && (
-        <>
-          <Terra raizes={2} />
-          <path d="M88 162 C92 136 90 118 94 96 L106 96 C110 118 108 136 112 162Z" fill="#9a6b47" />
-          <path d="M98 130 Q80 118 72 104" stroke="#9a6b47" strokeWidth="6" strokeLinecap="round" fill="none" />
-          <path d="M102 120 Q120 112 128 98" stroke="#9a6b47" strokeWidth="6" strokeLinecap="round" fill="none" />
-          <g className="foco-balanca" style={{ transformOrigin: "100px 100px" }}>
-            <circle cx="100" cy="64" r="48" fill="#0f9d6b" />
-            <circle cx="60" cy="86" r="28" fill="#0f9d6b" />
-            <circle cx="140" cy="86" r="28" fill="#0f9d6b" />
-            <circle cx="78" cy="40" r="24" fill="#0f9d6b" />
-            <circle cx="122" cy="40" r="24" fill="#0f9d6b" />
-            <circle cx="82" cy="44" r="18" fill="#34c38f" opacity=".55" />
-            <circle cx="56" cy="80" r="12" fill="#34c38f" opacity=".45" />
-            <Flor x={62} y={64} />
-            <Flor x={140} y={70} />
-            <Flor x={118} y={28} />
-            <Flor x={74} y={100} />
-            <Flor x={150} y={98} />
-            <Flor x={92} y={22} />
-          </g>
-          <Rosto x={100} y={74} escala={1.15} dormindo={pausado} />
-        </>
-      )}
+      {f === 5 && <ArvorePronta esp={especiePorId(especie)} pausado={pausado} />}
     </svg>
   );
 }
