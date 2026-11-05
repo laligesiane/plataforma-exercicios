@@ -89,7 +89,7 @@ const maisAluno = (comPraticas: boolean) =>
 export function semBarra(caminho: string) {
   return (
     /^\/atividades\/[^/]+/.test(caminho) ||
-    /^\/aluno\/resumos\/[^/]+\/(cartoes|praticar)/.test(caminho) ||
+    /^\/aluno\/resumos\/[^/]+\/(cartoes|jogar|praticar)/.test(caminho) ||
     /^\/aluno\/praticas\/[^/]+/.test(caminho) ||
     /^\/aluno\/revisar\/.+/.test(caminho) ||
     /^\/professor\/atividades\/[^/]+$/.test(caminho) ||

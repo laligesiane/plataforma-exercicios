@@ -1,6 +1,10 @@
 import type { Documento, No } from ".";
 
-export type Cartao = { id: string; frente: string; verso: string };
+/** "titulo": veio de um título e do texto embaixo dele. "negrito": veio de um trecho em negrito e da frase dele. */
+export type Cartao = { id: string; frente: string; verso: string; tipo: "titulo" | "negrito" };
+
+/** Quantos cartões entram numa rodada, para o estudo não ficar maçante. */
+export const CARTOES_POR_RODADA = 10;
 
 const LIMITE_VERSO = 400;
 
@@ -20,20 +24,20 @@ const encurtar = (t: string) => {
 export function cartoesDoDocumento(doc: Documento): Cartao[] {
   const cartoes: Cartao[] = [];
   const frentes = new Set<string>();
-  const adicionar = (frente: string, verso: string) => {
+  const adicionar = (frente: string, verso: string, tipo: Cartao["tipo"]) => {
     const f = frente.trim().replace(/[:：]\s*$/, "");
     const v = encurtar(verso);
     const chave = f.toLowerCase();
     if (!f || !v || v.toLowerCase() === chave || frentes.has(chave)) return;
     frentes.add(chave);
-    cartoes.push({ id: `c${cartoes.length + 1}`, frente: f, verso: v });
+    cartoes.push({ id: `c${cartoes.length + 1}`, frente: f, verso: v, tipo });
   };
 
   // Títulos: junta o que vem até o próximo título.
   let titulo: string | null = null;
   let corpo: string[] = [];
   const fecharTitulo = () => {
-    if (titulo) adicionar(titulo, corpo.join("\n"));
+    if (titulo) adicionar(titulo, corpo.join("\n"), "titulo");
     titulo = null;
     corpo = [];
   };
@@ -55,7 +59,7 @@ export function cartoesDoDocumento(doc: Documento): Cartao[] {
       for (const f of filhos) {
         if (f.type === "text" && f.marks?.some((m) => m.type === "bold")) {
           const termo = f.text.trim();
-          if (termo.length >= 2 && termo.length <= 80) adicionar(termo, frase);
+          if (termo.length >= 2 && termo.length <= 80) adicionar(termo, frase, "negrito");
         }
       }
       if (no.type === "listItem") filhos.forEach(visitar);
@@ -66,4 +70,34 @@ export function cartoesDoDocumento(doc: Documento): Cartao[] {
   doc.content.forEach(visitar);
 
   return cartoes;
+}
+
+/**
+ * Os cartões de uma rodada: no máximo 10, misturando títulos e negritos para variar.
+ * A rodada 0 pega os primeiros; as seguintes vão andando pela lista e dão a volta,
+ * para quem estuda de novo ver cartões que ainda não viu.
+ */
+export function rodadaDeCartoes(cartoes: Cartao[], rodada = 0, maximo = CARTOES_POR_RODADA): Cartao[] {
+  if (cartoes.length <= maximo) return cartoes;
+  const titulos = cartoes.filter((c) => c.tipo === "titulo");
+  const negritos = cartoes.filter((c) => c.tipo === "negrito");
+  const misturados: Cartao[] = [];
+  for (let i = 0; i < Math.max(titulos.length, negritos.length); i++) {
+    if (titulos[i]) misturados.push(titulos[i]);
+    if (negritos[i]) misturados.push(negritos[i]);
+  }
+  const inicio = (rodada * maximo) % misturados.length;
+  return Array.from({ length: maximo }, (_, i) => misturados[(inicio + i) % misturados.length]);
+}
+
+/** Quantas rodadas diferentes dá para fazer com esses cartões. */
+export const totalDeRodadas = (cartoes: Cartao[], maximo = CARTOES_POR_RODADA) => Math.max(1, Math.ceil(cartoes.length / maximo));
+
+const escaparRegex = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/** Troca o termo da frente por "____" no verso, para a pista não entregar a resposta. */
+export function esconderTermo(cartao: Pick<Cartao, "frente" | "verso">, lacuna = "____"): string {
+  const termo = cartao.frente.trim();
+  if (!termo) return cartao.verso;
+  return cartao.verso.replace(new RegExp(escaparRegex(termo), "gi"), lacuna);
 }

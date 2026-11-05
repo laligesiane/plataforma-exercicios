@@ -1,9 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Mascote } from "@/components/Mascote";
 import { botaoPrimario, botaoSecundario } from "@/components/ui/estilos";
 import type { Cartao } from "@/lib/documento/cartoes";
+import { FimDeJogo, Progresso, type AcoesFim } from "./comum";
 
 /** Quanto o dedo precisa andar para o deslize valer como resposta. */
 const LIMITE = 90;
@@ -12,7 +12,7 @@ const LIMITE = 90;
  * Vira o cartão, responde "sabia" ou "ainda não". Os que ainda não sabe voltam no fim da rodada.
  * Com o cartão virado, dá para deslizar: para a direita é "sabia", para a esquerda "ainda não".
  */
-export function EstudarCartoes({ cartoes }: { cartoes: Cartao[] }) {
+export function EstudarCartoes({ cartoes, acoes }: { cartoes: Cartao[]; acoes: AcoesFim }) {
   const [fila, setFila] = useState(cartoes);
   const [virado, setVirado] = useState(false);
   const [sabia, setSabia] = useState(0);
@@ -38,25 +38,11 @@ export function EstudarCartoes({ cartoes }: { cartoes: Cartao[] }) {
 
   if (!atual) {
     return (
-      <div className="flex flex-col items-center rounded-2xl bg-primaria-suave p-8 text-center">
-        <Mascote tamanho={96} animado />
-        <p className="mt-3 text-xl font-extrabold">Rodada concluída!</p>
-        <p className="mt-1 text-tinta-suave">
-          Você sabia {sabia} de {cartoes.length} de primeira.
-          {repetidos.size > 0 ? ` ${repetidos.size} precisaram de mais uma volta.` : ""}
-        </p>
-        <button
-          type="button"
-          onClick={() => {
-            setFila(cartoes);
-            setSabia(0);
-            setRepetidos(new Set());
-          }}
-          className={`${botaoPrimario} mt-5`}
-        >
-          Estudar de novo
-        </button>
-      </div>
+      <FimDeJogo
+        titulo="Rodada concluída!"
+        texto={`Você sabia ${sabia} de ${cartoes.length} de primeira.${repetidos.size > 0 ? ` ${repetidos.size} precisaram de mais uma volta.` : ""}`}
+        acoes={acoes}
+      />
     );
   }
 
@@ -64,14 +50,7 @@ export function EstudarCartoes({ cartoes }: { cartoes: Cartao[] }) {
 
   return (
     <div>
-      <div className="flex items-center gap-3 text-sm font-semibold text-tinta-suave">
-        <span className="tabular-nums">
-          {feitos} de {cartoes.length}
-        </span>
-        <div className="h-2 flex-1 overflow-hidden rounded-full bg-suave">
-          <div className="h-full rounded-full bg-primaria transition-[width] duration-500 motion-reduce:transition-none" style={{ width: `${(feitos / cartoes.length) * 100}%` }} />
-        </div>
-      </div>
+      <Progresso feitos={feitos} total={cartoes.length} />
 
       <button
         type="button"
