@@ -1,5 +1,6 @@
 "use client";
 
+import { CampoData } from "@/components/ui/CampoData";
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { AulaAtividade } from "@/components/exercicios/AulaAtividade";
@@ -371,13 +372,9 @@ export function EditorAtividade({ inicial, exerciciosIniciais, turmas, turmasIni
                 Entregar até <span className="font-normal text-tinta-suave">(opcional)</span>
               </label>
               <div className="flex flex-wrap items-center gap-3">
-                <input
-                  id="prazo"
-                  type="date"
-                  value={atividade.prazo ?? ""}
-                  onChange={(e) => editarAtividade("prazo", e.target.value || null)}
-                  className={`${campo} w-auto`}
-                />
+                <div className="w-56">
+                  <CampoData id="prazo" value={atividade.prazo ?? ""} onChange={(v) => editarAtividade("prazo", v || null)} />
+                </div>
                 {atividade.prazo && (
                   <button type="button" onClick={() => editarAtividade("prazo", null)} className={botaoTexto}>
                     Tirar prazo

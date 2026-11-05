@@ -1,5 +1,6 @@
 "use client";
 
+import { CampoData } from "@/components/ui/CampoData";
 import { useActionState } from "react";
 import { Mensagem } from "@/components/ui/Mensagem";
 import { botaoPrimario, campo, rotulo } from "@/components/ui/estilos";
@@ -31,7 +32,7 @@ export function FormularioPedido({ turmas, hoje }: { turmas: { id: string; nome:
           <label htmlFor="pedido-data" className={rotulo}>
             Dia
           </label>
-          <input id="pedido-data" type="date" name="data" required min={hoje} className={campo} />
+          <CampoData id="pedido-data" name="data" required min={hoje} />
         </div>
         <div>
           <label htmlFor="pedido-hora" className={rotulo}>

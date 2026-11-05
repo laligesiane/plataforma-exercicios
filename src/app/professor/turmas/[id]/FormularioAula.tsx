@@ -1,5 +1,6 @@
 "use client";
 
+import { CampoData } from "@/components/ui/CampoData";
 import { useActionState, useEffect, useRef } from "react";
 import { Mensagem } from "@/components/ui/Mensagem";
 import { botaoPrimario, campo, rotulo } from "@/components/ui/estilos";
@@ -25,7 +26,7 @@ export function FormularioAula({ turmaId, hoje, aula }: { turmaId: string; hoje:
           <label htmlFor={`data-${s}`} className={rotulo}>
             Data
           </label>
-          <input id={`data-${s}`} name="data" type="date" required defaultValue={aula?.data ?? hoje} className={campo} />
+          <CampoData id={`data-${s}`} name="data" required defaultValue={aula?.data ?? hoje} />
         </div>
         <div>
           <label htmlFor={`titulo-${s}`} className={rotulo}>

@@ -1,5 +1,6 @@
 "use client";
 
+import { CampoData } from "@/components/ui/CampoData";
 import { useId, useRef, useState, useTransition, type ReactNode } from "react";
 import { Mensagem, type EstadoFormulario } from "@/components/ui/Mensagem";
 import { botaoIcone, botaoPrimario, botaoSecundario, botaoTexto, caixaMarcar, campo, rotulo } from "@/components/ui/estilos";
@@ -326,25 +327,17 @@ export function ImportarCalendario({
                   <label htmlFor={`${p}-data`} className="mb-1 block text-xs font-bold">
                     Dia
                   </label>
-                  <input
-                    id={`${p}-data`}
-                    type="date"
-                    value={l.data}
-                    onChange={(e) => mudar(l.uid, { data: e.target.value })}
-                    className={campo}
-                  />
+                  <CampoData id={`${p}-data`} value={l.data} onChange={(v) => mudar(l.uid, { data: v })} required />
                 </div>
                 <div>
                   <label htmlFor={`${p}-ate`} className="mb-1 block text-xs font-bold">
                     Até <span className="font-normal text-tinta-suave">(se for período)</span>
                   </label>
-                  <input
+                  <CampoData
                     id={`${p}-ate`}
-                    type="date"
                     value={l.ate ?? ""}
                     min={l.data}
-                    onChange={(e) => mudar(l.uid, { ate: e.target.value || null })}
-                    className={campo}
+                    onChange={(v) => mudar(l.uid, { ate: v || null })}
                   />
                 </div>
                 <div>
