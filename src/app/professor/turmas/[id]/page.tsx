@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Cabecalho } from "@/components/Cabecalho";
 import { etiquetasDaAtividade } from "@/lib/atividades/modelo";
 import { descreverTurma } from "@/lib/turmas";
+import { chegouAoLimite, limite } from "@/lib/limites";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { CartaoAula } from "@/components/CartaoAula";
@@ -54,8 +55,8 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
   const atividades = (atribuicoes ?? []).flatMap((a) =>
     a.atividade ? [a.atividade as unknown as { id: string; titulo: string; nivel: string; categoria: string; materia: string; publicada: boolean }] : [],
   );
-  const limite = plano?.max_alunos_por_turma ?? 0;
-  const cheia = alunos.length >= limite;
+  const limiteAlunos = limite(plano?.max_alunos_por_turma);
+  const cheia = chegouAoLimite(alunos.length, plano?.max_alunos_por_turma);
   const aulas = (aulasDb ?? []) as Aula[];
   const hoje = hojeNoFuso();
   const ultima = ultimaAula(aulas, hoje);
@@ -230,7 +231,7 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
           <h2 className="mb-4 text-lg font-bold">Entrar com código</h2>
           {cheia ? (
             <p className="rounded-xl bg-suave px-3.5 py-2.5 text-sm text-tinta-suave">
-              A turma chegou ao limite de {limite} alunos do seu plano.
+              A turma chegou ao limite de {limiteAlunos} alunos do seu plano.
             </p>
           ) : (
             <CodigoTurma turmaId={turma.id} codigo={turma.codigo} />
@@ -241,7 +242,7 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
           <h2 className="mb-4 text-lg font-bold">Convidar aluno por e-mail</h2>
           {cheia ? (
             <p className="rounded-xl bg-suave px-3.5 py-2.5 text-sm text-tinta-suave">
-              A turma chegou ao limite de {limite} alunos do seu plano.
+              A turma chegou ao limite de {limiteAlunos} alunos do seu plano.
             </p>
           ) : (
             <FormularioConvite turmaId={turma.id} />
@@ -313,7 +314,7 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
           <h2 className="text-lg font-bold">
             Alunos{" "}
             <span className="font-semibold text-tinta-suave tabular-nums">
-              ({alunos.length} de {limite})
+              ({limiteAlunos != null ? `${alunos.length} de ${limiteAlunos}` : alunos.length})
             </span>
           </h2>
           {alunos.length > 0 ? (

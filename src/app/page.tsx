@@ -71,7 +71,7 @@ const recursos = [
 
 const promessas = [
   { titulo: "Sem anúncios. Nunca.", texto: "Lugar de estudo não é vitrine. Ninguém vai interromper sua atividade para vender nada." },
-  { titulo: "Sempre um plano grátis", texto: "Dá para começar e usar de verdade sem pagar. Os planos pagos existem para quem precisa de mais." },
+  { titulo: "Grátis e sem limites", texto: "Crie quantas turmas, atividades e matérias quiser, com quantos alunos precisar. Sem pagar nada." },
   { titulo: "Seus estudos são seus", texto: "Seus resumos e mapas ficam guardados com você, organizados por matéria, para voltar sempre que precisar." },
 ];
 

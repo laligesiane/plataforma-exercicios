@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AssinarAgenda } from "@/components/AssinarAgenda";
 import { Cabecalho } from "@/components/Cabecalho";
 import { descreverTurma } from "@/lib/turmas";
+import { chegouAoLimite, LIMITES_LIGADOS, limite } from "@/lib/limites";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { FormularioTurma } from "./FormularioTurma";
@@ -22,18 +23,19 @@ export default async function PainelProfessor() {
   for (const p of pedidos ?? []) pedidosPorTurma.set(p.turma_id, (pedidosPorTurma.get(p.turma_id) ?? 0) + 1);
 
   const totalTurmas = turmas?.length ?? 0;
-  const podeCriar = plano ? totalTurmas < plano.max_turmas : false;
+  const maxTurmas = limite(plano?.max_turmas);
+  const podeCriar = !chegouAoLimite(totalTurmas, plano?.max_turmas);
 
   return (
     <>
       <Cabecalho />
       <main className="mx-auto w-full max-w-3xl px-4 pt-8 pb-16">
         <h1 className="text-3xl font-extrabold tracking-tight">Olá{perfil.nome ? `, ${perfil.nome}` : ""}!</h1>
-        {plano && (
+        {LIMITES_LIGADOS && plano && maxTurmas != null && (
           <p className="mt-2 text-tinta-suave">
             Plano <strong className="text-tinta">{plano.nome}</strong>:{" "}
             <span className="tabular-nums">
-              {totalTurmas} de {plano.max_turmas} {plano.max_turmas === 1 ? "turma" : "turmas"}
+              {totalTurmas} de {maxTurmas} {maxTurmas === 1 ? "turma" : "turmas"}
             </span>
             , até {plano.max_alunos_por_turma} alunos e {plano.max_atividades_por_turma} atividades por turma.
           </p>

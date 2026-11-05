@@ -38,8 +38,8 @@ export default async function PaginaCadastro({ searchParams }: { searchParams: P
         </h1>
         <p className="mt-2 mb-6 text-tinta-suave">
           {papel === "aluno"
-            ? "Organize seus estudos por matéria, com resumos e mapas mentais. Não precisa de professor: se um professor te convidar depois, as turmas dele aparecem aqui também. O plano grátis inclui 3 matérias."
-            : "Crie turmas de qualquer matéria, registre as aulas, monte exercícios com explicação de cada erro e convide seus alunos. O plano grátis inclui 3 turmas com até 10 alunos."}
+            ? "Organize seus estudos por matéria, com resumos e mapas mentais. Não precisa de professor: se um professor te convidar depois, as turmas dele aparecem aqui também."
+            : "Crie turmas de qualquer matéria, registre as aulas, monte exercícios com explicação de cada erro e convide seus alunos."}
         </p>
         {supabaseConfigurado ? (
           <>
