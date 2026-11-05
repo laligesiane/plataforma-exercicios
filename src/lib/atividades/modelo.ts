@@ -403,6 +403,51 @@ export function limparExercicio(exercicio: Exercicio): Exercicio {
   }
 }
 
+/** Problemas de um item (sem dizer onde ele está). Lista vazia = item pronto. */
+export function problemasDoItem(exercicio: Exercicio, item: Exercicio["itens"][number]): string[] {
+  const p: string[] = [];
+  if (item.tipo === "arrastar") {
+    if (item.enunciado.split(LACUNA).length - 1 !== 1) {
+      p.push(`a frase precisa ter exatamente uma lacuna (${LACUNA}).`);
+    }
+    if (!item.resposta) p.push(`escreva a palavra certa.`);
+    if (!item.explicacaoPadrao) p.push(`escreva a explicação para quando o aluno errar.`);
+    if (item.errosPrevistos.some((e) => !e.explicacao)) {
+      p.push(`todo erro previsto precisa de explicação.`);
+    }
+  } else if (item.tipo === "classificar") {
+    if (!item.texto) p.push(`escreva o texto do cartão.`);
+    if (exercicio.tipo === "classificar" && !exercicio.colunas.some((c) => c.id === item.colunaId)) {
+      p.push(`escolha a coluna certa do cartão.`);
+    }
+    if (!item.explicacao) p.push(`explique por que o cartão vai nessa coluna.`);
+  } else if (item.tipo === "producao") {
+    if (!item.enunciado) p.push(`escreva o que o aluno deve produzir.`);
+  } else if (item.tipo === "relacionar") {
+    if (!item.esquerda || !item.direita) p.push(`preencha os dois lados do par.`);
+    if (!item.explicacao) p.push(`escreva a explicação para quando o aluno errar o par.`);
+  } else if (item.tipo === "lacuna") {
+    const lacunas = item.enunciado.split(LACUNA).length - 1;
+    if (lacunas !== 1) p.push(`a frase precisa ter exatamente uma lacuna (${LACUNA}).`);
+    if (item.aceitas.length === 0) p.push(`escreva a resposta certa.`);
+    if (!item.explicacaoPadrao) p.push(`escreva a explicação para quando o aluno errar.`);
+    if (item.errosPrevistos.some((e) => !e.explicacao)) {
+      p.push(`todo erro previsto precisa de explicação.`);
+    }
+  } else {
+    if (!item.enunciado) p.push(`escreva a pergunta.`);
+    if (item.alternativas.length < 2) p.push(`precisa de pelo menos duas alternativas.`);
+    if (item.alternativas.filter((a) => a.correta).length !== 1) {
+      p.push(`marque exatamente uma alternativa correta.`);
+    }
+    const erradasSemExplicacao = item.alternativas.some((a) => !a.correta && !a.explicacao);
+    if (erradasSemExplicacao && !item.explicacaoPadrao) {
+      p.push(`explique as alternativas erradas ou escreva uma explicação geral.`);
+    }
+  }
+  return p;
+}
+
 /** Problemas que impedem publicar. Lista vazia = pronto. Espera exercícios já limpos. */
 export function problemasDaAtividade(titulo: string, exercicios: Exercicio[]): string[] {
   const problemas: string[] = [];
@@ -433,46 +478,7 @@ export function problemasDaAtividade(titulo: string, exercicios: Exercicio[]): s
     }
 
     exercicio.itens.forEach((item, j) => {
-      const onde = `${ex}, item ${j + 1}`;
-      if (item.tipo === "arrastar") {
-        if (item.enunciado.split(LACUNA).length - 1 !== 1) {
-          problemas.push(`${onde}: a frase precisa ter exatamente uma lacuna (${LACUNA}).`);
-        }
-        if (!item.resposta) problemas.push(`${onde}: escreva a palavra certa.`);
-        if (!item.explicacaoPadrao) problemas.push(`${onde}: escreva a explicação para quando o aluno errar.`);
-        if (item.errosPrevistos.some((e) => !e.explicacao)) {
-          problemas.push(`${onde}: todo erro previsto precisa de explicação.`);
-        }
-      } else if (item.tipo === "classificar") {
-        if (!item.texto) problemas.push(`${onde}: escreva o texto do cartão.`);
-        if (exercicio.tipo === "classificar" && !exercicio.colunas.some((c) => c.id === item.colunaId)) {
-          problemas.push(`${onde}: escolha a coluna certa do cartão.`);
-        }
-        if (!item.explicacao) problemas.push(`${onde}: explique por que o cartão vai nessa coluna.`);
-      } else if (item.tipo === "producao") {
-        if (!item.enunciado) problemas.push(`${onde}: escreva o que o aluno deve produzir.`);
-      } else if (item.tipo === "relacionar") {
-        if (!item.esquerda || !item.direita) problemas.push(`${onde}: preencha os dois lados do par.`);
-        if (!item.explicacao) problemas.push(`${onde}: escreva a explicação para quando o aluno errar o par.`);
-      } else if (item.tipo === "lacuna") {
-        const lacunas = item.enunciado.split(LACUNA).length - 1;
-        if (lacunas !== 1) problemas.push(`${onde}: a frase precisa ter exatamente uma lacuna (${LACUNA}).`);
-        if (item.aceitas.length === 0) problemas.push(`${onde}: escreva a resposta certa.`);
-        if (!item.explicacaoPadrao) problemas.push(`${onde}: escreva a explicação para quando o aluno errar.`);
-        if (item.errosPrevistos.some((e) => !e.explicacao)) {
-          problemas.push(`${onde}: todo erro previsto precisa de explicação.`);
-        }
-      } else {
-        if (!item.enunciado) problemas.push(`${onde}: escreva a pergunta.`);
-        if (item.alternativas.length < 2) problemas.push(`${onde}: precisa de pelo menos duas alternativas.`);
-        if (item.alternativas.filter((a) => a.correta).length !== 1) {
-          problemas.push(`${onde}: marque exatamente uma alternativa correta.`);
-        }
-        const erradasSemExplicacao = item.alternativas.some((a) => !a.correta && !a.explicacao);
-        if (erradasSemExplicacao && !item.explicacaoPadrao) {
-          problemas.push(`${onde}: explique as alternativas erradas ou escreva uma explicação geral.`);
-        }
-      }
+      for (const p of problemasDoItem(exercicio, item)) problemas.push(`${ex}, item ${j + 1}: ${p}`);
     });
   });
 

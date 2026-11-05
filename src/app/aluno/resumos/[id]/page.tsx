@@ -4,6 +4,7 @@ import { Cabecalho } from "@/components/Cabecalho";
 import { BotaoExcluir } from "@/components/BotaoExcluir";
 import { ExportarPdf } from "@/components/ExportarPdf";
 import { VerResumo } from "@/components/VerResumo";
+import { botaoPrimario } from "@/components/ui/estilos";
 import { documentoTemConteudo } from "@/lib/documento";
 import { validarMapa } from "@/lib/mapas";
 import { apagarResumoAluno } from "@/app/aluno/materias/actions";
@@ -16,11 +17,14 @@ export default async function ResumoDoAluno({ params }: { params: Promise<{ id: 
   const { id } = await params;
   await exigirPapel("aluno");
   const supabase = await criarClienteServidor();
-  const { data } = await supabase
-    .from("resumo")
-    .select(`${camposResumo}, materia_id, turma(nome), aula(data, titulo), materia(id, nome)`)
-    .eq("id", id)
-    .maybeSingle();
+  const [{ data }, { data: praticas }] = await Promise.all([
+    supabase
+      .from("resumo")
+      .select(`${camposResumo}, materia_id, turma(nome), aula(data, titulo), materia(id, nome)`)
+      .eq("id", id)
+      .maybeSingle(),
+    supabase.from("pratica").select("id, titulo").eq("resumo_id", id).order("criada_em", { ascending: false }),
+  ]);
   if (!data) notFound();
 
   const turma = data.turma as unknown as { nome: string } | null;
@@ -66,6 +70,29 @@ export default async function ResumoDoAluno({ params }: { params: Promise<{ id: 
         <div className="mt-3">
           <VerResumo resumo={data as unknown as Resumo} subtitulo={subtitulo} />
         </div>
+
+        {temTexto && (
+          <section className="mt-10 rounded-2xl bg-primaria-suave p-5 sm:p-6">
+            <h2 className="text-lg font-bold">Treinar com este resumo</h2>
+            <p className="mt-1 text-sm text-tinta-suave">
+              Gere exercícios de lacuna, múltipla escolha, arrastar, classificar ou relacionar com base no que está escrito aqui.
+            </p>
+            <Link href={`/aluno/resumos/${data.id}/praticar`} className={`${botaoPrimario} mt-4 inline-block`}>
+              Gerar atividade
+            </Link>
+            {(praticas ?? []).length > 0 && (
+              <ul className="mt-5 space-y-2">
+                {(praticas ?? []).map((p) => (
+                  <li key={p.id}>
+                    <Link href={`/aluno/praticas/${p.id}`} className="font-bold text-primaria hover:underline">
+                      {p.titulo}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
       </main>
     </>
   );

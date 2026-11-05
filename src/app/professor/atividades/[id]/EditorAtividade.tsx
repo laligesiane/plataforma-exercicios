@@ -57,7 +57,7 @@ function paraSalvar(a: Atividade, tipo: "idioma" | "materia"): Atividade {
   return { ...a, materia: "", idioma_ensinado: a.idioma_ensinado ?? "es", idioma_instrucao: a.idioma_instrucao ?? "pt" };
 }
 
-function mover<T>(lista: T[], indice: number, direcao: -1 | 1) {
+export function mover<T>(lista: T[], indice: number, direcao: -1 | 1) {
   const alvo = indice + direcao;
   if (alvo < 0 || alvo >= lista.length) return lista;
   const nova = [...lista];
@@ -408,13 +408,14 @@ export function EditorAtividade({ inicial, exerciciosIniciais, turmas, turmasIni
   );
 }
 
-function EditorExercicio({
+export function EditorExercicio({
   numero,
   total,
   exercicio,
   onChange,
   onMover,
   onRemover,
+  semMidia = false,
 }: {
   numero: number;
   total: number;
@@ -422,6 +423,8 @@ function EditorExercicio({
   onChange: (e: Exercicio) => void;
   onMover: (direcao: -1 | 1) => void;
   onRemover: () => void;
+  /** Esconde imagem/áudio/vídeo (o aluno não envia mídia). */
+  semMidia?: boolean;
 }) {
   function moverItem(i: number, d: -1 | 1) {
     onChange({ ...exercicio, itens: mover(exercicio.itens as never[], i, d) } as Exercicio);
@@ -473,14 +476,16 @@ function EditorExercicio({
         </div>
       </div>
 
-      <EditorMidia
-        midia={exercicio.midia}
-        onChange={(midia) => {
-          const { midia: _antiga, ...resto } = exercicio;
-          void _antiga;
-          onChange((midia ? { ...resto, midia } : resto) as Exercicio);
-        }}
-      />
+      {!semMidia && (
+        <EditorMidia
+          midia={exercicio.midia}
+          onChange={(midia) => {
+            const { midia: _antiga, ...resto } = exercicio;
+            void _antiga;
+            onChange((midia ? { ...resto, midia } : resto) as Exercicio);
+          }}
+        />
+      )}
 
       <ExtrasDoExercicio exercicio={exercicio} onChange={onChange} />
 
