@@ -171,6 +171,24 @@ function CampoExplicacao({
   );
 }
 
+function CampoDica({ id, valor, onChange }: { id: string; valor?: string; onChange: (v: string) => void }) {
+  return (
+    <div>
+      <label htmlFor={`dica-${id}`} className={rotulo}>
+        Dica <span className="font-normal text-tinta-suave">(opcional, o aluno abre se quiser)</span>
+      </label>
+      <input
+        id={`dica-${id}`}
+        value={valor ?? ""}
+        maxLength={300}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Ex.: É uma ação que se repetia no passado."
+        className={campo}
+      />
+    </div>
+  );
+}
+
 export function EditorLacuna({ item, onChange }: { item: ItemLacuna; onChange: (item: ItemLacuna) => void }) {
   return (
     <div className="space-y-4">
@@ -230,6 +248,7 @@ export function EditorLacuna({ item, onChange }: { item: ItemLacuna; onChange: (
         onChange={(explicacaoPadrao) => onChange({ ...item, explicacaoPadrao })}
         exemplo="Ex.: Para hábitos no passado, use o pretérito imperfeito: iba, comía, jugaba."
       />
+      <CampoDica id={item.id} valor={item.dica} onChange={(dica) => onChange({ ...item, dica })} />
     </div>
   );
 }
@@ -249,6 +268,7 @@ export function EditorMultipla({ item, onChange }: { item: ItemMultipla; onChang
           className={campo}
         />
       </div>
+      <CampoDica id={item.id} valor={item.dica} onChange={(dica) => onChange({ ...item, dica })} />
 
       <fieldset>
         <legend className={rotulo}>Alternativas</legend>
@@ -350,6 +370,7 @@ export function EditorArrastar({ item, onChange }: { item: ItemArrastar; onChang
         onChange={(explicacaoPadrao) => onChange({ ...item, explicacaoPadrao })}
         exemplo="Ex.: Para hábitos no passado, use o pretérito imperfeito."
       />
+      <CampoDica id={item.id} valor={item.dica} onChange={(dica) => onChange({ ...item, dica })} />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { corrigirArrastar, podeVerResposta, type Resultado } from "@/lib/correcao";
 import type { ExercicioArrastar as Tipo } from "@/lib/atividades/modelo";
 import { embaralhar } from "@/lib/embaralhar";
+import { Dica } from "../Dica";
 import { Feedback } from "../Feedback";
 import { Alvo, AreaArrastar, Peca } from "./base";
 
@@ -113,6 +114,7 @@ export function ExercicioArrastar({ exercicio, anteriores, onResultado }: Props)
               </Alvo>
               {depois}
             </p>
+            {status !== "certo" && status !== "certo_com_aviso" && <Dica texto={item.dica} />}
             <Feedback resultado={estado?.resultado ?? null} />
             {status === "errado" && podeVerResposta(estado.erros) && (
               <button

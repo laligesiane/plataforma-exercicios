@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { corrigirMultiplaEscolha, type ItemMultiplaEscolha, type Resultado } from "@/lib/correcao";
+import { Dica } from "./Dica";
 import { Feedback } from "./Feedback";
 
 type Props = {
@@ -44,6 +45,7 @@ export function MultiplaEscolha({ item, valorInicial, onResultado }: Props) {
           </button>
         ))}
       </div>
+      {resultado?.status !== "certo" && resultado?.status !== "certo_com_aviso" && <Dica texto={item.dica} />}
       <Feedback resultado={resultado} />
     </div>
   );

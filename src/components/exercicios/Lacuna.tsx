@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { corrigirLacuna, podeVerResposta, respostaCorreta, type ItemLacuna, type Resultado } from "@/lib/correcao";
+import { Dica } from "./Dica";
 import { Feedback } from "./Feedback";
 
 const estiloPorStatus = {
@@ -57,6 +58,7 @@ export function Lacuna({ item, valorInicial, onResultado }: Props) {
         />
         {depois}
       </p>
+      {resultado?.status !== "certo" && resultado?.status !== "certo_com_aviso" && <Dica texto={item.dica} />}
       <Feedback resultado={resultado} />
       {resultado?.status === "errado" && podeVerResposta(erros) && (
         <button
