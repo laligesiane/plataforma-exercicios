@@ -8,6 +8,8 @@ import { CabecalhoAtividade } from "@/components/exercicios/CabecalhoAtividade";
 import { botaoIcone, botaoPrimario, botaoSecundario, botaoTexto, caixaMarcar, campo, rotulo } from "@/components/ui/estilos";
 import {
   categorias,
+  etapas,
+  LIMITE_TEMAS,
   limparExercicio,
   niveis,
   novoExercicio,
@@ -18,11 +20,13 @@ import {
   novoItemMultiplaEscolha,
   novoItemProducao,
   novoItemRelacionar,
+  normalizarTemas,
   ehLinkKahoot,
   problemasDaAtividade,
   tiposExercicio,
   type Atividade,
   type Categoria,
+  type Etapa,
   type Exercicio,
   type Nivel,
   type TipoExercicio,
@@ -79,6 +83,8 @@ export function EditorAtividade({ inicial, exerciciosIniciais, turmas, turmasIni
   const [publicadaSalva, setPublicadaSalva] = useState(inicial.publicada);
   const [tipo, setTipo] = useState<"idioma" | "materia">(inicial.materia.trim() ? "materia" : "idioma");
   const atual = paraSalvar(atividade, tipo);
+  // O texto do campo fica como o professor digitou; os temas valem a partir dele.
+  const [temasTexto, setTemasTexto] = useState((inicial.temas ?? []).join(", "));
 
   useEffect(() => {
     if (!alterado) return;
@@ -196,7 +202,7 @@ export function EditorAtividade({ inicial, exerciciosIniciais, turmas, turmasIni
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="nivel" className={rotulo}>
-                    Nível
+                    Nível do idioma (A1 a C2)
                   </label>
                   <select
                     id="nivel"
@@ -282,6 +288,46 @@ export function EditorAtividade({ inicial, exerciciosIniciais, turmas, turmasIni
                 </datalist>
               </div>
             )}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="etapa" className={rotulo}>
+                  Etapa de ensino
+                </label>
+                <select
+                  id="etapa"
+                  value={atividade.etapa ?? ""}
+                  onChange={(e) => editarAtividade("etapa", e.target.value as Etapa | "")}
+                  className={campo}
+                >
+                  <option value="">Não informar</option>
+                  {Object.entries(etapas).map(([valor, nome]) => (
+                    <option key={valor} value={valor}>
+                      {nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="temas" className={rotulo}>
+                  Temas
+                </label>
+                <input
+                  id="temas"
+                  value={temasTexto}
+                  onChange={(e) => {
+                    setTemasTexto(e.target.value);
+                    editarAtividade("temas", normalizarTemas(e.target.value));
+                  }}
+                  maxLength={300}
+                  placeholder="Ex.: frações, porcentagem"
+                  aria-describedby="temas-ajuda"
+                  className={campo}
+                />
+                <p id="temas-ajuda" className="mt-1 text-xs text-tinta-suave">
+                  Separe por vírgula, até {LIMITE_TEMAS}. Ajudam outros professores a achar a atividade na biblioteca.
+                </p>
+              </div>
+            </div>
             <div>
               <label htmlFor="explicacao" className={rotulo}>
                 Explicação do conteúdo
