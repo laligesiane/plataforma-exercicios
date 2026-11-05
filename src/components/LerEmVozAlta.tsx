@@ -70,7 +70,7 @@ export function LerEmVozAlta({
   return <Leitor titulo={titulo} trechos={trechos} alvo={alvo} idioma={idioma} assinaturas={assinaturas} />;
 }
 
-const opcoesNaturais: OpcaoVoz[] = VOZES_NATURAIS.map((v) => ({ id: v.id, rotulo: v.rotulo, detalhe: v.detalhe, tom: 1, natural: v.id }));
+const opcoesNaturais: OpcaoVoz[] = VOZES_NATURAIS.map((v) => ({ id: v.id, rotulo: v.rotulo, tom: 1, natural: v.id }));
 
 function Leitor({
   titulo,
@@ -90,7 +90,8 @@ function Leitor({
   const [naturalFalhou, setNaturalFalhou] = useState(false);
   const opcoes = useMemo(() => {
     const doAparelho = temVozDoAparelho() ? opcoesDeVoz(vozes, idioma) : [];
-    return assinaturas && !naturalFalhou ? [...opcoesNaturais, ...doAparelho] : doAparelho;
+    // Com voz natural, só ela aparece; a do aparelho fica de reserva para quando a cota do mês acabar.
+    return assinaturas && !naturalFalhou ? opcoesNaturais : doAparelho;
   }, [vozes, idioma, assinaturas, naturalFalhou]);
   const [pref, setPref] = useState<Preferencia>({ velocidade: 1 });
   useEffect(() => setPref(lerPreferencia()), []);
@@ -455,7 +456,7 @@ function EscolhaDeVoz({
         {naturalFalhou
           ? "As vozes naturais não estão disponíveis agora (o limite grátis do mês pode ter acabado). Por enquanto a leitura usa as vozes do seu aparelho. "
           : opcoes.some((o) => o.natural)
-            ? "As vozes marcadas como naturais soam iguais em qualquer aparelho; as outras são as do seu celular ou computador. "
+            ? "Estas vozes soam iguais em qualquer celular ou computador. "
             : "As vozes são as do seu aparelho, então mudam de um celular ou navegador para outro. "}
         A escolha fica guardada aqui.
       </p>
