@@ -6,7 +6,7 @@ import { iaConfigurada } from "@/lib/pratica/gerar";
 import { obterPerfil, paginaInicial } from "@/lib/perfil";
 import { PreferenciasLeitura } from "@/components/PreferenciasLeitura";
 import { BarraInferior } from "@/components/BarraInferior";
-import { MenuTopo } from "@/components/MenuTopo";
+import { MenuConta, MenuPrincipal } from "@/components/MenuTopo";
 import { SincronizarTema } from "@/components/Tema";
 
 /** semMenu: só a marca (ex.: na verificação em duas etapas, antes de liberar a conta). */
@@ -18,20 +18,28 @@ export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {})
   return (
     <header className="border-b border-linha">
       {!semMenu && <SincronizarTema tema={perfil?.tema ?? null} />}
-      <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3.5">
-        <Link href={inicio} className="flex items-center gap-2.5" aria-label={perfil ? "Repasa, ir para o meu painel" : "Repasa, página inicial"}>
-          <IconeLogo />
-          <span className="text-[17px] font-extrabold tracking-tight">Repasa</span>
-        </Link>
+      {/* Largura toda: logo à esquerda, abas no centro, leitura e conta à direita. */}
+      <div className="flex items-center gap-4 px-4 py-3 sm:px-6 lg:px-10">
+        <div className="flex flex-1 basis-0 items-center">
+          <Link href={inicio} className="flex items-center gap-2.5" aria-label={perfil ? "Repasa, ir para o meu painel" : "Repasa, página inicial"}>
+            <IconeLogo />
+            <span className="text-[17px] font-extrabold tracking-tight">Repasa</span>
+          </Link>
+        </div>
+        {!semMenu && perfil && perfil.papel_escolhido && (
+          <div className="hidden justify-center sm:flex">
+            <MenuPrincipal papel={perfil.papel} comPraticas={iaConfigurada()} />
+          </div>
+        )}
         {!semMenu && (
-          <div className="flex items-center gap-1 text-sm font-semibold text-tinta-suave">
+          <div className="flex flex-1 basis-0 items-center justify-end gap-2 text-sm font-semibold text-tinta-suave">
             <span className="esconder-no-foco hidden sm:block">
               <PreferenciasLeitura />
             </span>
             {perfil ? (
               perfil.papel_escolhido ? (
                 <div className="hidden sm:block">
-                  <MenuTopo papel={perfil.papel} nome={perfil.nome} comPraticas={iaConfigurada()} />
+                  <MenuConta nome={perfil.nome} />
                 </div>
               ) : (
                 <form action={sair}>
