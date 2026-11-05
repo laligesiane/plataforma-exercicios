@@ -8,6 +8,7 @@ import { ehUuid } from "@/lib/atividades/modelo";
 import { montarProducoes, type LinhaProducao } from "@/lib/atividades/producoes";
 import type { ProducaoSalva } from "@/components/exercicios/Producao";
 import type { DuvidaSalva } from "@/components/exercicios/NaoEntendi";
+import { nomeIdioma } from "@/lib/idiomas";
 import { obterPerfil } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { ResolverAtividade } from "./ResolverAtividade";
@@ -19,7 +20,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const carregada = ehUuid(id) ? await carregarAtividade(id) : null;
   if (!carregada) return { title: "Repasa", robots: { index: false } };
   const { atividade } = carregada;
-  const sobre = atividade.materia?.trim() || "idiomas";
+  const sobre = atividade.materia?.trim() || (atividade.idioma_ensinado ? nomeIdioma(atividade.idioma_ensinado) : "estudo");
   return {
     title: `${atividade.titulo} · Repasa`,
     description: `Atividade de ${sobre} com correção na hora e a explicação de cada erro. Grátis e sem anúncios, na Repasa.`,

@@ -4,10 +4,12 @@ import { useState } from "react";
 import { botaoSecundario, botaoTexto, campo } from "@/components/ui/estilos";
 import { ajudaColar, itensColados } from "@/lib/atividades/colar";
 import type { Exercicio } from "@/lib/atividades/modelo";
+import { useExemplos } from "./exemplos";
 
 /** Cria vários itens de uma vez a partir de linhas coladas. */
 export function ColarItens({ exercicio, onChange }: { exercicio: Exercicio; onChange: (e: Exercicio) => void }) {
   const ajuda = ajudaColar[exercicio.tipo];
+  const ex = useExemplos();
   const [aberto, setAberto] = useState(false);
   const [texto, setTexto] = useState("");
   const [aviso, setAviso] = useState("");
@@ -50,7 +52,7 @@ export function ColarItens({ exercicio, onChange }: { exercicio: Exercicio; onCh
         value={texto}
         onChange={(e) => setTexto(e.target.value)}
         rows={6}
-        placeholder={ajuda.exemplo}
+        placeholder={ex.colar[exercicio.tipo] ?? ajuda.exemplo}
         aria-label="Linhas para virar itens"
         className={`${campo} mt-3 font-mono text-sm`}
       />

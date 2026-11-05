@@ -243,7 +243,7 @@ export function EditorResumo({
             value={mapa.centro}
             maxLength={LIMITES.texto}
             onChange={(e) => setMapa((m) => ({ ...m, centro: e.target.value }))}
-            placeholder="Ex.: Pretérito imperfeito"
+            placeholder="Ex.: Revolução Francesa"
             className={campo}
           />
         </div>

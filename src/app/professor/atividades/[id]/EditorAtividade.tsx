@@ -33,6 +33,7 @@ import {
 } from "@/lib/atividades/modelo";
 import { idiomas } from "@/lib/idiomas";
 import { conversoes, converterExercicio } from "@/lib/atividades/converter";
+import { ExemplosDoEditor, useExemplos } from "./exemplos";
 import { ColarItens } from "./ColarItens";
 import { sugestoesMateria } from "@/lib/turmas";
 import { apagarAtividade, salvarAtividade, type ResultadoSalvar } from "../actions";
@@ -135,6 +136,7 @@ export function EditorAtividade({ inicial, exerciciosIniciais, turmas, turmasIni
   const linkPublico = `/atividades/${atividade.id}`;
 
   return (
+    <ExemplosDoEditor tipo={tipo}>
     <div className="pb-28">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link href="/professor/atividades" className="text-sm font-bold text-primaria hover:underline">
@@ -170,7 +172,7 @@ export function EditorAtividade({ inicial, exerciciosIniciais, turmas, turmasIni
                 id="titulo"
                 value={atividade.titulo}
                 onChange={(e) => editarAtividade("titulo", e.target.value)}
-                placeholder="Ex.: Hábitos no passado"
+                placeholder={tipo === "materia" ? "Ex.: Ciclo da água" : "Ex.: Hábitos no passado"}
                 className={`${campo} text-lg font-bold`}
               />
             </div>
@@ -179,8 +181,8 @@ export function EditorAtividade({ inicial, exerciciosIniciais, turmas, turmasIni
               <div className="flex flex-wrap gap-2">
                 {(
                   [
+                    ["materia", "Uma matéria"],
                     ["idioma", "Um idioma"],
-                    ["materia", "Outra matéria"],
                   ] as const
                 ).map(([valor, texto]) => (
                   <button
@@ -337,7 +339,7 @@ export function EditorAtividade({ inicial, exerciciosIniciais, turmas, turmasIni
                 value={atividade.explicacao}
                 onChange={(e) => editarAtividade("explicacao", e.target.value)}
                 rows={4}
-                placeholder="O aluno lê isto antes dos exercícios. Ex.: usamos o pretérito imperfeito para falar de hábitos no passado..."
+                placeholder={tipo === "materia" ? "O aluno lê isto antes dos exercícios. Ex.: a água muda de estado e circula entre o mar, o ar e a terra..." : "O aluno lê isto antes dos exercícios. Ex.: usamos o pretérito imperfeito para falar de hábitos no passado..."}
                 className={campo}
               />
             </div>
@@ -474,6 +476,7 @@ export function EditorAtividade({ inicial, exerciciosIniciais, turmas, turmasIni
         onDespublicar={() => salvar(false)}
       />
     </div>
+    </ExemplosDoEditor>
   );
 }
 
@@ -668,6 +671,7 @@ function EditorDoItem({ exercicio, indice, onChange }: { exercicio: Exercicio; i
 
 /** Partes do exercício que não são itens: palavras extras do banco e colunas. */
 function ExtrasDoExercicio({ exercicio, onChange }: { exercicio: Exercicio; onChange: (e: Exercicio) => void }) {
+  const ex = useExemplos();
   if (exercicio.tipo === "kahoot") {
     const preenchido = exercicio.link.trim() !== "";
     return (
@@ -702,7 +706,7 @@ function ExtrasDoExercicio({ exercicio, onChange }: { exercicio: Exercicio; onCh
           dica="As palavras certas já entram no banco. Acrescente outras para o aluno ter que pensar (opcional)."
           valores={exercicio.palavrasExtras}
           onChange={(palavrasExtras) => onChange({ ...exercicio, palavrasExtras })}
-          exemplo="Ex.: fue"
+          exemplo={ex.palavraExtra}
           textoAdicionar="+ Palavra extra"
         />
       </div>
@@ -718,7 +722,7 @@ function ExtrasDoExercicio({ exercicio, onChange }: { exercicio: Exercicio; onCh
               <input
                 value={coluna.nome}
                 onChange={(e) => onChange({ ...exercicio, colunas: trocar(exercicio.colunas, i, { ...coluna, nome: e.target.value }) })}
-                placeholder={i === 0 ? "Ex.: Ser" : "Ex.: Estar"}
+                placeholder={ex.colunas[i === 0 ? 0 : 1]}
                 aria-label={`Nome da coluna ${i + 1}`}
                 className="w-40 rounded-xl border-2 border-linha bg-fundo px-3 py-1.5 font-bold outline-none focus:border-primaria"
               />
