@@ -9,6 +9,8 @@ import { ehAutomatico, type Exercicio } from "@/lib/atividades/modelo";
 import { ExercicioKahoot } from "./ExercicioKahoot";
 import { ItemProducao, type ProducaoSalva, type EnviarProducao } from "./Producao";
 import { CartaoExercicio } from "./CartaoExercicio";
+import { NaoEntendi, type DuvidaSalva, type EnviarDuvida } from "./NaoEntendi";
+import { IdiomaFala } from "./Ouvir";
 import { Lacuna } from "./Lacuna";
 import { MultiplaEscolha } from "./MultiplaEscolha";
 import { ExercicioArrastar } from "./arrastar/ExercicioArrastar";
@@ -35,6 +37,12 @@ type Props = {
   producoes?: Record<string, ProducaoSalva>;
   /** Envia uma produção escrita ou oral. Sem ela, a produção não pode ser enviada (visitante, professor). */
   onProducao?: EnviarProducao;
+  /** Dúvidas já mandadas, por id do exercício. */
+  duvidas?: Record<string, DuvidaSalva[]>;
+  /** Manda uma dúvida ao professor. Sem ela, o botão "Não entendi" não aparece (visitante, professor). */
+  onDuvida?: EnviarDuvida;
+  /** Idioma ensinado (es, en...). Com ele, as frases ganham o botão de ouvir. */
+  idioma?: string | null;
 };
 
 export function AulaAtividade({
@@ -45,6 +53,9 @@ export function AulaAtividade({
   onEnviar,
   producoes = {},
   onProducao,
+  duvidas = {},
+  onDuvida,
+  idioma = null,
 }: Props) {
   const totalItens = exercicios.filter(ehAutomatico).reduce((soma, e) => soma + e.itens.length, 0);
   const temOutros = exercicios.some((e) => !ehAutomatico(e));
@@ -80,54 +91,61 @@ export function AulaAtividade({
   }
 
   return (
-    <div className="space-y-5">
-      {totalItens > 0 && (
-        <div className="flex items-center gap-3 text-sm font-semibold text-tinta-suave">
-          <span className="tabular-nums">
-            {acertos} de {totalItens} certos
-          </span>
-          <div className="h-2 flex-1 overflow-hidden rounded-full bg-suave">
-            <div
-              className="h-full rounded-full bg-primaria transition-[width] duration-500 motion-reduce:transition-none"
-              style={{ width: `${(acertos / totalItens) * 100}%` }}
-            />
-          </div>
-        </div>
-      )}
-
-      {exercicios.map((exercicio, i) => (
-        <CartaoExercicio
-          key={exercicio.id}
-          numero={i + 1}
-          titulo={exercicio.titulo}
-          instrucoes={exercicio.instrucoes}
-          midia={exercicio.midia}
-        >
-          <ConteudoExercicio
-            exercicio={exercicio}
-            anteriores={respostasAnteriores}
-            registrar={(itemId) => registrar(exercicio.id, itemId)}
-            producoes={producoes}
-            onProducao={onProducao}
-          />
-        </CartaoExercicio>
-      ))}
-
-      {totalItens > 0 && (
-        <div ref={painel} className="scroll-mt-4">
-          {resumo ? (
-            <PainelResumo resumo={resumo} onFechar={() => setResumo(null)} />
-          ) : (
-            <div className="flex flex-col items-center gap-2 rounded-2xl bg-suave p-5 text-center">
-              <p className="text-sm text-tinta-suave">Terminou? Envie para ver o resumo dos seus acertos.</p>
-              <button type="button" onClick={enviar} className={botaoPrimario}>
-                Enviar respostas
-              </button>
+    <IdiomaFala.Provider value={idioma}>
+      <div className="space-y-5">
+        {totalItens > 0 && (
+          <div className="flex items-center gap-3 text-sm font-semibold text-tinta-suave">
+            <span className="tabular-nums">
+              {acertos} de {totalItens} certos
+            </span>
+            <div className="h-2 flex-1 overflow-hidden rounded-full bg-suave">
+              <div
+                className="h-full rounded-full bg-primaria transition-[width] duration-500 motion-reduce:transition-none"
+                style={{ width: `${(acertos / totalItens) * 100}%` }}
+              />
             </div>
-          )}
-        </div>
-      )}
-    </div>
+          </div>
+        )}
+
+        {exercicios.map((exercicio, i) => (
+          <CartaoExercicio
+            key={exercicio.id}
+            numero={i + 1}
+            titulo={exercicio.titulo}
+            instrucoes={exercicio.instrucoes}
+            midia={exercicio.midia}
+            rodape={
+              onDuvida && exercicio.tipo !== "kahoot" ? (
+                <NaoEntendi exercicioId={exercicio.id} iniciais={duvidas[exercicio.id]} onEnviar={onDuvida} />
+              ) : undefined
+            }
+          >
+            <ConteudoExercicio
+              exercicio={exercicio}
+              anteriores={respostasAnteriores}
+              registrar={(itemId) => registrar(exercicio.id, itemId)}
+              producoes={producoes}
+              onProducao={onProducao}
+            />
+          </CartaoExercicio>
+        ))}
+
+        {totalItens > 0 && (
+          <div ref={painel} className="scroll-mt-4">
+            {resumo ? (
+              <PainelResumo resumo={resumo} onFechar={() => setResumo(null)} />
+            ) : (
+              <div className="flex flex-col items-center gap-2 rounded-2xl bg-suave p-5 text-center">
+                <p className="text-sm text-tinta-suave">Terminou? Envie para ver o resumo dos seus acertos.</p>
+                <button type="button" onClick={enviar} className={botaoPrimario}>
+                  Enviar respostas
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </IdiomaFala.Provider>
   );
 }
 

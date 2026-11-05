@@ -13,6 +13,8 @@ export type ItemLacuna = {
   explicacaoPadrao: string;
   /** Marcada: acento ou hífen diferente é erro. Desmarcada: certo com aviso. */
   grafiaExata: boolean;
+  /** Pista que o aluno pode abrir antes de responder. */
+  dica?: string;
 };
 
 export type Alternativa = {
@@ -28,6 +30,8 @@ export type ItemMultiplaEscolha = {
   enunciado: string;
   alternativas: Alternativa[];
   explicacaoPadrao: string;
+  /** Pista que o aluno pode abrir antes de responder. */
+  dica?: string;
 };
 
 /** Lacuna preenchida arrastando uma palavra do banco do exercício. */
@@ -38,6 +42,8 @@ export type ItemArrastar = {
   resposta: string;
   errosPrevistos: ErroPrevisto[];
   explicacaoPadrao: string;
+  /** Pista que o aluno pode abrir antes de responder. */
+  dica?: string;
 };
 
 /** Cartão que o aluno coloca numa das colunas do exercício. */

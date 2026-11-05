@@ -294,6 +294,7 @@ export function novoExercicio(tipo: TipoExercicio): Exercicio {
 }
 
 const limpar = (texto: string) => texto.trim();
+const dicaLimpa = (dica: unknown) => (typeof dica === "string" && dica.trim() ? { dica: dica.trim().slice(0, 300) } : {});
 
 /** Mídia sem link vira "sem mídia"; legenda vazia some. */
 function limparMidia(midia: Midia | undefined): Midia | undefined {
@@ -327,6 +328,7 @@ export function limparExercicio(exercicio: Exercicio): Exercicio {
           errosPrevistos: limparErros(item.errosPrevistos),
           explicacaoPadrao: limpar(item.explicacaoPadrao),
           grafiaExata: Boolean(item.grafiaExata),
+          ...dicaLimpa(item.dica),
         })),
       };
     case "multipla_escolha":
@@ -346,6 +348,7 @@ export function limparExercicio(exercicio: Exercicio): Exercicio {
             }))
             .filter((a) => a.texto),
           explicacaoPadrao: limpar(item.explicacaoPadrao),
+          ...dicaLimpa(item.dica),
         })),
       };
     case "arrastar":
@@ -360,6 +363,7 @@ export function limparExercicio(exercicio: Exercicio): Exercicio {
           resposta: limpar(item.resposta),
           errosPrevistos: limparErros(item.errosPrevistos),
           explicacaoPadrao: limpar(item.explicacaoPadrao),
+          ...dicaLimpa(item.dica),
         })),
       };
     case "classificar":

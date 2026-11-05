@@ -3,6 +3,7 @@
 import { ehUuid } from "@/lib/atividades/modelo";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import type { ProducaoSalva } from "@/components/exercicios/Producao";
+import type { DuvidaSalva } from "@/components/exercicios/NaoEntendi";
 import { montarProducoes, type LinhaProducao } from "@/lib/atividades/producoes";
 
 const status = new Set(["certo", "certo_com_aviso", "errado"]);
@@ -95,4 +96,24 @@ export async function enviarProducao(p: NovaProducao): Promise<{ ok: true; salva
 
   const [salva] = await montarProducoes(supabase, [data as unknown as LinhaProducao]);
   return { ok: true, salva: salva[1] };
+}
+
+/** Manda a dúvida do aluno sobre um exercício. O RLS recusa quem não é aluno da atividade. */
+export async function enviarDuvida(
+  atividadeId: string,
+  exercicioId: string,
+  texto: string,
+): Promise<{ ok: true; duvida: DuvidaSalva } | { ok: false; erro: string }> {
+  if (!ehUuid(atividadeId) || !ehUuid(exercicioId) || typeof texto !== "string") return { ok: false, erro: "Recarregue a página e tente de novo." };
+  const limpo = texto.trim().slice(0, 1000);
+  if (!limpo) return { ok: false, erro: "Escreva o que você não entendeu." };
+
+  const supabase = await criarClienteServidor();
+  const { data, error } = await supabase
+    .from("duvida")
+    .insert({ atividade_id: atividadeId, exercicio_id: exercicioId, texto: limpo })
+    .select("id, texto, resposta, criada_em")
+    .single();
+  if (error || !data) return { ok: false, erro: "Não deu para enviar. Confira sua conexão." };
+  return { ok: true, duvida: data as DuvidaSalva };
 }

@@ -7,9 +7,11 @@ type Props = {
   instrucoes: string;
   midia?: Midia;
   children: React.ReactNode;
+  /** Abaixo dos itens, como o botão "Não entendi". */
+  rodape?: React.ReactNode;
 };
 
-export function CartaoExercicio({ numero, titulo, instrucoes, midia, children }: Props) {
+export function CartaoExercicio({ numero, titulo, instrucoes, midia, children, rodape }: Props) {
   return (
     <section className="rounded-2xl border border-linha bg-fundo p-5 sm:p-6">
       <header className="mb-4 flex items-center gap-3">
@@ -23,6 +25,7 @@ export function CartaoExercicio({ numero, titulo, instrucoes, midia, children }:
       </header>
       <MidiaExercicio midia={midia} />
       <div className="divide-y divide-linha">{children}</div>
+      {rodape}
     </section>
   );
 }

@@ -7,6 +7,7 @@ import { ehAutomatico, ehUuid, type ExercicioAutomatico as Exercicio } from "@/l
 import { textoDoItem } from "@/lib/atividades/resumo";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
+import { ResponderDuvida } from "./ResponderDuvida";
 
 type Resposta = { aluno_id: string; item_id: string; valor: string; status: string };
 type Aluno = { id: string; nome: string | null; email: string };
@@ -17,11 +18,12 @@ export default async function RespostasAtividade({ params }: { params: Promise<{
   if (!ehUuid(id)) notFound();
 
   const supabase = await criarClienteServidor();
-  const [carregada, { data: respostas }, { data: atribuicoes }, { data: envios }] = await Promise.all([
+  const [carregada, { data: respostas }, { data: atribuicoes }, { data: envios }, { data: duvidas }] = await Promise.all([
     carregarAtividade(id),
     supabase.from("resposta").select("aluno_id, item_id, valor, status").eq("atividade_id", id).order("criada_em"),
     supabase.from("atividade_turma").select("turma(nome, turma_aluno(perfil(id, nome, email)))").eq("atividade_id", id),
     supabase.from("envio").select("aluno_id, enviado_em").eq("atividade_id", id).order("enviado_em"),
+    supabase.from("duvida").select("id, aluno_id, exercicio_id, texto, resposta, criada_em").eq("atividade_id", id).order("criada_em", { ascending: false }),
   ]);
 
   // Último envio de cada aluno (fica vazio se a tabela ainda não existir).
@@ -82,6 +84,34 @@ export default async function RespostasAtividade({ params }: { params: Promise<{
           >
             Corrigir produções escritas e orais →
           </Link>
+        )}
+
+        {(duvidas ?? []).length > 0 && (
+          <section id="duvidas" className="mt-8 rounded-2xl border border-linha p-5 sm:p-6">
+            <h2 className="text-lg font-bold">
+              Dúvidas dos alunos{" "}
+              {(duvidas ?? []).some((d) => !d.resposta) && (
+                <span className="rounded-full bg-aviso-fundo px-2.5 py-0.5 text-xs font-bold text-aviso">
+                  {(duvidas ?? []).filter((d) => !d.resposta).length} sem resposta
+                </span>
+              )}
+            </h2>
+            <ul className="mt-3 divide-y divide-linha">
+              {(duvidas ?? []).map((d) => {
+                const aluno = alunos.get(d.aluno_id);
+                const n = carregada.exercicios.findIndex((e) => e.id === d.exercicio_id) + 1;
+                return (
+                  <li key={d.id} className="py-3 text-sm">
+                    <p className="text-xs text-tinta-suave">
+                      {aluno?.nome ?? aluno?.email ?? "Aluno"} · exercício {n || "?"} · {quando(d.criada_em)}
+                    </p>
+                    <p className="mt-1 font-semibold">{d.texto}</p>
+                    <ResponderDuvida id={d.id} atividadeId={id} resposta={d.resposta} />
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
         )}
 
         <section className="mt-8 rounded-2xl border border-linha p-5 sm:p-6">

@@ -7,6 +7,7 @@ import { carregarAtividade } from "@/lib/atividades/carregar";
 import { ehUuid } from "@/lib/atividades/modelo";
 import { montarProducoes, type LinhaProducao } from "@/lib/atividades/producoes";
 import type { ProducaoSalva } from "@/components/exercicios/Producao";
+import type { DuvidaSalva } from "@/components/exercicios/NaoEntendi";
 import { obterPerfil } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { ResolverAtividade } from "./ResolverAtividade";
@@ -38,10 +39,11 @@ export default async function PaginaAtividade({ params }: Params) {
   const anteriores: Record<string, string> = {};
   const primeiras: Record<string, boolean> = {};
   let producoes: Record<string, ProducaoSalva> = {};
+  const duvidas: Record<string, DuvidaSalva[]> = {};
   if (perfil?.papel === "aluno") {
     const supabase = await criarClienteServidor();
     const temProducao = exercicios.some((e) => e.tipo === "producao");
-    const [{ count }, { data: respostas }, { data: linhas }] = await Promise.all([
+    const [{ count }, { data: respostas }, { data: linhas }, { data: duvidasDb }] = await Promise.all([
       supabase.from("atividade_turma").select("turma_id", { count: "exact", head: true }).eq("atividade_id", id),
       supabase.from("resposta").select("item_id, valor, status").eq("atividade_id", id).eq("aluno_id", perfil.id).order("criada_em"),
       temProducao
@@ -51,7 +53,9 @@ export default async function PaginaAtividade({ params }: Params) {
             .eq("atividade_id", id)
             .eq("aluno_id", perfil.id)
         : Promise.resolve({ data: [] }),
+      supabase.from("duvida").select("id, exercicio_id, texto, resposta, criada_em").eq("atividade_id", id).eq("aluno_id", perfil.id).order("criada_em"),
     ]);
+    for (const { exercicio_id, ...d } of duvidasDb ?? []) (duvidas[exercicio_id] ??= []).push(d as DuvidaSalva);
     producoes = Object.fromEntries(await montarProducoes(supabase, (linhas ?? []) as unknown as LinhaProducao[]));
     salvar = (count ?? 0) > 0;
     for (const r of respostas ?? []) {
@@ -89,6 +93,8 @@ export default async function PaginaAtividade({ params }: Params) {
             primeirasAnteriores={primeiras}
             salvar={salvar}
             producoes={producoes}
+            duvidas={duvidas}
+            idioma={atividade.materia?.trim() ? null : atividade.idioma_ensinado}
           />
         </div>
       </main>
