@@ -27,6 +27,7 @@ import {
   type TipoExercicio,
 } from "@/lib/atividades/modelo";
 import { idiomas } from "@/lib/idiomas";
+import { conversoes, converterExercicio } from "@/lib/atividades/converter";
 import { ColarItens } from "./ColarItens";
 import { sugestoesMateria } from "@/lib/turmas";
 import { apagarAtividade, salvarAtividade, type ResultadoSalvar } from "../actions";
@@ -306,6 +307,10 @@ export function EditorAtividade({ inicial, exerciciosIniciais, turmas, turmasIni
                 setExercicios((lista) => mover(lista, i, d));
                 mudar();
               }}
+              onCopiar={(novo) => {
+                setExercicios((lista) => [...lista.slice(0, i + 1), novo, ...lista.slice(i + 1)]);
+                mudar();
+              }}
               onRemover={() => {
                 if (!confirm(`Apagar o exercício ${i + 1}?`)) return;
                 setExercicios((lista) => lista.filter((_, j) => j !== i));
@@ -415,6 +420,7 @@ export function EditorExercicio({
   exercicio,
   onChange,
   onMover,
+  onCopiar,
   onRemover,
   semMidia = false,
 }: {
@@ -423,10 +429,12 @@ export function EditorExercicio({
   exercicio: Exercicio;
   onChange: (e: Exercicio) => void;
   onMover: (direcao: -1 | 1) => void;
+  onCopiar: (novo: Exercicio) => void;
   onRemover: () => void;
   /** Esconde imagem/áudio/vídeo (o aluno não envia mídia). */
   semMidia?: boolean;
 }) {
+  const destinos = conversoes[exercicio.tipo] ?? [];
   function moverItem(i: number, d: -1 | 1) {
     onChange({ ...exercicio, itens: mover(exercicio.itens as never[], i, d) } as Exercicio);
   }
@@ -441,6 +449,29 @@ export function EditorExercicio({
           {numero}
         </span>
         <span className="flex-1 text-sm font-bold text-tinta-suave">{tiposExercicio[exercicio.tipo]}</span>
+        {destinos.length > 0 && (
+          <select
+            value=""
+            aria-label="Criar uma cópia deste exercício em outro formato"
+            title="Cria um exercício novo, logo abaixo, com o mesmo conteúdo em outro formato"
+            onChange={(e) => {
+              const novo = converterExercicio(exercicio, e.target.value as TipoExercicio);
+              if (!novo || novo.itens.length === 0) {
+                alert("Preencha pelo menos um item com pergunta e resposta antes de copiar.");
+                return;
+              }
+              onCopiar(novo);
+            }}
+            className="max-w-40 rounded-lg border border-linha bg-fundo px-2 py-1 text-xs font-bold text-tinta-suave"
+          >
+            <option value="">Copiar como…</option>
+            {destinos.map((t) => (
+              <option key={t} value={t}>
+                {tiposExercicio[t]}
+              </option>
+            ))}
+          </select>
+        )}
         <button type="button" onClick={() => onMover(-1)} disabled={numero === 1} aria-label="Subir exercício" className={botaoIcone}>
           ↑
         </button>
