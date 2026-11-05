@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
 import { FocoProvider } from "@/components/foco/FocoProvider";
 import { MiniBrotinho } from "@/components/foco/MiniBrotinho";
+import { CHAVE_SESSAO } from "@/lib/foco";
 import "./globals.css";
 
 const figtree = Figtree({
@@ -20,7 +21,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        {/* Marca o foco antes de pintar a página, para o menu não piscar ao recarregar. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(localStorage.getItem(${JSON.stringify(CHAVE_SESSAO)}))document.documentElement.dataset.foco="ativo"}catch(e){}`,
+          }}
+        />
+      </head>
       <body className={`${figtree.variable} antialiased`}>
         <FocoProvider>
           {children}
