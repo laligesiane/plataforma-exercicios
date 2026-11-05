@@ -27,7 +27,7 @@ export default async function AulasDaTurma({ params }: { params: Promise<{ id: s
   return (
     <>
       <Cabecalho />
-      <main className="mx-auto w-full max-w-3xl px-4 pt-8 pb-16">
+      <main className="mx-auto w-full max-w-7xl px-4 pt-8 pb-16 sm:px-6 lg:px-8">
         <Link href="/aluno/atividades" className="text-sm font-bold text-primaria hover:underline">
           ← Minhas atividades
         </Link>

@@ -46,7 +46,7 @@ export default async function Producoes({ params }: { params: Promise<{ id: stri
   return (
     <>
       <Cabecalho />
-      <main className="mx-auto w-full max-w-3xl px-4 pt-8 pb-16">
+      <main className="mx-auto w-full max-w-7xl px-4 pt-8 pb-16 sm:px-6 lg:px-8">
         <Link href={`/professor/atividades/${id}/respostas`} className="text-sm font-bold text-primaria hover:underline">
           ← Respostas da atividade
         </Link>

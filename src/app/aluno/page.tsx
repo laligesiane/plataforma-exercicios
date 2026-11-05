@@ -116,7 +116,7 @@ export default async function MinhaConta() {
       {continuar.length > 0 && (
         <section aria-label="Continuar de onde parou" className="mt-8">
           <h2 className="text-sm font-bold tracking-wide text-tinta-suave uppercase">Continuar de onde parou</h2>
-          <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+          <ul className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {continuar.map((c) => (
               <li key={c.href}>
                 <Link
@@ -233,7 +233,7 @@ export default async function MinhaConta() {
               Ver todas
             </Link>
           </div>
-          <ul className="mt-3 grid gap-3 sm:grid-cols-3">
+          <ul className="mt-3 grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {(materias ?? []).map((m) => (
               <li key={m.id}>
                 <CartaoMateria id={m.id} nome={m.nome} cor={m.cor} total={(m.resumo as unknown as { count: number }[])[0]?.count ?? 0} />

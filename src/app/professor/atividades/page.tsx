@@ -19,7 +19,7 @@ export default async function AtividadesProfessor({ searchParams }: { searchPara
   return (
     <>
       <Cabecalho />
-      <main className="mx-auto w-full max-w-3xl px-4 pt-8 pb-16">
+      <main className="mx-auto w-full max-w-7xl px-4 pt-8 pb-16 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h1 className="text-3xl font-extrabold tracking-tight">Atividades</h1>
           <div className="flex items-center gap-4">

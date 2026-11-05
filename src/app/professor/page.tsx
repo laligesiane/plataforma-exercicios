@@ -29,7 +29,7 @@ export default async function PainelProfessor() {
   return (
     <>
       <Cabecalho />
-      <main className="mx-auto w-full max-w-3xl px-4 pt-8 pb-16">
+      <main className="mx-auto w-full max-w-7xl px-4 pt-8 pb-16 sm:px-6 lg:px-8">
         <h1 className="text-3xl font-extrabold tracking-tight">Olá{perfil.nome ? `, ${perfil.nome}` : ""}!</h1>
         {LIMITES_LIGADOS && plano && maxTurmas != null && (
           <p className="mt-2 text-tinta-suave">
@@ -59,7 +59,7 @@ export default async function PainelProfessor() {
         <section className="mt-8 space-y-3">
           <h2 className="text-lg font-bold">Suas turmas</h2>
           {turmas && turmas.length > 0 ? (
-            <ul className="grid gap-3 sm:grid-cols-2">
+            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {turmas.map((turma) => (
                 <li key={turma.id}>
                   <Link
