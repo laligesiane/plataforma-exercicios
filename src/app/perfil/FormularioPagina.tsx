@@ -88,7 +88,7 @@ export function FormularioPagina({ pagina, nomePadrao }: { pagina: PaginaSalva |
           name="destaque"
           defaultValue={pagina?.destaque ?? ""}
           maxLength={120}
-          placeholder="Ex.: Espanhol do zero à conversa, com aulas leves e práticas"
+          placeholder="Ex.: Aulas leves e práticas, do básico ao avançado"
           className={campo}
         />
       </div>
@@ -104,7 +104,7 @@ export function FormularioPagina({ pagina, nomePadrao }: { pagina: PaginaSalva |
         <label htmlFor="materias" className={rotulo}>
           O que você ensina
         </label>
-        <input id="materias" name="materias" defaultValue={pagina?.materias ?? ""} maxLength={200} placeholder="Ex.: Espanhol, inglês, preparação para o DELE" className={campo} />
+        <input id="materias" name="materias" defaultValue={pagina?.materias ?? ""} maxLength={200} placeholder="Ex.: Matemática para o ENEM, inglês para adultos" className={campo} />
         <p className="mt-1 text-xs text-tinta-suave">Separe por vírgula: cada matéria vira uma etiqueta na página.</p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -154,7 +154,7 @@ export function FormularioPagina({ pagina, nomePadrao }: { pagina: PaginaSalva |
           defaultValue={pagina?.formacao ?? ""}
           maxLength={300}
           rows={3}
-          placeholder={"Uma por linha. Ex.:\nLetras Português-Espanhol (UFPE)\nCertificado DELE C1"}
+          placeholder={"Uma por linha. Ex.:\nLicenciatura em Matemática (UFPE)\nCertificado de inglês C1"}
           className={campo}
         />
       </div>

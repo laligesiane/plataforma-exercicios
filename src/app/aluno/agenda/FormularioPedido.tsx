@@ -50,7 +50,7 @@ export function FormularioPedido({ turmas, hoje }: { turmas: { id: string; nome:
           name="mensagem"
           rows={3}
           maxLength={1000}
-          placeholder="Ex.: queria revisar o pretérito antes da prova."
+          placeholder="Ex.: queria revisar frações antes da prova."
           className={campo}
         />
       </div>

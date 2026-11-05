@@ -4,6 +4,7 @@ import { useId, useRef, useState } from "react";
 import { MidiaExercicio } from "@/components/exercicios/MidiaExercicio";
 import { botaoIcone, botaoSecundario, botaoTexto, campo, rotulo } from "@/components/ui/estilos";
 import { enviarArquivo, type TipoArquivo } from "@/lib/atividades/enviarMidia";
+import { useExemplos } from "./exemplos";
 import { ehLinkDeArquivo, enderecoDoVideo, formatosAceitos, LIMITE_ARQUIVO_MB, tiposMidia, type Midia } from "@/lib/atividades/midia";
 
 const campoPequeno = campo.replace("py-2.5", "py-2");
@@ -60,6 +61,7 @@ export function BotaoEnviar({
 
 /** Imagem, áudio ou vídeo do topo do exercício (opcional). */
 export function EditorMidia({ midia, onChange }: { midia?: Midia; onChange: (midia: Midia | undefined) => void }) {
+  const ex = useExemplos();
   const id = useId();
 
   if (!midia) {
@@ -127,7 +129,7 @@ export function EditorMidia({ midia, onChange }: { midia?: Midia; onChange: (mid
             id={`${id}-legenda`}
             value={midia.legenda ?? ""}
             onChange={(e) => onChange({ ...midia, legenda: e.target.value })}
-            placeholder={midia.tipo === "imagem" ? "Ex.: Uma feira de rua em Madri" : "Ex.: Ouça o diálogo duas vezes."}
+            placeholder={midia.tipo === "imagem" ? ex.legendaImagem : ex.legenda}
             maxLength={300}
             className={`${campoPequeno} bg-fundo`}
           />
