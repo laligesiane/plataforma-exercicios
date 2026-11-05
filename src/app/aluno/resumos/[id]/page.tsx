@@ -42,13 +42,13 @@ export default async function ResumoDoAluno({ params }: { params: Promise<{ id: 
       <main className="mx-auto w-full max-w-5xl px-4 pt-8 pb-16">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link
-            href={materia ? `/aluno/materias/${materia.id}` : "/aluno/resumos"}
+            href={materia ? `/aluno/materias/${materia.id}` : "/aluno/materias#das-turmas"}
             className="inline-flex min-w-0 items-center gap-1.5 text-sm font-bold text-tinta-suave hover:text-primaria"
           >
             <svg viewBox="0 0 24 24" className="size-4 shrink-0" aria-hidden fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 5l-7 7 7 7" />
             </svg>
-            <span className="truncate">{materia ? materia.nome : "Meus resumos"}</span>
+            <span className="truncate">{materia ? materia.nome : "Resumos das turmas"}</span>
           </Link>
           <AcoesResumo
             id={data.id}

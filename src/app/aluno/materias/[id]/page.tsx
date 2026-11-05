@@ -4,6 +4,7 @@ import { Cabecalho } from "@/components/Cabecalho";
 import { BotaoExcluir } from "@/components/BotaoExcluir";
 import { botaoPrimario } from "@/components/ui/estilos";
 import { cores, type Cor } from "@/lib/mapas";
+import { temMapa } from "@/lib/pedidos";
 import { exigirPapel } from "@/lib/perfil";
 import { camposResumo, tituloResumo, type Resumo } from "@/lib/resumos";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
@@ -18,8 +19,15 @@ function dataCurta(valor: string | null | undefined) {
   return d && !Number.isNaN(d.getTime()) ? formatoData.format(d) : "";
 }
 
-export default async function PaginaMateria({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function PaginaMateria({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ ver?: string }>;
+}) {
+  const [{ id }, { ver }] = await Promise.all([params, searchParams]);
+  const soMapas = ver === "mapas";
   await exigirPapel("aluno");
   const supabase = await criarClienteServidor();
   const [{ data: materia }, { data: resumosDb }, { data: cursosDb }] = await Promise.all([
@@ -29,7 +37,9 @@ export default async function PaginaMateria({ params }: { params: Promise<{ id: 
   ]);
   const cursos = (cursosDb ?? []) as CursoSimples[];
   if (!materia) notFound();
-  const resumos = ((resumosDb ?? []) as Resumo[]).filter((r) => r && r.id);
+  const todos = ((resumosDb ?? []) as Resumo[]).filter((r) => r && r.id);
+  const comMapa = todos.filter(temMapa);
+  const resumos = soMapas ? comMapa : todos;
   const cor = cores[typeof materia.cor === "string" && materia.cor in cores ? (materia.cor as Cor) : "menta"];
 
   return (
@@ -54,6 +64,26 @@ export default async function PaginaMateria({ params }: { params: Promise<{ id: 
           Novo resumo ou mapa mental
         </Link>
 
+        {todos.length > 0 && (
+          <nav aria-label="Mostrar" className="mt-6 flex gap-2">
+            {[
+              { href: `/aluno/materias/${materia.id}`, rotulo: `Resumos (${todos.length})`, ativo: !soMapas },
+              { href: `/aluno/materias/${materia.id}?ver=mapas`, rotulo: `Mapas mentais (${comMapa.length})`, ativo: soMapas },
+            ].map((aba) => (
+              <Link
+                key={aba.href}
+                href={aba.href}
+                aria-current={aba.ativo ? "page" : undefined}
+                className={`rounded-full px-4 py-1.5 text-sm font-bold transition-colors ${
+                  aba.ativo ? "bg-tinta text-fundo" : "border border-linha text-tinta-suave hover:border-tinta hover:text-tinta"
+                }`}
+              >
+                {aba.rotulo}
+              </Link>
+            ))}
+          </nav>
+        )}
+
         {resumos.length > 0 ? (
           <ul className="mt-6 grid gap-3 sm:grid-cols-2">
             {resumos.map((r) => (
@@ -61,7 +91,7 @@ export default async function PaginaMateria({ params }: { params: Promise<{ id: 
                 <Link href={`/aluno/resumos/${r.id}`} className="block grow p-5 pb-3">
                   <span className="block font-bold">{tituloResumo(r)}</span>
                   <span className="mt-1 block text-sm text-tinta-suave">
-                    {Array.isArray(r.mapa?.ramos) && r.mapa.ramos.length ? "Com mapa mental" : "Resumo"}
+                    {temMapa(r) ? "Com mapa mental" : "Resumo"}
                     {dataCurta(r.atualizado_em) && ` · ${dataCurta(r.atualizado_em)}`}
                   </span>
                 </Link>
@@ -84,7 +114,9 @@ export default async function PaginaMateria({ params }: { params: Promise<{ id: 
           </ul>
         ) : (
           <p className="mt-6 rounded-2xl border border-dashed border-linha p-5 text-sm text-tinta-suave">
-            Nenhum resumo ainda. Comece com um mapa mental do último assunto que você estudou.
+            {soMapas
+              ? "Nenhum mapa mental nesta matéria ainda. Abra um resumo e gere o mapa dele, ou crie um novo."
+              : "Nenhum resumo ainda. Comece com um mapa mental do último assunto que você estudou."}
           </p>
         )}
 

@@ -11,6 +11,7 @@ import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { CampoCodigoTurma } from "@/components/CampoCodigoTurma";
 import { estadoTrilha } from "@/lib/trilha";
 import { LayoutConta } from "../LayoutConta";
+import { CartaoRepasar } from "./CartaoRepasar";
 
 type AtividadeResumo = { id: string; titulo: string; nivel: string; categoria: string; atualizada_em: string };
 
@@ -57,6 +58,7 @@ export default async function AtividadesDoAluno({ searchParams }: { searchParams
 
   return (
     <LayoutConta titulo="Minhas atividades" descricao="As atividades e aulas das turmas em que você está.">
+      <CartaoRepasar alunoId={perfil.id} />
       <CampoCodigoTurma invalido={codigo === "invalido"} />
       {(turmas ?? []).map((turma) => {
         // Na trilha vale a ordem do professor; fora dela, as mais recentes primeiro.
