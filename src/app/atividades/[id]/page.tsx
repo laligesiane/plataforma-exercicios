@@ -17,7 +17,16 @@ type Params = { params: Promise<{ id: string }> };
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { id } = await params;
   const carregada = ehUuid(id) ? await carregarAtividade(id) : null;
-  return { title: carregada ? `${carregada.atividade.titulo} · Repasa` : "Repasa" };
+  if (!carregada) return { title: "Repasa", robots: { index: false } };
+  const { atividade } = carregada;
+  const sobre = atividade.materia?.trim() || "idiomas";
+  return {
+    title: `${atividade.titulo} · Repasa`,
+    description: `Atividade de ${sobre} com correção na hora e a explicação de cada erro. Grátis e sem anúncios, na Repasa.`,
+    alternates: { canonical: `/atividades/${id}` },
+    // Só atividade pública e publicada entra no Google; as de turma ficam fora.
+    robots: atividade.publica && atividade.publicada ? undefined : { index: false, follow: false },
+  };
 }
 
 export default async function PaginaAtividade({ params }: Params) {

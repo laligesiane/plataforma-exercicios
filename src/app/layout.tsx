@@ -7,6 +7,7 @@ import { FocoProvider } from "@/components/foco/FocoProvider";
 import { CelebracaoArvore } from "@/components/foco/CelebracaoArvore";
 import { MiniBrotinho } from "@/components/foco/MiniBrotinho";
 import { CHAVE_SESSAO } from "@/lib/foco";
+import { DESCRICAO_SITE, URL_SITE } from "@/lib/seo/site";
 import "./globals.css";
 
 const figtree = Figtree({
@@ -23,8 +24,22 @@ const atkinson = Atkinson_Hyperlegible({
 });
 
 export const metadata: Metadata = {
-  title: "Repasa",
-  description: "Seu melhor amigo na hora de aprender: matérias, resumos, mapas mentais e exercícios que explicam cada erro.",
+  metadataBase: new URL(URL_SITE),
+  title: "Repasa: seu melhor amigo na hora de aprender",
+  description: DESCRICAO_SITE,
+  applicationName: "Repasa",
+  keywords: ["resumos", "mapa mental", "exercícios online", "estudar", "plataforma para professores", "atividades para alunos", "flashcards"],
+  openGraph: {
+    type: "website",
+    siteName: "Repasa",
+    locale: "pt_BR",
+    url: "/",
+    title: "Repasa: seu melhor amigo na hora de aprender",
+    description: DESCRICAO_SITE,
+  },
+  twitter: { card: "summary_large_image" },
+  // Google Search Console pela meta tag (opcional: a verificação pelo DNS dispensa isto).
+  verification: process.env.NEXT_PUBLIC_GOOGLE_VERIFICACAO ? { google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICACAO } : undefined,
   appleWebApp: { capable: true, title: "Repasa", statusBarStyle: "default" },
 };
 
