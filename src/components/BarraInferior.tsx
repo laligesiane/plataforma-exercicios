@@ -6,10 +6,11 @@ import { useEffect, useState } from "react";
 import { sair } from "@/app/entrar/actions";
 import { PainelLeitura } from "@/components/PreferenciasLeitura";
 import { InstalarApp } from "@/components/InstalarApp";
-import { abaAtiva, abasAluno, abasProfessor, icones, maisAluno, semBarra } from "@/components/navegacao";
+import { Avatar } from "@/components/Avatar";
+import { abaAtiva, abasAluno, abasProfessor, icones, maisAluno, semBarra, type Item } from "@/components/navegacao";
 
 /** Barra de abas presa embaixo, só no celular. "Mais" abre uma folha com o resto do menu, a leitura e o Sair. */
-export function BarraInferior({ papel, comPraticas = false }: { papel: "aluno" | "professor"; comPraticas?: boolean }) {
+export function BarraInferior({ papel, comPraticas = false, foto = null }: { papel: "aluno" | "professor"; comPraticas?: boolean; foto?: string | null }) {
   const caminho = usePathname();
   const [aberto, setAberto] = useState(false);
 
@@ -23,8 +24,11 @@ export function BarraInferior({ papel, comPraticas = false }: { papel: "aluno" |
 
   if (semBarra(caminho)) return null;
 
-  const abas = papel === "aluno" ? abasAluno : abasProfessor;
-  const mais = papel === "aluno" ? [...maisAluno(comPraticas), { href: "/perfil", rotulo: "Perfil", icone: icones.perfil }] : [];
+  // Com foto, o item "Perfil" mostra a foto no lugar do ícone.
+  const iconePerfil = foto ? <Avatar foto={foto} className="size-6" /> : icones.perfil;
+  const comFoto = (itens: Item[]) => itens.map((i) => (i.href === "/perfil" ? { ...i, icone: iconePerfil } : i));
+  const abas = papel === "aluno" ? abasAluno : comFoto(abasProfessor);
+  const mais = papel === "aluno" ? [...maisAluno(comPraticas), { href: "/perfil", rotulo: "Perfil", icone: iconePerfil }] : [];
   const maisAtivo = mais.some((m) => abaAtiva(caminho, m.href));
 
   const estiloAba = (ativa: boolean) =>

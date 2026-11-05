@@ -8,6 +8,7 @@ import { PreferenciasLeitura } from "@/components/PreferenciasLeitura";
 import { BarraInferior } from "@/components/BarraInferior";
 import { MenuConta, MenuPrincipal } from "@/components/MenuTopo";
 import { SincronizarTema } from "@/components/Tema";
+import { urlDaFoto } from "@/lib/foto";
 
 /** semMenu: só a marca (ex.: na verificação em duas etapas, antes de liberar a conta). */
 export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {}) {
@@ -46,7 +47,7 @@ export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {})
             {perfil ? (
               perfil.papel_escolhido ? (
                 <div className="hidden sm:block">
-                  <MenuConta nome={perfil.nome} />
+                  <MenuConta nome={perfil.nome} foto={urlDaFoto(perfil.foto)} />
                 </div>
               ) : (
                 <form action={sair}>
@@ -71,7 +72,7 @@ export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {})
           <NavConta comPraticas={iaConfigurada()} className="" />
         </div>
       )}
-      {perfil && perfil.papel_escolhido && <BarraInferior papel={perfil.papel} comPraticas={iaConfigurada()} />}
+      {perfil && perfil.papel_escolhido && <BarraInferior papel={perfil.papel} comPraticas={iaConfigurada()} foto={urlDaFoto(perfil.foto)} />}
     </header>
   );
 }
