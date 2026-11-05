@@ -15,15 +15,15 @@ const abas = [
   { href: "/aluno/foco", rotulo: "Modo foco" },
 ];
 
-/** Abas da área Minha conta do aluno. */
-export function NavConta() {
+/** Abas da área Minha conta do aluno. "Práticas" só aparece com a geração por IA ligada. */
+export function NavConta({ comPraticas = false }: { comPraticas?: boolean }) {
   const caminho = usePathname();
   const ativa = (href: string) => (href === "/aluno" ? caminho === href : caminho.startsWith(href));
 
   return (
     <nav aria-label="Minha conta" className="-mx-4 mt-6 overflow-x-auto px-4">
       <ul className="flex w-max gap-2">
-        {abas.map((a) => (
+        {abas.filter((a) => comPraticas || a.href !== "/aluno/praticas").map((a) => (
           <li key={a.href}>
             <Link
               href={a.href}

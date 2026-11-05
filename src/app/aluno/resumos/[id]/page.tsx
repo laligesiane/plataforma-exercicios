@@ -10,6 +10,7 @@ import { validarMapa } from "@/lib/mapas";
 import { apagarResumoAluno, gerarMapaDoResumo } from "@/app/aluno/materias/actions";
 import { BotaoGerarMapa } from "@/components/BotaoGerarMapa";
 import { formatarData, tituloAula } from "@/lib/aulas";
+import { iaConfigurada } from "@/lib/pratica/gerar";
 import { exigirPapel } from "@/lib/perfil";
 import { camposResumo, documentoDoResumo, type Resumo } from "@/lib/resumos";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
@@ -73,7 +74,7 @@ export default async function ResumoDoAluno({ params }: { params: Promise<{ id: 
           <VerResumo resumo={data as unknown as Resumo} subtitulo={subtitulo} />
         </div>
 
-        {temTexto && (
+        {temTexto && iaConfigurada() && (
           <section className="mt-10 rounded-2xl bg-primaria-suave p-5 sm:p-6">
             <h2 className="text-lg font-bold">Treinar com este resumo</h2>
             <p className="mt-1 text-sm text-tinta-suave">
