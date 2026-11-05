@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Cartao } from "@/lib/documento/cartoes";
 import { montarMemoria } from "@/lib/documento/jogos";
 import { tocarResultado } from "@/lib/som";
+import { Icone } from "./Icones";
 import { FimDeJogo, Progresso, type AcoesFim } from "./comum";
 
 /** Tempo para ver as duas peças erradas antes de elas virarem de volta. */
@@ -23,6 +24,8 @@ export function JogoMemoria({ cartoes, semente, acoes }: { cartoes: Cartao[]; se
   useEffect(() => () => void (timer.current && clearTimeout(timer.current)), []);
 
   const totalPares = pecas.length / 2;
+  // Com explicações compridas, duas colunas no celular para a frase caber inteira sem ficar miúda.
+  const longas = pecas.some((p) => p.texto.length > 70);
 
   function virar(id: string) {
     const peca = pecas.find((p) => p.id === id);
@@ -69,7 +72,7 @@ export function JogoMemoria({ cartoes, semente, acoes }: { cartoes: Cartao[]; se
     <div>
       <Progresso feitos={achados.size} total={totalPares} extra={<span className="tabular-nums">{jogadas} jogadas</span>} />
       <p className="mt-3 text-sm text-tinta-suave">Vire duas peças. Ache cada termo e a explicação dele.</p>
-      <ul className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3">
+      <ul className={`mt-4 grid gap-2 sm:grid-cols-3 sm:gap-3 ${longas ? "grid-cols-2" : "grid-cols-3"}`}>
         {pecas.map((p) => {
           const achado = achados.has(p.par);
           const aberta = achado || abertas.includes(p.id);
@@ -80,7 +83,7 @@ export function JogoMemoria({ cartoes, semente, acoes }: { cartoes: Cartao[]; se
                 onClick={() => virar(p.id)}
                 disabled={achado}
                 aria-label={aberta ? `${p.lado === "termo" ? "Termo" : "Explicação"}: ${p.texto}` : "Peça virada para baixo"}
-                className={`flex aspect-[4/5] w-full items-center justify-center overflow-hidden rounded-2xl border-2 p-1.5 text-center transition-[transform,colors] duration-200 motion-reduce:transition-none sm:aspect-square sm:p-2.5 ${
+                className={`flex h-full min-h-28 w-full items-center justify-center rounded-2xl border-2 p-2 text-center transition-[transform,colors] duration-200 motion-reduce:transition-none sm:min-h-32 sm:p-3 ${
                   achado
                     ? "border-certo bg-certo-fundo"
                     : aberta
@@ -94,16 +97,14 @@ export function JogoMemoria({ cartoes, semente, acoes }: { cartoes: Cartao[]; se
                   <span
                     className={
                       p.lado === "termo"
-                        ? "text-sm font-extrabold break-words sm:text-base"
-                        : "text-[11px] leading-snug break-words sm:text-xs"
+                        ? `font-extrabold break-words hyphens-auto ${p.texto.length > 30 ? "text-xs sm:text-sm" : "text-sm sm:text-base"}`
+                        : `leading-snug break-words hyphens-auto ${p.texto.length > 110 ? "text-[11px] sm:text-xs" : "text-xs sm:text-sm"}`
                     }
                   >
                     {p.texto}
                   </span>
                 ) : (
-                  <span aria-hidden className="text-2xl text-primaria">
-                    ✦
-                  </span>
+                  <Icone nome="brilho" className="size-6 text-primaria" />
                 )}
               </button>
             </li>

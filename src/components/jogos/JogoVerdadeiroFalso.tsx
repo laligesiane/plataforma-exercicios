@@ -4,6 +4,7 @@ import { useState } from "react";
 import { botaoPrimario } from "@/components/ui/estilos";
 import type { Afirmacao } from "@/lib/documento/jogos";
 import { tocarResultado } from "@/lib/som";
+import { Icone } from "./Icones";
 import { FimDeJogo, Progresso, incentivo, type AcoesFim } from "./comum";
 
 /** Verdadeiro ou falso: a explicação mostrada é a do termo, ou foi trocada pela de outro? */
@@ -40,7 +41,7 @@ export function JogoVerdadeiroFalso({ afirmacoes, acoes }: { afirmacoes: Afirmac
       <Progresso
         feitos={indice}
         total={afirmacoes.length}
-        extra={sequencia >= 2 ? <span className="font-bold text-primaria">🔥 {sequencia} seguidas</span> : undefined}
+        extra={sequencia >= 2 ? <span className="inline-flex items-center gap-1 font-bold text-primaria"><Icone nome="fogo" className="size-4" /> {sequencia} seguidas</span> : undefined}
       />
       <div className="mt-5 rounded-3xl border-2 border-linha bg-fundo p-6 text-center">
         <p className="text-2xl font-extrabold">{atual.termo}</p>
@@ -55,14 +56,14 @@ export function JogoVerdadeiroFalso({ afirmacoes, acoes }: { afirmacoes: Afirmac
             onClick={() => responder(false)}
             className="rounded-2xl border-2 border-erro bg-erro-fundo py-4 text-lg font-extrabold text-erro transition-transform active:scale-95"
           >
-            ✗ Falso
+            <span className="inline-flex items-center justify-center gap-2"><Icone nome="errado" /> Falso</span>
           </button>
           <button
             type="button"
             onClick={() => responder(true)}
             className="rounded-2xl border-2 border-certo bg-certo-fundo py-4 text-lg font-extrabold text-certo transition-transform active:scale-95"
           >
-            ✓ Verdadeiro
+            <span className="inline-flex items-center justify-center gap-2"><Icone nome="certo" /> Verdadeiro</span>
           </button>
         </div>
       ) : (

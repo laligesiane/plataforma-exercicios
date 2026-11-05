@@ -34,4 +34,17 @@ describe("cartões do resumo", () => {
     expect(cartoes.find((c) => c.frente === "hábitos no passado")?.verso).toBe("Usamos para hábitos no passado.");
     expect(cartoes.find((c) => c.frente === "pontual")).toBeTruthy();
   });
+
+  it("tira a numeração dos títulos", () => {
+    const numerado: Documento = {
+      type: "doc",
+      content: [
+        { type: "heading", attrs: { level: 2 }, content: [t("2. Aprendizado de máquina")] },
+        p(t("Parte de exemplos.")),
+        { type: "heading", attrs: { level: 2 }, content: [t("Civil: regras")] },
+        p(t("Normas da vida privada.")),
+      ],
+    };
+    expect(cartoesDoDocumento(numerado).map((c) => c.frente)).toEqual(["Aprendizado de máquina", "Civil: regras"]);
+  });
 });

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { TelaLigar } from "@/lib/documento/jogos";
 import { tocarResultado } from "@/lib/som";
+import { Icone } from "./Icones";
 import { FimDeJogo, Progresso, type AcoesFim } from "./comum";
 
 const formatarTempo = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
@@ -67,7 +68,7 @@ export function JogoLigar({ telas, acoes }: { telas: TelaLigar[]; acoes: AcoesFi
 
   return (
     <div>
-      <Progresso feitos={feitos} total={total} extra={<span className="tabular-nums">⏱ {formatarTempo(segundos)}</span>} />
+      <Progresso feitos={feitos} total={total} extra={<span className="inline-flex items-center gap-1 tabular-nums"><Icone nome="relogio" className="size-4" /> {formatarTempo(segundos)}</span>} />
       <p className="mt-3 text-sm text-tinta-suave">Toque num termo e depois na explicação dele.</p>
       <div className="mt-4 grid grid-cols-[2fr_3fr] gap-2 sm:gap-3">
         <ul className="space-y-2">

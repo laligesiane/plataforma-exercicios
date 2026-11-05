@@ -8,15 +8,15 @@ import { esconderTermo, type Cartao } from "./cartoes";
 
 export type ModoJogo = "cartoes" | "memoria" | "quiz" | "complete" | "verdadeiro-falso" | "ligar";
 
-export type InfoJogo = { modo: ModoJogo; nome: string; emoji: string; descricao: string; minimo: number };
+export type InfoJogo = { modo: ModoJogo; nome: string; descricao: string; minimo: number };
 
 export const jogos: InfoJogo[] = [
-  { modo: "cartoes", nome: "Cartões", emoji: "🃏", descricao: "Vire o cartão e diga se sabia.", minimo: 1 },
-  { modo: "memoria", nome: "Jogo da memória", emoji: "🧠", descricao: "Ache os pares de termo e explicação.", minimo: 3 },
-  { modo: "quiz", nome: "Quiz", emoji: "❓", descricao: "Leia a pista e escolha o termo certo.", minimo: 3 },
-  { modo: "complete", nome: "Complete a frase", emoji: "✏️", descricao: "Escolha a palavra que falta na frase.", minimo: 2 },
-  { modo: "verdadeiro-falso", nome: "Verdadeiro ou falso", emoji: "⚡", descricao: "A explicação combina com o termo?", minimo: 2 },
-  { modo: "ligar", nome: "Ligar pares", emoji: "🔗", descricao: "Ligue cada termo à explicação, contra o relógio.", minimo: 3 },
+  { modo: "cartoes", nome: "Cartões", descricao: "Vire o cartão e diga se sabia.", minimo: 1 },
+  { modo: "memoria", nome: "Jogo da memória", descricao: "Ache os pares de termo e explicação.", minimo: 3 },
+  { modo: "quiz", nome: "Quiz", descricao: "Leia a pista e escolha o termo certo.", minimo: 3 },
+  { modo: "complete", nome: "Complete a frase", descricao: "Escolha a palavra que falta na frase.", minimo: 2 },
+  { modo: "verdadeiro-falso", nome: "Verdadeiro ou falso", descricao: "A explicação combina com o termo?", minimo: 2 },
+  { modo: "ligar", nome: "Ligar pares", descricao: "Ligue cada termo à explicação, contra o relógio.", minimo: 3 },
 ];
 
 export const infoDoJogo = (modo: string) => jogos.find((j) => j.modo === modo);
@@ -30,8 +30,21 @@ export function resumir(texto: string, limite: number): string {
   return `${(espaco > limite * 0.6 ? corte.slice(0, espaco) : corte).trimEnd()}…`;
 }
 
-/** A pista de um cartão: o verso sem o termo, encurtado. */
-export const pistaDe = (c: Cartao, limite = 160) => resumir(esconderTermo(c), limite);
+/**
+ * A primeira frase inteira do texto, sem cortar no meio. Serve para caber nos quadradinhos
+ * do jogo da memória e do ligar pares sem aparecer "…". Se a frase for longa, vem inteira mesmo assim.
+ */
+export function primeiraFrase(texto: string): string {
+  const linha = texto.split("\n").map((l) => l.trim()).find(Boolean) ?? "";
+  const fim = linha.search(/[.!?…](\s|$)/);
+  return (fim >= 0 ? linha.slice(0, fim + 1) : linha).replace(/\s+/g, " ").trim();
+}
+
+/** A pista de um cartão: o verso inteiro sem o termo. */
+export const pistaDe = (c: Cartao) => esconderTermo(c).replace(/[ \t]+/g, " ").trim();
+
+/** A pista curta: só a primeira frase, inteira. */
+export const pistaCurta = (c: Cartao) => primeiraFrase(esconderTermo(c));
 
 /** Cartões que servem para "Complete a frase": o termo aparece dentro da frase do verso. */
 export function cartoesParaCompletar(cartoes: Cartao[]): Cartao[] {
@@ -52,8 +65,8 @@ export const PARES_NA_MEMORIA = 6;
 export function montarMemoria(cartoes: Cartao[], semente: string, pares = PARES_NA_MEMORIA): Peca[] {
   const escolhidos = embaralhar(cartoes, `${semente}:escolha`).slice(0, pares);
   const pecas = escolhidos.flatMap((c): Peca[] => [
-    { id: `${c.id}-t`, par: c.id, texto: resumir(c.frente, 40), lado: "termo" },
-    { id: `${c.id}-e`, par: c.id, texto: pistaDe(c, 70), lado: "explicacao" },
+    { id: `${c.id}-t`, par: c.id, texto: c.frente, lado: "termo" },
+    { id: `${c.id}-e`, par: c.id, texto: pistaCurta(c), lado: "explicacao" },
   ]);
   return embaralhar(pecas, semente);
 }
@@ -79,10 +92,10 @@ function distratores(certo: Cartao, todos: Cartao[], semente: string, quantos = 
 export function montarQuiz(cartoes: Cartao[], semente: string): Pergunta[] {
   return embaralhar(cartoes, semente).map((c) => ({
     id: c.id,
-    enunciado: pistaDe(c, 220),
+    enunciado: pistaDe(c),
     opcoes: embaralhar([c.frente, ...distratores(c, cartoes, semente)], `${semente}:op:${c.id}`),
     certa: c.frente,
-    explicacao: resumir(c.verso, 220),
+    explicacao: c.verso,
   }));
 }
 
@@ -130,9 +143,9 @@ export function montarLigar(cartoes: Cartao[], semente: string, porTela = PARES_
       grupo = [...ordem.slice(i - ultima.termos.length, i), ...grupo];
     }
     telas.push({
-      termos: grupo.map((c) => ({ id: c.id, texto: resumir(c.frente, 50) })),
+      termos: grupo.map((c) => ({ id: c.id, texto: c.frente })),
       explicacoes: embaralhar(
-        grupo.map((c) => ({ id: c.id, texto: pistaDe(c, 90) })),
+        grupo.map((c) => ({ id: c.id, texto: pistaCurta(c) })),
         `${semente}:tela${i}`,
       ),
     });

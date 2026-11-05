@@ -11,9 +11,13 @@ const LIMITE_VERSO = 400;
 const textoDe = (no: No): string =>
   no.type === "text" ? no.text : (no.content ?? []).map(textoDe).join(no.type === "bulletList" || no.type === "orderedList" ? "\n" : "");
 
+/** Limpa os espaços e, se passar do limite, corta no fim de uma frase, para não ficar frase pela metade. */
 const encurtar = (t: string) => {
   const limpo = t.replace(/[ \t]+/g, " ").replace(/\n{2,}/g, "\n").trim();
-  return limpo.length > LIMITE_VERSO ? `${limpo.slice(0, LIMITE_VERSO - 1).trimEnd()}…` : limpo;
+  if (limpo.length <= LIMITE_VERSO) return limpo;
+  const corte = limpo.slice(0, LIMITE_VERSO);
+  const fim = Math.max(...[". ", "! ", "? ", ".\n", "!\n", "?\n", "\n"].map((s) => corte.lastIndexOf(s)));
+  return fim > 0 ? corte.slice(0, fim + 1).trim() : `${corte.slice(0, LIMITE_VERSO - 1).trimEnd()}…`;
 };
 
 /**
@@ -25,7 +29,11 @@ export function cartoesDoDocumento(doc: Documento): Cartao[] {
   const cartoes: Cartao[] = [];
   const frentes = new Set<string>();
   const adicionar = (frente: string, verso: string, tipo: Cartao["tipo"]) => {
-    const f = frente.trim().replace(/[:：]\s*$/, "");
+    // Tira a numeração dos títulos ("2. Indução", "II - Indução") e os dois-pontos do fim.
+    const f = frente
+      .trim()
+      .replace(/^(\d+(\.\d+)*|[IVX]{1,4})\s*[.)\-–]\s+/, "")
+      .replace(/[:：]\s*$/, "");
     const v = encurtar(verso);
     const chave = f.toLowerCase();
     if (!f || !v || v.toLowerCase() === chave || frentes.has(chave)) return;
