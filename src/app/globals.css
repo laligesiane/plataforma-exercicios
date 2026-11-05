@@ -213,7 +213,7 @@ body {
     --marca: #fff0a0;
   }
   @page {
-    margin: 16mm 14mm;
+    margin: 12mm 13mm;
   }
   /* O mapa mental é largo: vai numa folha deitada. */
   @page paisagem {
@@ -223,10 +223,44 @@ body {
   .folha-paisagem {
     page: paisagem;
   }
+  /* O mapa cabe na mesma folha que o título "Mapa mental", sem sobrar uma folha quase vazia. */
+  .folha-paisagem svg {
+    max-height: 165mm;
+    width: auto;
+  }
   html,
   body {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+  /* Letra e espaços menores que na tela: o mesmo resumo cabe em menos folhas e continua fácil de ler. */
+  .documento {
+    font-size: 10.5pt;
+    line-height: 1.5;
+  }
+  .documento > * + * {
+    margin-top: 0.45em;
+  }
+  .documento h2 {
+    margin-top: 1.1em;
+    padding-bottom: 0.15em;
+    font-size: 14.5pt;
+  }
+  .documento h3 {
+    margin-top: 0.9em;
+    font-size: 12pt;
+  }
+  .documento li + li {
+    margin-top: 0.15em;
+  }
+  .documento blockquote {
+    padding: 0.45em 0.8em 0.45em 2.2em;
+  }
+  .documento blockquote::before {
+    top: 0.45em;
+  }
+  .documento hr {
+    margin: 0.9em 0;
   }
   .documento h2,
   .documento h3 {
@@ -280,7 +314,7 @@ html[data-foco="ativo"] .silenciar-no-foco {
 [data-cor="roxo"] { --primaria: #7a4fd1; --primaria-suave: #efe9ff; --marca: #e2d6ff; }
 [data-cor="laranja"] { --primaria: #c75d0e; --primaria-suave: #fdeedf; --marca: #ffdcb8; }
 
-@media (prefers-color-scheme: dark) {
+@media screen and (prefers-color-scheme: dark) {
   [data-cor="azul"] { --primaria: #7aa7f5; --primaria-suave: #17264a; --marca: #24406e; }
   [data-cor="rosa"] { --primaria: #f08cbc; --primaria-suave: #3d1a2c; --marca: #5e2643; }
   [data-cor="roxo"] { --primaria: #b49af5; --primaria-suave: #2a1f47; --marca: #43316e; }
