@@ -35,12 +35,17 @@ export const MAX_ITENS = 300;
 
 const semAcento = (t: string) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
+/** Feriados que aparecem só pelo nome, sem a palavra "feriado" (lista de feriados do calendário). */
+const feriadosConhecidos =
+  /confraternizacao|\bano novo\b|tiradentes|dia do trabalh|corpus christi|paixao de cristo|sexta-feira santa|independencia do brasil|aparecida|dia do professor|finados|proclamacao da republica|proc\. republica|consciencia negra|zumbi|\bnatal\b|padroeir|aniversario da cidade/;
+
 /** Palpite do tipo pelo nome. A ordem importa: "Feriado, não haverá prova" é dia sem aula. */
 export function adivinharTipo(titulo: string): TipoImportado {
   const t = semAcento(titulo);
   if (/feriado|recesso|ferias|sem aula|nao havera aula|ponto facultativo|carnaval|suspens/.test(t)) return "sem_aula";
+  if (feriadosConhecidos.test(t)) return "sem_aula";
   if (/prova|avaliac|exame|\bp[1-4]\b|\bav[1-4]\b|\bap[1-4]\b|\bteste\b|simulado|recuperac|\bvs\b/.test(t)) return "prova";
-  if (/entrega|trabalho|seminario|\btcc\b|relatorio|projeto|tarefa|lista de exercicio|\bprazo\b/.test(t)) return "entrega";
+  if (/entrega|trabalho|seminario|\btcc\b|relatorio|projeto|tarefa|lista de exercicio|\bprazo\b|ultima data|ultimo dia/.test(t)) return "entrega";
   if (/\baulas?\b|semestre letivo|periodo letivo|ano letivo/.test(t)) return "aula";
   return "outro";
 }
@@ -190,6 +195,76 @@ const reCabecalhoMes = new RegExp(`^\\W*${nomeMes}(?:\\s*(?:de\\s+|/\\s*)?(\\d{4
 const reDiaNoComeco = /^\s*(\d{1,2})(?:\s*(a|ate|ao|-|–|e)\s*(\d{1,2}))?\s*(?:[-–:.)|]\s*|\s+)(?=[a-z])/;
 const reAnoSolto = /\b(20\d{2})\b/;
 
+const reMesNoComeco = new RegExp(`^\\W*${nomeMes}\\s+(?=\\d{1,2}\\b)(?!\\d{1,2}\\s*(?:de\\s+)?${nomeMes})`);
+/** Entre dois dias de uma lista do mesmo mês: "12 - Aparecida / 15 - Dia do Professor". */
+const reOutroDiaDaLista = /\s*[\/;]\s*(?=\d{1,2}\s*[-–:])/g;
+
+/**
+ * Uma volta para trás maior que isto, numa lista em ordem, quer dizer que o calendário virou o ano.
+ * É grande porque PDFs com colunas lado a lado (cronograma e feriados) não vêm em ordem.
+ */
+const VOLTA_DO_ANO = 180;
+
+/**
+ * Linha com colunas (tab): cada coluna é lida sozinha, para não misturar, por exemplo,
+ * a lista de feriados com o cronograma ao lado. Uma coluna só com a data ("05/03" | "Aula")
+ * se junta com o nome ao lado. Números soltos (grade dos meses) e colunas sem data são deixados de lado.
+ */
+function separarColunas(linha: string): string[] {
+  const celulas = linha.split(/\t+/).map((c) => c.trim()).filter(Boolean);
+  if (celulas.length <= 1) return celulas;
+  const saida: string[] = [];
+  let atual: { texto: string; soData: boolean } | null = null;
+  let anterior: string | null = null;
+  const fechar = () => {
+    if (atual) saida.push(atual.texto);
+    atual = null;
+  };
+  celulas.forEach((c, n) => {
+    const b = semAcento(c);
+    const seguinte = celulas[n + 1] ?? "";
+    if (/^[\d\s]+$/.test(c)) {
+      // "15" | "Prova": dia de uma lista dentro do mês. Qualquer outro número solto é grade.
+      if (/^\d{1,2}$/.test(c) && /^\p{L}/u.test(seguinte)) {
+        fechar();
+        atual = { texto: c, soData: true };
+      }
+      anterior = null;
+      return;
+    }
+    if (!/\d/.test(c) && !/\p{L}{2}/u.test(c)) return; // "D S T Q Q S S", traços
+    if (reCabecalhoMes.test(b.trim())) {
+      fechar();
+      saida.push(c);
+      anterior = null;
+      return;
+    }
+    const datas = acharDatas(b);
+    if (datas.length > 0 || reMesNoComeco.test(b) || reDiaNoComeco.test(b)) {
+      fechar();
+      const soData = datas.length > 0 && !/[a-z]{2}/.test(cortar(b, datas.map((d) => [d.inicio, d.fim])));
+      if (soData && anterior) {
+        saida.push(`${anterior} - ${c}`);
+        anterior = null;
+        return;
+      }
+      atual = { texto: c, soData };
+      anterior = null;
+      return;
+    }
+    const aberto = atual as { texto: string; soData: boolean } | null;
+    if (aberto?.soData) {
+      aberto.texto += ` - ${c}`;
+      aberto.soData = false;
+      return;
+    }
+    fechar();
+    anterior = c;
+  });
+  fechar();
+  return saida;
+}
+
 /** Troca por espaço os pedaços indicados (posições valem no original e na versão sem acento). */
 function cortar(texto: string, pedacos: [number, number][]) {
   let t = texto;
@@ -232,8 +307,9 @@ export function lerTexto(texto: string, hoje: string): ItemImportado[] {
   const linhas = texto
     .normalize("NFC")
     .replace(/\r\n?/g, "\n")
-    .replace(/[\t|]+/g, " - ")
     .split("\n")
+    .flatMap(separarColunas)
+    .map((l) => l.replace(/\|+/g, " - "))
     .filter((l) => l.trim());
 
   // "Calendário Acadêmico 2027" numa linha sem data: vale como ano das datas sem ano.
@@ -253,11 +329,11 @@ export function lerTexto(texto: string, hoje: string): ItemImportado[] {
     if (anoDoTexto) {
       // Calendário que vira o ano (agosto → fevereiro): volta no mês, passa para o ano seguinte.
       let a = anoDoTexto;
-      if (ultimaData && montar(a, mes, dia) < somarDias(ultimaData, -60)) a += 1;
+      if (ultimaData && montar(a, mes, dia) < somarDias(ultimaData, -VOLTA_DO_ANO)) a += 1;
       return montar(a, mes, dia);
     }
     let a = montar(anoHoje, mes, dia) < limite ? anoHoje + 1 : anoHoje;
-    if (ultimaData && montar(a, mes, dia) < somarDias(ultimaData, -60)) a += 1;
+    if (ultimaData && montar(a, mes, dia) < somarDias(ultimaData, -VOLTA_DO_ANO)) a += 1;
     return montar(a, mes, dia);
   };
 
@@ -270,9 +346,27 @@ export function lerTexto(texto: string, hoje: string): ItemImportado[] {
   };
   let mesAtual: { mes: number; ano: number | null } | null = null;
 
-  for (const original of linhas) {
-    const baixa = semAcento(original);
+  /** Um dia só (ou "15 a 20") achado no trecho: o resto do trecho é o nome. */
+  const lerUmaData = (original: string, baixa: string, d: DataAchada) => {
+    const { titulo, hora } = tituloEHora(cortar(original, [[d.inicio, d.fim]]), cortar(baixa, [[d.inicio, d.fim]]));
+    const inicio = dataCom(d.dia, d.mes, d.ano);
+    if (d.outroDia && d.separado) {
+      adicionar(titulo, inicio, null, hora);
+      adicionar(titulo, dataCom(d.outroDia, d.mes, d.ano), null, hora);
+    } else adicionar(titulo, inicio, d.outroDia ? dataCom(d.outroDia, d.mes, d.ano) : null, hora);
+  };
+
+  for (let original of linhas) {
+    let baixa = semAcento(original);
     if (baixa.length !== original.length) continue; // caractere que muda de tamanho: pula para não errar o corte
+
+    // "OUTUBRO 12 - Nossa Senhora Aparecida": o mês vale para esta linha e as de baixo.
+    const mesNaFrente = reMesNoComeco.exec(baixa);
+    if (mesNaFrente) {
+      mesAtual = { mes: numeroMes(mesNaFrente[1]), ano: null };
+      original = original.slice(mesNaFrente[0].length);
+      baixa = baixa.slice(mesNaFrente[0].length);
+    }
 
     const cabecalho = reCabecalhoMes.exec(baixa.trim());
     if (cabecalho) {
@@ -280,23 +374,21 @@ export function lerTexto(texto: string, hoje: string): ItemImportado[] {
       continue;
     }
 
-    let datas = acharDatas(baixa);
-    // Lista dentro de um mês: "15 - Prova 1" ou "15 a 20 Semana de provas".
+    const datas = acharDatas(baixa);
+    // Lista dentro de um mês: "15 - Prova 1", "15 a 20 Semana de provas" ou vários dias numa linha
+    // ("02 - Finados / 15 - Proclamação da República").
     if (datas.length === 0 && mesAtual) {
-      const m = reDiaNoComeco.exec(baixa);
-      if (m) {
-        datas = [
-          {
-            inicio: 0,
-            fim: m[0].length,
-            dia: +m[1],
-            mes: mesAtual.mes,
-            ano: mesAtual.ano,
-            outroDia: m[3] ? +m[3] : undefined,
-            separado: m[2] === "e",
-          },
-        ];
+      const mes = mesAtual;
+      const cortes = [0, ...[...baixa.matchAll(reOutroDiaDaLista)].map((x) => x.index! + x[0].length), baixa.length];
+      for (let n = 0; n + 1 < cortes.length; n++) {
+        const o = original.slice(cortes[n], cortes[n + 1]).replace(/\s*[\/;]\s*$/, "");
+        const b = baixa.slice(cortes[n], cortes[n + 1]).replace(/\s*[\/;]\s*$/, "");
+        const m = reDiaNoComeco.exec(b);
+        if (!m) continue;
+        const d = { inicio: 0, fim: m[0].length, dia: +m[1], mes: mes.mes, ano: mes.ano };
+        lerUmaData(o, b, { ...d, outroDia: m[3] ? +m[3] : undefined, separado: m[2] === "e" });
       }
+      continue;
     }
     if (datas.length === 0) continue;
 
@@ -311,13 +403,7 @@ export function lerTexto(texto: string, hoje: string): ItemImportado[] {
     }
 
     if (datas.length === 1) {
-      const d = datas[0];
-      const { titulo, hora } = tituloEHora(cortar(original, [[d.inicio, d.fim]]), cortar(baixa, [[d.inicio, d.fim]]));
-      const inicio = dataCom(d.dia, d.mes, d.ano);
-      if (d.outroDia && d.separado) {
-        adicionar(titulo, inicio, null, hora);
-        adicionar(titulo, dataCom(d.outroDia, d.mes, d.ano), null, hora);
-      } else adicionar(titulo, inicio, d.outroDia ? dataCom(d.outroDia, d.mes, d.ano) : null, hora);
+      lerUmaData(original, baixa, datas[0]);
       continue;
     }
 
