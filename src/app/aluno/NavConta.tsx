@@ -11,6 +11,7 @@ const abas = [
   { href: "/aluno/resumos", rotulo: "Resumos" },
   { href: "/aluno/mapas", rotulo: "Mapas mentais" },
   { href: "/aluno/agenda", rotulo: "Agenda" },
+  { href: "/aluno/foco", rotulo: "Modo foco" },
 ];
 
 /** Abas da área Minha conta do aluno. */
