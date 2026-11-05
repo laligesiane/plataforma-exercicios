@@ -3,6 +3,17 @@ import { diasRRule, type Horario } from ".";
 
 export type EventoTurma = Horario & { id: string; turma_nome: string };
 
+/** Evento de um dia só (compromisso do aluno, prazo). Sem hora vira evento de dia inteiro. */
+export type EventoUnico = {
+  id: string;
+  titulo: string;
+  descricao?: string;
+  data: string; // "AAAA-MM-DD"
+  hora?: string | null; // "HH:MM" ou "HH:MM:SS"
+  duracao_min?: number;
+  fuso?: string;
+};
+
 const vtimezoneSaoPaulo = [
   "BEGIN:VTIMEZONE",
   "TZID:America/Sao_Paulo",
@@ -16,7 +27,7 @@ const vtimezoneSaoPaulo = [
 ];
 
 function escapar(texto: string) {
-  return texto.replace(/\\/g, "\\\\").replace(/;/g, "\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+  return texto.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
 }
 
 function dois(n: number) {
@@ -24,7 +35,7 @@ function dois(n: number) {
 }
 
 /** Monta o .ics. `criadoEm` fixa a primeira semana; as próximas vêm do RRULE. */
-export function gerarIcs(eventos: EventoTurma[], nomeCalendario: string, agora = new Date()) {
+export function gerarIcs(eventos: EventoTurma[], nomeCalendario: string, agora = new Date(), unicos: EventoUnico[] = []) {
   const carimboUtc = agora.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
   // Primeira ocorrência: a semana de 05/01/2026 (segunda) serve de âncora fixa para todas as aulas.
   const ancora = Date.UTC(2026, 0, 4); // domingo
@@ -56,6 +67,36 @@ export function gerarIcs(eventos: EventoTurma[], nomeCalendario: string, agora =
       "END:VEVENT",
     );
   }
+  for (const e of unicos) linhas.push(...linhasEventoUnico(e, carimboUtc));
   linhas.push("END:VCALENDAR");
   return linhas.join("\r\n") + "\r\n";
+}
+
+function linhasEventoUnico(e: EventoUnico, carimboUtc: string) {
+  const [a, m, d] = e.data.split("-").map(Number);
+  const dia = (data: Date) => `${data.getUTCFullYear()}${dois(data.getUTCMonth() + 1)}${dois(data.getUTCDate())}`;
+  let inicio: string;
+  let fim: string;
+  if (e.hora) {
+    const [h, min] = e.hora.split(":").map(Number);
+    const comeco = new Date(Date.UTC(a, m - 1, d, h, min));
+    const termino = new Date(comeco.getTime() + (e.duracao_min ?? 60) * 6e4);
+    const local = (x: Date) => `${dia(x)}T${dois(x.getUTCHours())}${dois(x.getUTCMinutes())}00`;
+    const fuso = e.fuso ?? "America/Sao_Paulo";
+    inicio = `DTSTART;TZID=${fuso}:${local(comeco)}`;
+    fim = `DTEND;TZID=${fuso}:${local(termino)}`;
+  } else {
+    inicio = `DTSTART;VALUE=DATE:${dia(new Date(Date.UTC(a, m - 1, d)))}`;
+    fim = `DTEND;VALUE=DATE:${dia(new Date(Date.UTC(a, m - 1, d + 1)))}`;
+  }
+  return [
+    "BEGIN:VEVENT",
+    `UID:${e.id}@repasa.com.br`,
+    `DTSTAMP:${carimboUtc}`,
+    inicio,
+    fim,
+    `SUMMARY:${escapar(e.titulo)}`,
+    ...(e.descricao ? [`DESCRIPTION:${escapar(e.descricao)}`] : []),
+    "END:VEVENT",
+  ];
 }

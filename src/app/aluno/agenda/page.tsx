@@ -4,12 +4,15 @@ import { BotaoExcluir } from "@/components/BotaoExcluir";
 import { HorariosTurma } from "@/components/HorariosTurma";
 import type { Horario } from "@/lib/agenda";
 import { camposAula, formatarData, hojeNoFuso, tituloAula, type Aula } from "@/lib/aulas";
+import { camposCompromisso, separarCompromissos, type Compromisso } from "@/lib/compromissos";
 import { camposPedido, proximasAulas, rotuloStatus, separarPedidos, type PedidoAula } from "@/lib/pedidos";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { LayoutConta } from "../LayoutConta";
 import { cancelarPedido } from "./actions";
+import { FormularioCompromisso } from "./FormularioCompromisso";
 import { FormularioPedido } from "./FormularioPedido";
+import { ListaCompromissos } from "./ListaCompromissos";
 
 const corStatus = {
   pendente: "bg-suave text-tinta-suave",
@@ -22,12 +25,14 @@ export default async function AgendaDoAluno() {
   const supabase = await criarClienteServidor();
   const hoje = hojeNoFuso();
 
-  const [{ data: turmas }, { data: horarios }, { data: aulasDb }, { data: pedidosDb }] = await Promise.all([
+  const [{ data: turmas }, { data: horarios }, { data: aulasDb }, { data: pedidosDb }, { data: compromissosDb }] = await Promise.all([
     supabase.from("turma").select("id, nome").order("nome"),
     supabase.from("turma_horario").select("id, turma_id, dia_semana, hora_inicio, duracao_min, fuso"),
     supabase.from("aula").select(camposAula).gte("data", hoje).order("data"),
     supabase.from("pedido_aula").select(camposPedido).eq("aluno_id", perfil.id).order("data"),
+    supabase.from("compromisso").select(camposCompromisso).eq("aluno_id", perfil.id).order("data"),
   ]);
+  const compromissos = separarCompromissos((compromissosDb ?? []) as Compromisso[], hoje);
   const listaTurmas = turmas ?? [];
   const nomeTurma = new Map(listaTurmas.map((t) => [t.id, t.nome]));
   const aulas = proximasAulas((aulasDb ?? []) as Aula[], hoje);
@@ -38,7 +43,44 @@ export default async function AgendaDoAluno() {
   for (const h of horarios ?? []) horariosPorTurma.set(h.turma_id, [...(horariosPorTurma.get(h.turma_id) ?? []), h]);
 
   return (
-    <LayoutConta titulo="Minha agenda" descricao="Suas próximas aulas, os horários das turmas e os pedidos de aula.">
+    <LayoutConta titulo="Minha agenda" descricao="Suas tarefas, provas e aulas, de dentro e de fora da Repasa, num lugar só.">
+      <section className="mt-8">
+        <h2 className="text-lg font-bold">Meus compromissos</h2>
+        <p className="mt-1 text-sm text-tinta-suave">
+          Coloque o que tem para entregar, provas e aulas, até as da faculdade ou do curso. Depois marque o que já fez e
+          anote a nota.
+        </p>
+        <details open={compromissos.pelaFrente.length === 0} className="mt-3 rounded-2xl border border-linha p-5 sm:p-6">
+          <summary className="cursor-pointer font-bold text-primaria">Adicionar compromisso</summary>
+          <div className="mt-4">
+            <FormularioCompromisso hoje={hoje} />
+          </div>
+        </details>
+        {compromissos.pelaFrente.length > 0 && (
+          <div className="mt-4">
+            <ListaCompromissos itens={compromissos.pelaFrente} hoje={hoje} />
+          </div>
+        )}
+        {compromissos.passados.length > 0 && (
+          <details className="mt-4">
+            <summary className="cursor-pointer text-sm font-bold text-tinta-suave">
+              Já feitos ({compromissos.passados.length})
+            </summary>
+            <div className="mt-3">
+              <ListaCompromissos itens={compromissos.passados} hoje={hoje} />
+            </div>
+          </details>
+        )}
+      </section>
+
+      <div className="mt-6">
+        <AssinarAgenda
+          perfilId={perfil.id}
+          titulo="Tudo na sua agenda do celular"
+          descricao="Assine uma vez: seus compromissos e as aulas das turmas aparecem e se atualizam sozinhos."
+        />
+      </div>
+
       <section className="mt-8">
         <h2 className="text-lg font-bold">Próximas aulas marcadas</h2>
         {aulas.length > 0 ? (
@@ -74,12 +116,6 @@ export default async function AgendaDoAluno() {
             )}
           </div>
         </section>
-      )}
-
-      {listaTurmas.length > 0 && (
-        <div className="mt-6">
-          <AssinarAgenda perfilId={perfil.id} />
-        </div>
       )}
 
       <section id="marcar" className="mt-8 scroll-mt-6">

@@ -1,4 +1,5 @@
 import { gerarIcs, type EventoTurma } from "@/lib/agenda/ics";
+import { camposCompromisso, eventoDoCompromisso, type Compromisso } from "@/lib/compromissos";
 import { criarClienteAdmin } from "@/lib/supabase/admin";
 
 // Assinatura .ics: o Google Agenda busca este endereço sem login, então o token secreto é a chave.
@@ -32,7 +33,15 @@ export async function GET(_req: Request, { params }: { params: Promise<{ arquivo
     turma_nome: (h.turma as unknown as { nome: string } | null)?.nome ?? "Aula",
   }));
 
-  return new Response(gerarIcs(eventos, "Aulas na Repasa"), {
+  // Agenda pessoal do aluno: tarefas, provas e aulas de fora da Repasa.
+  let compromissos: Compromisso[] = [];
+  if (perfil.papel === "aluno") {
+    const { data } = await admin.from("compromisso").select(camposCompromisso).eq("aluno_id", perfil.id);
+    compromissos = (data ?? []) as Compromisso[];
+  }
+
+  const nome = perfil.papel === "aluno" ? "Minha agenda na Repasa" : "Aulas na Repasa";
+  return new Response(gerarIcs(eventos, nome, new Date(), compromissos.map(eventoDoCompromisso)), {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
       "Content-Disposition": 'inline; filename="repasa.ics"',
