@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { IconeLogo } from "@/components/Mascote";
 import { sair } from "@/app/entrar/actions";
+import { NavConta } from "@/app/aluno/NavConta";
+import { iaConfigurada } from "@/lib/pratica/gerar";
 import { obterPerfil, paginaInicial } from "@/lib/perfil";
 
 /** semMenu: só a marca (ex.: na verificação em duas etapas, antes de liberar a conta). */
@@ -14,7 +16,7 @@ export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {})
           <IconeLogo />
           <span className="text-[17px] font-extrabold tracking-tight">Repasa</span>
         </Link>
-        {!semMenu && <nav className="flex items-center gap-4 text-sm font-semibold text-tinta-suave">
+        {!semMenu && <nav className="esconder-no-foco flex items-center gap-4 text-sm font-semibold text-tinta-suave">
           {perfil ? (
             <>
               {perfil.papel === "professor" ? (
@@ -52,6 +54,11 @@ export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {})
           )}
         </nav>}
       </div>
+      {perfil?.papel === "aluno" && (
+        <div className="so-no-foco mx-auto max-w-3xl px-4 pb-3">
+          <NavConta comPraticas={iaConfigurada()} className="" />
+        </div>
+      )}
     </header>
   );
 }

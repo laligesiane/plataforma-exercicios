@@ -49,7 +49,7 @@ export default async function ResumoDoAluno({ params }: { params: Promise<{ id: 
           >
             ← {materia ? materia.nome : "Meus resumos"}
           </Link>
-          <span className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+          <span className="esconder-no-foco flex flex-wrap items-baseline gap-x-4 gap-y-1">
             {materia && temTexto && <BotaoGerarMapa acao={gerarMapaDoResumo.bind(null, data.id)} temMapa={temMapa} />}
             <ExportarPdf id={data.id} temTexto={temTexto} temMapa={temMapa} />
             {materia && (
@@ -75,7 +75,7 @@ export default async function ResumoDoAluno({ params }: { params: Promise<{ id: 
         </div>
 
         {temTexto && iaConfigurada() && (
-          <section className="mt-10 rounded-2xl bg-primaria-suave p-5 sm:p-6">
+          <section className="esconder-no-foco mt-10 rounded-2xl bg-primaria-suave p-5 sm:p-6">
             <h2 className="text-lg font-bold">Treinar com este resumo</h2>
             <p className="mt-1 text-sm text-tinta-suave">
               Gere exercícios de lacuna, múltipla escolha, arrastar, classificar ou relacionar com base no que está escrito aqui.
