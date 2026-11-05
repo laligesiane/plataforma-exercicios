@@ -44,6 +44,7 @@ export default async function Revisar() {
   return (
     <LayoutConta
       titulo="Repasar meus erros"
+      voltar={{ href: "/aluno/atividades", rotulo: "Atividades" }}
       descricao="Os itens que você errou voltam depois de 1, 3 e 7 dias. Acertou de primeira nas três vezes, o item está dominado."
     >
       <p className="mt-6 text-sm font-semibold text-tinta-suave">

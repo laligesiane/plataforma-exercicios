@@ -7,6 +7,9 @@ import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { montarParaFazer, rotuloPrazo, type CompromissoAluno } from "@/lib/parafazer";
 import { diasDeEstudo } from "@/lib/sequencia";
 import { continuarDeOndeParou } from "@/lib/continuar";
+import { agendaDeHoje } from "@/lib/hoje";
+import { camposDataTurma, somarDias, type DataTurma } from "@/lib/importar-calendario";
+import { AgendaHoje } from "./AgendaHoje";
 import { CartaoMateria } from "./CartaoMateria";
 import { SequenciaBrotinho } from "./SequenciaBrotinho";
 import { carregarResumosDoAluno } from "./dados";
@@ -19,7 +22,7 @@ export default async function MinhaConta() {
   const supabase = await criarClienteServidor();
   const hoje = hojeNoFuso();
 
-  const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }, { data: aulasDb }, { data: materias }, { count: pendentes }, { count: paraRepassar }, { data: envios }, { data: compromissosDb }, { data: momentosResposta }, { data: momentosRevisao }, resumos] =
+  const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }, { data: aulasDb }, { data: materias }, { count: pendentes }, { count: paraRepassar }, { data: envios }, { data: compromissosDb }, { data: momentosResposta }, { data: momentosRevisao }, { data: datasDb }, resumos] =
     await Promise.all([
       supabase.from("turma").select("id, nome"),
       supabase.from("atividade_turma").select("turma(nome), atividade(id, titulo, prazo, publicada)"),
@@ -35,7 +38,7 @@ export default async function MinhaConta() {
         .is("concluida_em", null)
         .lte("proxima_em", hoje),
       supabase.from("envio").select("atividade_id").eq("aluno_id", perfil.id),
-      supabase.from("compromisso").select("id, titulo, data, feito, tipo, materia").eq("aluno_id", perfil.id).eq("feito", false),
+      supabase.from("compromisso").select("id, titulo, data, hora, feito, tipo, materia").eq("aluno_id", perfil.id).eq("feito", false),
       supabase
         .from("resposta")
         .select("criada_em, atividade_id")
@@ -48,6 +51,8 @@ export default async function MinhaConta() {
         .select("atualizada_em")
         .eq("aluno_id", perfil.id)
         .gte("atualizada_em", new Date(Date.now() - 40 * 86_400_000).toISOString()),
+      // Períodos (férias, recesso) que começaram antes ainda contam hoje.
+      supabase.from("data_turma").select(camposDataTurma).gte("data", somarDias(hoje, -120)).lte("data", hoje),
       carregarResumosDoAluno(),
     ]);
 
@@ -92,6 +97,17 @@ export default async function MinhaConta() {
           }
         : null;
 
+  const itensHoje = agendaDeHoje({
+    hoje,
+    nomeTurma,
+    aulas: aulasDb ?? [],
+    horarios: horarios ?? [],
+    atividades: [...porAtividade.values()],
+    enviadas: new Set((envios ?? []).map((e) => e.atividade_id as string)),
+    compromissos: (compromissosDb ?? []) as (CompromissoAluno & { hora: string | null })[],
+    datasTurma: (datasDb ?? []) as DataTurma[],
+  });
+
   const continuar = continuarDeOndeParou(
     (momentosResposta ?? []) as { atividade_id: string; criada_em: string }[],
     porAtividade,
@@ -106,9 +122,12 @@ export default async function MinhaConta() {
       numero: atividades.size,
       detalhe: atividades.size === 0 ? "Nenhuma ainda" : novas > 0 ? `${novas} ${novas === 1 ? "nova" : "novas"}` : "Todas começadas",
     },
-    { href: "/aluno/materias", titulo: "Matérias", numero: (materias ?? []).length, detalhe: "Seus resumos por matéria" },
-    { href: "/aluno/resumos", titulo: "Resumos", numero: resumos.length, detalhe: "Seus e das turmas" },
-    { href: "/aluno/mapas", titulo: "Mapas mentais", numero: mapas.length, detalhe: "Para revisar de relance" },
+    {
+      href: "/aluno/materias",
+      titulo: "Matérias",
+      numero: (materias ?? []).length,
+      detalhe: `${resumos.length} ${resumos.length === 1 ? "resumo" : "resumos"} · ${mapas.length} ${mapas.length === 1 ? "mapa" : "mapas"}`,
+    },
   ];
 
   return (
@@ -137,32 +156,13 @@ export default async function MinhaConta() {
         </section>
       )}
 
-      <section className={`${continuar.length > 0 ? "mt-6" : "mt-8"} rounded-2xl bg-primaria-suave p-5 sm:p-6`}>
-        <h2 className="text-sm font-bold tracking-wide text-primaria uppercase">Agenda</h2>
-        {proxima ? (
-          <>
-            <p className="mt-2 text-xl font-extrabold first-letter:uppercase">{proxima.quando}</p>
-            <p className="mt-0.5 text-tinta-suave">{proxima.oque}</p>
-          </>
-        ) : (
-          <p className="mt-2 text-xl font-extrabold">Nenhuma aula marcada</p>
-        )}
-        {(pendentes ?? 0) > 0 && (
-          <p className="mt-2 text-sm font-semibold text-tinta-suave">
-            {pendentes} {pendentes === 1 ? "pedido de aula aguardando" : "pedidos de aula aguardando"} o professor
-          </p>
-        )}
-        <div className="mt-4 flex flex-wrap gap-4">
-          <Link href="/aluno/agenda" className="text-sm font-bold text-primaria hover:underline">
-            Ver agenda
-          </Link>
-          {(turmas ?? []).length > 0 && (
-            <Link href="/aluno/agenda#marcar" className="text-sm font-bold text-primaria hover:underline">
-              Marcar uma aula
-            </Link>
-          )}
-        </div>
-      </section>
+      <AgendaHoje
+        className={continuar.length > 0 ? "mt-6" : "mt-8"}
+        itens={itensHoje}
+        proxima={proxima}
+        pedidosAguardando={pendentes ?? 0}
+        podeMarcar={(turmas ?? []).length > 0}
+      />
 
       <SequenciaBrotinho dias={diasEstudados} hoje={hoje} />
 
@@ -213,7 +213,7 @@ export default async function MinhaConta() {
         </Link>
       )}
 
-      <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <ul className="mt-6 grid grid-cols-2 gap-3">
         {atalhos.map((a) => (
           <li key={a.href}>
             <Link href={a.href} className="block h-full rounded-2xl border border-linha p-4 transition-colors hover:border-primaria">
@@ -247,7 +247,7 @@ export default async function MinhaConta() {
         <section className="mt-8">
           <div className="flex items-baseline justify-between">
             <h2 className="text-lg font-bold">Resumos recentes</h2>
-            <Link href="/aluno/resumos" className="text-sm font-bold text-primaria hover:underline">
+            <Link href="/aluno/materias" className="text-sm font-bold text-primaria hover:underline">
               Ver todos
             </Link>
           </div>

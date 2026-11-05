@@ -2,14 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { abaAtiva } from "@/components/navegacao";
 
 const abas = [
   { href: "/aluno", rotulo: "Visão geral" },
   { href: "/aluno/atividades", rotulo: "Atividades" },
-  { href: "/aluno/revisar", rotulo: "Repasar erros" },
   { href: "/aluno/materias", rotulo: "Matérias" },
-  { href: "/aluno/resumos", rotulo: "Resumos" },
-  { href: "/aluno/mapas", rotulo: "Mapas mentais" },
   { href: "/aluno/praticas", rotulo: "Práticas" },
   { href: "/aluno/agenda", rotulo: "Agenda" },
   { href: "/aluno/foco", rotulo: "Modo foco" },
@@ -18,7 +16,7 @@ const abas = [
 /** Abas do aluno no modo foco do celular (fora do foco, o menu fica na barra de baixo). "Práticas" só aparece com a geração por IA ligada. */
 export function NavConta({ comPraticas = false, className = "mt-6" }: { comPraticas?: boolean; className?: string }) {
   const caminho = usePathname();
-  const ativa = (href: string) => (href === "/aluno" ? caminho === href : caminho.startsWith(href));
+  const ativa = (href: string) => abaAtiva(caminho, href);
 
   return (
     <nav aria-label="Minha conta" className={`sem-rolagem -mx-4 overflow-x-auto px-4 ${className}`}>

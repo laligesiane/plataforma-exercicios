@@ -98,8 +98,8 @@ export const icones = {
 export const abasAluno: Item[] = [
   { href: "/aluno", rotulo: "Início", icone: icones.inicio },
   { href: "/aluno/atividades", rotulo: "Atividades", icone: icones.atividades },
-  { href: "/aluno/revisar", rotulo: "Repasar", icone: icones.repasar },
-  { href: "/aluno/resumos", rotulo: "Resumos", icone: icones.resumos },
+  { href: "/aluno/materias", rotulo: "Matérias", icone: icones.materias },
+  { href: "/aluno/agenda", rotulo: "Agenda", icone: icones.agenda },
 ];
 
 export const abasProfessor: Item[] = [
@@ -109,14 +109,20 @@ export const abasProfessor: Item[] = [
   { href: "/perfil", rotulo: "Perfil", icone: icones.perfil },
 ];
 
-/** O resto do menu do aluno, dentro do "Mais". */
+/**
+ * O resto do menu do aluno, dentro do "Mais". Resumos e mapas mentais ficam dentro de cada
+ * matéria, e o Repasar fica dentro de Atividades, por isso não aparecem aqui.
+ */
 export const maisAluno = (comPraticas: boolean): Item[] => [
-  { href: "/aluno/materias", rotulo: "Matérias", icone: icones.materias },
-  { href: "/aluno/mapas", rotulo: "Mapas mentais", icone: icones.mapas },
   ...(comPraticas ? [{ href: "/aluno/praticas", rotulo: "Práticas", icone: icones.praticas }] : []),
-  { href: "/aluno/agenda", rotulo: "Agenda", icone: icones.agenda },
   { href: "/aluno/foco", rotulo: "Modo foco", icone: icones.foco },
 ];
+
+/** Páginas que moram dentro de outra aba e devem acendê-la no menu. */
+const dentroDe: Record<string, string[]> = {
+  "/aluno/atividades": ["/aluno/revisar", "/aluno/turmas"],
+  "/aluno/materias": ["/aluno/resumos", "/aluno/mapas"],
+};
 
 /**
  * Telas em que a barra some no celular: quem está resolvendo, estudando cartões ou editando
@@ -136,5 +142,5 @@ export function semBarra(caminho: string) {
 export function abaAtiva(caminho: string, href: string) {
   if (href === "/aluno") return caminho === href;
   if (href === "/professor") return caminho === href || caminho.startsWith("/professor/turmas");
-  return caminho.startsWith(href);
+  return caminho.startsWith(href) || (dentroDe[href] ?? []).some((p) => caminho.startsWith(p));
 }

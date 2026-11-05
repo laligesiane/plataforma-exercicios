@@ -29,7 +29,7 @@ export function BarraInferior({ papel, comPraticas = false, foto = null }: { pap
   const comFoto = (itens: Item[]) => itens.map((i) => (i.href === "/perfil" ? { ...i, icone: iconePerfil } : i));
   const abas = papel === "aluno" ? abasAluno : comFoto(abasProfessor);
   const mais = papel === "aluno" ? [...maisAluno(comPraticas), { href: "/perfil", rotulo: "Perfil", icone: iconePerfil }] : [];
-  const maisAtivo = mais.some((m) => caminho.startsWith(m.href));
+  const maisAtivo = mais.some((m) => abaAtiva(caminho, m.href));
 
   const estiloAba = (ativa: boolean) =>
     `flex min-w-0 flex-1 flex-col items-center gap-0.5 pt-2 pb-1.5 text-[11px] font-bold ${ativa ? "text-primaria" : "text-tinta-suave"}`;

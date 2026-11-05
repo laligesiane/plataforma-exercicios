@@ -5,6 +5,8 @@ import { chegouAoLimite, limite } from "@/lib/limites";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { CartaoMateria } from "../CartaoMateria";
+import { carregarResumosDoAluno } from "../dados";
+import { ListaResumos } from "../ListaResumos";
 import { LayoutConta } from "../LayoutConta";
 import { apagarCurso } from "./actions";
 import { FormularioCurso, FormularioEditarCurso, type CursoCompleto } from "./FormularioCurso";
@@ -18,11 +20,14 @@ export default async function MateriasDoAluno({ searchParams }: { searchParams: 
   const perfil = await exigirPapel("aluno");
   const { curso: cursoPedido } = await searchParams;
   const supabase = await criarClienteServidor();
-  const [{ data }, { data: cursosDb }, { data: plano }] = await Promise.all([
+  const [{ data }, { data: cursosDb }, { data: plano }, todosResumos] = await Promise.all([
     supabase.from("materia").select("id, nome, cor, curso_id, resumo(count)").order("criada_em"),
     supabase.from("curso").select("id, nome, inicio, duracao_meses, etapa").order("nome"),
     supabase.from("plano").select("max_materias").eq("id", perfil.plano_id).single(),
+    carregarResumosDoAluno(),
   ]);
+  // Resumos e mapas que os professores compartilharam nas turmas (não pertencem a uma matéria do aluno).
+  const dasTurmas = todosResumos.filter((r) => r.turma_id);
   const materias = (data ?? []) as MateriaLista[];
   const cursos = (cursosDb ?? []) as CursoCompleto[];
   const maxMaterias = limite(plano?.max_materias);
@@ -104,6 +109,16 @@ export default async function MateriasDoAluno({ searchParams }: { searchParams: 
         <section className="mt-8">
           {cursos.length > 0 && <h2 className="text-xl font-extrabold">Sem curso</h2>}
           {grade(semCurso)}
+        </section>
+      )}
+
+      {dasTurmas.length > 0 && (
+        <section id="das-turmas" className="mt-10 scroll-mt-24" aria-labelledby="titulo-das-turmas">
+          <h2 id="titulo-das-turmas" className="text-xl font-extrabold">
+            Das turmas
+          </h2>
+          <p className="mt-1 text-sm text-tinta-suave">Resumos e mapas mentais que os professores compartilharam com você.</p>
+          <ListaResumos resumos={dasTurmas} vazio="" />
         </section>
       )}
 
