@@ -6,6 +6,7 @@ import { iaConfigurada } from "@/lib/pratica/gerar";
 import { obterPerfil, paginaInicial } from "@/lib/perfil";
 import { PreferenciasLeitura } from "@/components/PreferenciasLeitura";
 import { BarraInferior } from "@/components/BarraInferior";
+import { MenuTopo } from "@/components/MenuTopo";
 import { SincronizarTema } from "@/components/Tema";
 
 /** semMenu: só a marca (ex.: na verificação em duas etapas, antes de liberar a conta). */
@@ -22,49 +23,36 @@ export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {})
           <IconeLogo />
           <span className="text-[17px] font-extrabold tracking-tight">Repasa</span>
         </Link>
-        {!semMenu && <nav className="esconder-no-foco flex items-center gap-3 text-sm font-semibold text-tinta-suave sm:gap-4">
-          <span className="hidden sm:block">
-            <PreferenciasLeitura />
-          </span>
-          {perfil ? (
-            <div className="hidden items-center gap-3 sm:flex sm:gap-4">
-              {perfil.papel === "professor" ? (
-                <>
-                  <Link href="/professor" className="hover:text-tinta">
-                    Turmas
-                  </Link>
-                  <Link href="/professor/atividades" className="hover:text-tinta">
-                    Atividades
-                  </Link>
-                </>
+        {!semMenu && (
+          <div className="flex items-center gap-1 text-sm font-semibold text-tinta-suave">
+            <span className="esconder-no-foco hidden sm:block">
+              <PreferenciasLeitura />
+            </span>
+            {perfil ? (
+              perfil.papel_escolhido ? (
+                <div className="hidden sm:block">
+                  <MenuTopo papel={perfil.papel} nome={perfil.nome} comPraticas={iaConfigurada()} />
+                </div>
               ) : (
-                <Link href={paginaInicial(perfil.papel)} className="hover:text-tinta">
-                  Minha conta
+                <form action={sair}>
+                  <button className="rounded-full border-2 border-linha px-4 py-1 font-bold text-tinta hover:border-tinta">Sair</button>
+                </form>
+              )
+            ) : (
+              <nav className="esconder-no-foco flex items-center gap-3 sm:gap-4">
+                <Link href="/cadastro" className="hidden hover:text-tinta sm:inline">
+                  Criar conta
                 </Link>
-              )}
-              <Link href="/perfil" className="hover:text-tinta">
-                Perfil
-              </Link>
-              <form action={sair}>
-                <button className="rounded-full border-2 border-linha px-4 py-1 font-bold text-tinta hover:border-tinta">
-                  Sair
-                </button>
-              </form>
-            </div>
-          ) : (
-            <>
-              <Link href="/cadastro" className="hidden hover:text-tinta sm:inline">
-                Criar conta
-              </Link>
-              <Link href="/entrar" className="rounded-full bg-tinta px-4 py-1.5 font-bold text-fundo">
-                Entrar
-              </Link>
-            </>
-          )}
-        </nav>}
+                <Link href="/entrar" className="rounded-full bg-tinta px-4 py-1.5 font-bold text-fundo">
+                  Entrar
+                </Link>
+              </nav>
+            )}
+          </div>
+        )}
       </div>
       {perfil?.papel === "aluno" && (
-        <div className="so-no-foco mx-auto max-w-3xl px-4 pb-3">
+        <div className="so-no-foco mx-auto max-w-3xl px-4 pb-3 sm:hidden">
           <NavConta comPraticas={iaConfigurada()} className="" />
         </div>
       )}

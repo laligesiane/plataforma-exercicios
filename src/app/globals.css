@@ -425,3 +425,11 @@ html[data-dislexia] li {
     box-shadow: none;
   }
 }
+
+/* Faixa que rola para o lado sem mostrar a barra de rolagem. */
+.sem-rolagem {
+  scrollbar-width: none;
+}
+.sem-rolagem::-webkit-scrollbar {
+  display: none;
+}
