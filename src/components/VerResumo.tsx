@@ -1,12 +1,13 @@
 import { Documento } from "@/components/Documento";
 import { MapaMental } from "@/components/MapaMental";
-import { Sumario } from "@/components/Sumario";
+import { MapaTelaCheia } from "@/components/MapaTelaCheia";
+import { Sumario, SumarioCompacto } from "@/components/Sumario";
 import { LerEmVozAlta } from "@/components/LerEmVozAlta";
 import { documentoTemConteudo, secoesDoDocumento, textoDoDocumento } from "@/lib/documento";
 import { validarMapa } from "@/lib/mapas";
 import { documentoDoResumo, tituloResumo, type Resumo } from "@/lib/resumos";
 
-/** Resumo como página: sumário fixo ao lado (no celular, em cima), o texto formatado e, se houver, o mapa mental. */
+/** Resumo como página: sumário fixo ao lado (no celular, numa faixa presa no topo), o texto formatado e, se houver, o mapa mental. */
 export function VerResumo({ resumo, subtitulo }: { resumo: Resumo; subtitulo?: string }) {
   const mapa = validarMapa(resumo.mapa);
   const temMapa = mapa && (mapa.centro || mapa.ramos.length > 0);
@@ -29,7 +30,8 @@ export function VerResumo({ resumo, subtitulo }: { resumo: Resumo; subtitulo?: s
       {temTexto &&
         (temSumario ? (
           <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_16rem] lg:gap-10">
-            <aside className="mb-8 lg:order-2 lg:mb-0">
+            <SumarioCompacto secoes={secoes} />
+            <aside className="hidden lg:order-2 lg:block">
               <div className="lg:sticky lg:top-6">
                 <Sumario secoes={secoes} />
               </div>
@@ -47,7 +49,9 @@ export function VerResumo({ resumo, subtitulo }: { resumo: Resumo; subtitulo?: s
       {temMapa && (
         <section className="mt-10">
           <h2 className="mb-3 text-sm font-bold tracking-wide text-tinta-suave uppercase">Mapa mental</h2>
-          <MapaMental mapa={mapa} titulo={tituloResumo(resumo)} />
+          <MapaTelaCheia titulo={tituloResumo(resumo)}>
+            <MapaMental mapa={mapa} titulo={tituloResumo(resumo)} />
+          </MapaTelaCheia>
         </section>
       )}
     </article>

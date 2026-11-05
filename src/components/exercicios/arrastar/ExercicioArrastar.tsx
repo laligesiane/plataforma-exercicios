@@ -109,7 +109,7 @@ export function ExercicioArrastar({ exercicio, anteriores, onResultado }: Props)
                 inline
                 rotulo={estado ? `Lacuna com "${estado.palavra}"` : "Lacuna vazia"}
                 onToque={selecionada && status !== "certo" ? () => colocar(selecionada, item.id) : undefined}
-                className={`mx-1 inline-flex min-w-24 items-center justify-center rounded-[10px] border-2 px-3 py-0.5 align-middle leading-normal font-bold transition-colors ${cor}`}
+                className={`mx-1 inline-flex min-h-10 min-w-24 items-center justify-center rounded-[10px] border-2 px-3 py-0.5 align-middle sm:min-h-0 leading-normal font-bold transition-colors ${cor}`}
               >
                 {estado?.palavra ?? " "}
               </Alvo>

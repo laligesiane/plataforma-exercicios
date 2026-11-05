@@ -12,7 +12,7 @@ export function LayoutConta({ titulo, descricao, children }: { titulo: string; d
         <p className="esconder-no-foco text-sm font-bold text-primaria">Minha conta</p>
         <h1 className="mt-1 text-3xl font-extrabold tracking-tight">{titulo}</h1>
         {descricao && <p className="esconder-no-foco mt-2 text-tinta-suave">{descricao}</p>}
-        <div className="esconder-no-foco">
+        <div className="esconder-no-foco hidden sm:block">
           <NavConta comPraticas={iaConfigurada()} />
         </div>
         {children}

@@ -5,6 +5,7 @@ import { NavConta } from "@/app/aluno/NavConta";
 import { iaConfigurada } from "@/lib/pratica/gerar";
 import { obterPerfil, paginaInicial } from "@/lib/perfil";
 import { PreferenciasLeitura } from "@/components/PreferenciasLeitura";
+import { BarraInferior } from "@/components/BarraInferior";
 
 /** semMenu: só a marca (ex.: na verificação em duas etapas, antes de liberar a conta). */
 export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {}) {
@@ -24,7 +25,7 @@ export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {})
             <PreferenciasLeitura />
           </span>
           {perfil ? (
-            <>
+            <div className="hidden items-center gap-3 sm:flex sm:gap-4">
               {perfil.papel === "professor" ? (
                 <>
                   <Link href="/professor" className="hover:text-tinta">
@@ -47,7 +48,7 @@ export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {})
                   Sair
                 </button>
               </form>
-            </>
+            </div>
           ) : (
             <>
               <Link href="/cadastro" className="hidden hover:text-tinta sm:inline">
@@ -65,6 +66,7 @@ export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {})
           <NavConta comPraticas={iaConfigurada()} className="" />
         </div>
       )}
+      {perfil && perfil.papel_escolhido && <BarraInferior papel={perfil.papel} comPraticas={iaConfigurada()} />}
     </header>
   );
 }

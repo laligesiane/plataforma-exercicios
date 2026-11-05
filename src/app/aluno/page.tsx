@@ -6,6 +6,7 @@ import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { montarParaFazer, rotuloPrazo, type CompromissoAluno } from "@/lib/parafazer";
 import { diasDeEstudo } from "@/lib/sequencia";
+import { continuarDeOndeParou } from "@/lib/continuar";
 import { CartaoMateria } from "./CartaoMateria";
 import { SequenciaBrotinho } from "./SequenciaBrotinho";
 import { carregarResumosDoAluno } from "./dados";
@@ -37,7 +38,7 @@ export default async function MinhaConta() {
       supabase.from("compromisso").select("id, titulo, data, feito, tipo, materia").eq("aluno_id", perfil.id).eq("feito", false),
       supabase
         .from("resposta")
-        .select("criada_em")
+        .select("criada_em, atividade_id")
         .eq("aluno_id", perfil.id)
         .gte("criada_em", new Date(Date.now() - 40 * 86_400_000).toISOString())
         .order("criada_em", { ascending: false })
@@ -91,6 +92,13 @@ export default async function MinhaConta() {
           }
         : null;
 
+  const continuar = continuarDeOndeParou(
+    (momentosResposta ?? []) as { atividade_id: string; criada_em: string }[],
+    porAtividade,
+    new Set((envios ?? []).map((e) => e.atividade_id as string)),
+    resumos,
+  );
+
   const atalhos = [
     {
       href: "/aluno/atividades",
@@ -105,7 +113,31 @@ export default async function MinhaConta() {
 
   return (
     <LayoutConta titulo={`Olá${perfil.nome ? `, ${perfil.nome}` : ""}!`} descricao="Tudo do seu estudo num lugar só.">
-      <section className="mt-8 rounded-2xl bg-primaria-suave p-5 sm:p-6">
+      {continuar.length > 0 && (
+        <section aria-label="Continuar de onde parou" className="mt-8">
+          <h2 className="text-sm font-bold tracking-wide text-tinta-suave uppercase">Continuar de onde parou</h2>
+          <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+            {continuar.map((c) => (
+              <li key={c.href}>
+                <Link
+                  href={c.href}
+                  className="flex items-center justify-between gap-3 rounded-2xl border-2 border-linha p-4 transition-colors hover:border-primaria"
+                >
+                  <span className="min-w-0">
+                    <span className="block text-xs font-bold text-primaria">{c.tipo}</span>
+                    <span className="block truncate font-extrabold">{c.titulo}</span>
+                  </span>
+                  <span className="shrink-0 rounded-full bg-primaria px-3.5 py-1 text-sm font-bold text-white" aria-hidden>
+                    {c.tipo === "Atividade" ? "Continuar" : "Abrir"}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <section className={`${continuar.length > 0 ? "mt-6" : "mt-8"} rounded-2xl bg-primaria-suave p-5 sm:p-6`}>
         <h2 className="text-sm font-bold tracking-wide text-primaria uppercase">Agenda</h2>
         {proxima ? (
           <>

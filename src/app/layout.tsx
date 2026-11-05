@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Atkinson_Hyperlegible, Figtree } from "next/font/google";
 import { scriptLeitura } from "@/components/PreferenciasLeitura";
 import { FocoProvider } from "@/components/foco/FocoProvider";
@@ -22,6 +22,16 @@ const atkinson = Atkinson_Hyperlegible({
 export const metadata: Metadata = {
   title: "Repasa",
   description: "Seu melhor amigo na hora de aprender: matérias, resumos, mapas mentais e exercícios que explicam cada erro.",
+  appleWebApp: { capable: true, title: "Repasa", statusBarStyle: "default" },
+};
+
+export const viewport: Viewport = {
+  // viewport-fit=cover libera o env(safe-area-inset-bottom) das barras presas no rodapé (iPhone).
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f1a17" },
+  ],
 };
 
 export default function RootLayout({
