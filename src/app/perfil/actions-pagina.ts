@@ -56,7 +56,7 @@ export async function salvarPaginaProfessor(_estado: EstadoFormulario, formData:
   );
   if (error) {
     if (error.code === "23505") return { erro: "Esse endereço já é de outro professor. Escolha outro." };
-    if (error.code === "PGRST204" || error.code === "42703") return { erro: "Falta rodar o SQL 0037 no Supabase para salvar os campos novos." };
+    if (error.code === "PGRST204" || error.code === "42703") return { erro: "Falta rodar o SQL 0038 no Supabase para salvar os campos novos." };
     return { erro: "Não foi possível salvar a página." };
   }
   revalidatePath("/perfil");

@@ -22,7 +22,7 @@ type Pagina = {
   materias: string;
   contato: string;
   publicada: boolean;
-  // Campos da 0037: podem faltar enquanto o SQL não roda.
+  // Campos da 0038: podem faltar enquanto o SQL não roda.
   destaque?: string;
   ensina_desde?: number | null;
   formacao?: string;
@@ -33,7 +33,7 @@ type Pagina = {
 
 const buscarPagina = cache(async (apelido: string) => {
   const supabase = await criarClienteServidor();
-  // "*" para não quebrar se as colunas da 0037 ainda não existirem.
+  // "*" para não quebrar se as colunas da 0038 ainda não existirem.
   const { data } = await supabase.from("pagina_professor").select("*").eq("apelido", apelido.toLowerCase()).maybeSingle<Pagina>();
   return data;
 });

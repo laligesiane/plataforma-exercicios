@@ -1,6 +1,6 @@
 -- Foto de perfil (aluno e professor) e página pública do professor mais completa:
 -- redes sociais prontas, frase de destaque, desde quando ensina, formação, modalidade, cidade e cor da capa.
--- Rodar uma vez no SQL Editor do Supabase ANTES do merge, depois da 0036. Pode rodar de novo sem erro.
+-- Rodar uma vez no SQL Editor do Supabase ANTES do merge, depois da 0037. Pode rodar de novo sem erro.
 
 -- 1. Foto de perfil: bucket público "avatar". Cada pessoa só mexe na própria pasta (<id>/arquivo).
 --    A foto é reduzida no navegador para 400x400 antes de subir, por isso o limite é pequeno.

@@ -16,7 +16,7 @@ export type PaginaSalva = {
   materias: string;
   contato: string;
   publicada: boolean;
-  // Campos da 0037: podem faltar enquanto o SQL não roda.
+  // Campos da 0038: podem faltar enquanto o SQL não roda.
   destaque?: string;
   ensina_desde?: number | null;
   formacao?: string;

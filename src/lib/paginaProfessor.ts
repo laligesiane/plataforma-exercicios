@@ -42,7 +42,7 @@ type InfoRede = {
   nome: string;
   /** Texto de exemplo no campo. */
   exemplo: string;
-  /** Mesma regra do banco (0037). */
+  /** Mesma regra do banco (0038). */
   padrao: RegExp;
   /** Domínios aceitos quando a pessoa cola o link inteiro. */
   dominios: RegExp;

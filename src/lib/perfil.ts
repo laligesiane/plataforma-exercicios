@@ -16,7 +16,7 @@ export type Perfil = {
   papel_escolhido: boolean;
   /** Cor da Repasa escolhida no perfil (0031); sem a coluna, fica o verde menta. */
   tema?: string;
-  /** Caminho da foto no bucket "avatar" (0037); null sem foto. */
+  /** Caminho da foto no bucket "avatar" (0038); null sem foto. */
   foto?: string | null;
 };
 

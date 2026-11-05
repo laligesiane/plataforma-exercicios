@@ -1,6 +1,6 @@
 import { supabaseUrl } from "./supabase/config";
 
-/** Bucket público das fotos de perfil (SQL 0037). Cada pessoa guarda a foto na pasta <id>/. */
+/** Bucket público das fotos de perfil (SQL 0038). Cada pessoa guarda a foto na pasta <id>/. */
 export const BUCKET_FOTO = "avatar";
 
 /** Caminho salvo em perfil.foto: sempre na pasta da própria pessoa. Mesma regra do banco. */
