@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { opcoesDeVoz, partesDaFala, VELOCIDADES, type OpcaoVoz } from "@/lib/fala";
-import { AMOSTRA, urlDaVoz, VOZES_NATURAIS } from "@/lib/fala/natural";
+import { nomeIdioma } from "@/lib/idiomas";
+import { AMOSTRA, LOCALE_IDIOMA, urlDaVoz, VOZES_NATURAIS, VOZES_NATURAIS_IDIOMA } from "@/lib/fala/natural";
 
 const CHAVE_PREFERENCIA = "repasa:leitura-voz";
 const temVozDoAparelho = () => typeof window !== "undefined" && "speechSynthesis" in window;
@@ -55,44 +56,61 @@ export function LerEmVozAlta({
   trechos,
   alvo,
   idioma = "pt-BR",
+  idiomaDoCurso,
   assinaturas,
 }: {
   titulo: string;
   trechos: string[];
   alvo: string;
   idioma?: string;
+  /** Resumo de um curso de idioma ("es", "en"...): as vozes desse idioma entram na lista, depois das do Brasil. */
+  idiomaDoCurso?: string | null;
   /** Assinatura de cada parte da fala, para pedir o áudio com voz natural. */
   assinaturas?: Record<string, string>;
 }) {
   const [disponivel, setDisponivel] = useState(false);
   useEffect(() => setDisponivel(temVozDoAparelho() || Boolean(assinaturas)), [assinaturas]);
   if (!disponivel || !trechos.length) return null;
-  return <Leitor titulo={titulo} trechos={trechos} alvo={alvo} idioma={idioma} assinaturas={assinaturas} />;
+  return <Leitor titulo={titulo} trechos={trechos} alvo={alvo} idioma={idioma} idiomaDoCurso={idiomaDoCurso} assinaturas={assinaturas} />;
+}
+
+/** Só as vozes que o aparelho tem de verdade nesse idioma (sem as variações de tom de reserva). */
+function vozesDoAparelhoNoIdioma(vozes: SpeechSynthesisVoice[], locale: string, codigo: string): OpcaoVoz[] {
+  return opcoesDeVoz(vozes, locale, 3)
+    .filter((o) => o.voiceURI && !o.id.includes("|"))
+    .map((o) => ({ ...o, detalhe: nomeIdioma(codigo).toLowerCase() }));
 }
 
 const opcoesNaturais: OpcaoVoz[] = VOZES_NATURAIS.map((v) => ({ id: v.id, rotulo: v.rotulo, tom: 1, natural: v.id }));
+const naturaisDoIdioma = (codigo?: string | null): OpcaoVoz[] =>
+  (codigo ? (VOZES_NATURAIS_IDIOMA[codigo] ?? []) : []).map((v) => ({ id: v.id, rotulo: v.rotulo, detalhe: v.detalhe, tom: 1, natural: v.id }));
 
 function Leitor({
   titulo,
   trechos,
   alvo,
   idioma,
+  idiomaDoCurso,
   assinaturas,
 }: {
   titulo: string;
   trechos: string[];
   alvo: string;
   idioma: string;
+  idiomaDoCurso?: string | null;
   assinaturas?: Record<string, string>;
 }) {
   const vozes = useVozes();
   // Se a voz natural falhar (cota do mês acabou, sem internet), some da lista e a leitura segue com a do aparelho.
   const [naturalFalhou, setNaturalFalhou] = useState(false);
   const opcoes = useMemo(() => {
-    const doAparelho = temVozDoAparelho() ? opcoesDeVoz(vozes, idioma) : [];
+    const localeCurso = idiomaDoCurso && idiomaDoCurso !== "pt" ? LOCALE_IDIOMA[idiomaDoCurso] : undefined;
+    const doAparelho = temVozDoAparelho()
+      ? [...opcoesDeVoz(vozes, idioma, localeCurso ? 3 : 6), ...(localeCurso ? vozesDoAparelhoNoIdioma(vozes, localeCurso, idiomaDoCurso!) : [])]
+      : [];
     // Com voz natural, só ela aparece; a do aparelho fica de reserva para quando a cota do mês acabar.
-    return assinaturas && !naturalFalhou ? opcoesNaturais : doAparelho;
-  }, [vozes, idioma, assinaturas, naturalFalhou]);
+    return assinaturas && !naturalFalhou ? [...opcoesNaturais, ...naturaisDoIdioma(localeCurso && idiomaDoCurso)] : doAparelho;
+  }, [vozes, idioma, idiomaDoCurso, assinaturas, naturalFalhou]);
   const [pref, setPref] = useState<Preferencia>({ velocidade: 1 });
   useEffect(() => setPref(lerPreferencia()), []);
   const opcao = opcoes.find((o) => o.id === pref.voz) ?? opcoes[0];
@@ -302,9 +320,21 @@ function Leitor({
             setPainel(false);
             falarDe(-1);
           }}
-          className="text-sm font-bold text-primaria hover:underline"
+          className="inline-flex items-center gap-1.5 self-center text-sm font-bold text-primaria hover:underline"
         >
-          {estado === "lendo" ? "⏸ Pausar leitura" : estado === "pausado" ? "▶ Continuar" : "🔊 Ouvir o resumo"}
+          <svg aria-hidden viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {estado === "lendo" ? (
+              <path d="M8 5v14M16 5v14" />
+            ) : estado === "pausado" ? (
+              <path d="M7 4l13 8-13 8Z" />
+            ) : (
+              <>
+                <path d="M11 5 6 9H3v6h3l5 4V5z" />
+                <path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" />
+              </>
+            )}
+          </svg>
+          {estado === "lendo" ? "Pausar leitura" : estado === "pausado" ? "Continuar" : "Ouvir o resumo"}
         </button>
         {!ativo && (
           <button

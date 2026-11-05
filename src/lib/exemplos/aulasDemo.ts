@@ -21,7 +21,7 @@ const kahootInstrucoes =
 const producaoInstrucoes =
   "Responda com suas palavras. Na aula de verdade o professor lê, corrige e comenta. Aqui nada é enviado.";
 
-export const aulasDemo: AulaDemo[] = [
+const aulas: AulaDemo[] = [
   {
     slug: "portugues",
     materia: "Português",
@@ -528,7 +528,7 @@ export const aulasDemo: AulaDemo[] = [
     titulo: "Frações, contas e formas",
     chamada: "Frações com pizza, contas rápidas e figuras geométricas.",
     explicacao:
-      "A Repasa não é só para idiomas: dá para montar aula de qualquer matéria. Esta mostra todos os tipos de exercício com Matemática. Experimente errar de propósito.",
+      "Esta aula mostra todos os tipos de exercício da Repasa com Matemática. Experimente errar de propósito.",
     exercicios: [
       {
         id: "mt-lacuna",
@@ -683,7 +683,177 @@ export const aulasDemo: AulaDemo[] = [
       { id: "mt-kahoot", tipo: "kahoot", titulo: "Jogue um Kahoot", instrucoes: kahootInstrucoes, link: KAHOOT, itens: [] },
     ],
   },
+  {
+    slug: "ciencias",
+    materia: "Ciências",
+    sigla: "Ci",
+    titulo: "Água, corpo e seres vivos",
+    chamada: "O ciclo da água, os órgãos do corpo e os grupos de animais.",
+    explicacao:
+      "Esta aula mostra todos os tipos de exercício da Repasa com Ciências. Toque no alto-falante para ouvir as frases. Experimente errar de propósito.",
+    exercicios: [
+      {
+        id: "ci-lacuna",
+        tipo: "lacuna",
+        titulo: "O ciclo da água",
+        instrucoes: "Escreva a palavra que falta e aperte Enter.",
+        midia: { tipo: "imagem", url: "/demo/ciclo-agua.svg", legenda: "O caminho da água: do mar para as nuvens e de volta para a terra." },
+        itens: [
+          {
+            id: "ci-lacuna-1",
+            tipo: "lacuna",
+            enunciado: "Com o calor do sol, a água dos rios e do mar vira vapor. Isso se chama ___.",
+            aceitas: ["evaporação"],
+            errosPrevistos: [
+              { valor: "condensação", explicacao: "Condensação é o caminho de volta: o vapor esfria e vira gotinhas (as nuvens)." },
+              { valor: "chuva", explicacao: "A chuva vem depois. Quando a água vira vapor com o calor, é evaporação." },
+            ],
+            explicacaoPadrao: "Água virando vapor com o calor é evaporação.",
+            grafiaExata: false,
+            dica: "Pense no que acontece com uma poça d'água num dia de sol.",
+          },
+          {
+            id: "ci-lacuna-2",
+            tipo: "lacuna",
+            enunciado: "No alto, o vapor esfria e forma as nuvens. Isso se chama ___.",
+            aceitas: ["condensação"],
+            errosPrevistos: [{ valor: "evaporação", explicacao: "Evaporação é a subida, com calor. No alto, esfriando, é condensação." }],
+            explicacaoPadrao: "Vapor esfriando e virando gotinhas é condensação.",
+            grafiaExata: false,
+          },
+          {
+            id: "ci-lacuna-3",
+            tipo: "lacuna",
+            enunciado: "Quando as gotinhas das nuvens ficam pesadas, elas caem. É a ___.",
+            aceitas: ["chuva", "precipitação"],
+            errosPrevistos: [],
+            explicacaoPadrao: "A água volta para a terra como chuva (precipitação).",
+            grafiaExata: false,
+          },
+        ],
+      },
+      {
+        id: "ci-multipla",
+        tipo: "multipla_escolha",
+        titulo: "O corpo humano",
+        instrucoes: "Clique na alternativa correta.",
+        itens: [
+          {
+            id: "ci-multipla-1",
+            tipo: "multipla_escolha",
+            enunciado: "Qual órgão bombeia o sangue para o corpo todo?",
+            alternativas: [
+              { id: "a", texto: "Pulmão", correta: false, explicacao: "O pulmão cuida da respiração: põe oxigênio no sangue, mas não bombeia." },
+              { id: "b", texto: "Coração", correta: true, explicacao: "Isso! O coração é um músculo que bate e empurra o sangue." },
+              { id: "c", texto: "Estômago", correta: false, explicacao: "O estômago faz parte da digestão." },
+            ],
+            explicacaoPadrao: "Quem bombeia o sangue é o coração.",
+          },
+          {
+            id: "ci-multipla-2",
+            tipo: "multipla_escolha",
+            enunciado: "Que gás as plantas soltam no ar durante a fotossíntese?",
+            alternativas: [
+              { id: "a", texto: "Oxigênio", correta: true, explicacao: "Isso! As plantas usam gás carbônico e luz e soltam oxigênio." },
+              { id: "b", texto: "Gás carbônico", correta: false, explicacao: "O gás carbônico é o que elas tiram do ar. Elas soltam oxigênio." },
+              { id: "c", texto: "Vapor de ferro", correta: false, explicacao: "Isso não existe na fotossíntese. As plantas soltam oxigênio." },
+            ],
+            explicacaoPadrao: "Na fotossíntese, as plantas soltam oxigênio.",
+          },
+        ],
+      },
+      {
+        id: "ci-arrastar",
+        tipo: "arrastar",
+        titulo: "Complete com a palavra certa",
+        instrucoes: "Arraste cada palavra para a lacuna certa, ou toque na palavra e depois na lacuna.",
+        palavrasExtras: ["fígado"],
+        itens: [
+          {
+            id: "ci-arrastar-1",
+            tipo: "arrastar",
+            enunciado: "Respiramos com os ___.",
+            resposta: "pulmões",
+            errosPrevistos: [{ valor: "fígado", explicacao: "O fígado ajuda na digestão e limpa o sangue. Quem respira são os pulmões." }],
+            explicacaoPadrao: "Respiramos com os pulmões.",
+          },
+          {
+            id: "ci-arrastar-2",
+            tipo: "arrastar",
+            enunciado: "O ___ protege o cérebro.",
+            resposta: "crânio",
+            errosPrevistos: [],
+            explicacaoPadrao: "O crânio é o osso que protege o cérebro.",
+          },
+          {
+            id: "ci-arrastar-3",
+            tipo: "arrastar",
+            enunciado: "Os ___ sustentam o corpo e permitem o movimento, junto com os músculos.",
+            resposta: "ossos",
+            errosPrevistos: [],
+            explicacaoPadrao: "Os ossos formam o esqueleto, que sustenta o corpo.",
+          },
+        ],
+      },
+      {
+        id: "ci-classificar",
+        tipo: "classificar",
+        titulo: "Mamífero ou peixe?",
+        instrucoes: "Arraste cada animal para a coluna certa, ou toque no animal e depois na coluna.",
+        colunas: [
+          { id: "mamifero", nome: "Mamífero" },
+          { id: "peixe", nome: "Peixe" },
+        ],
+        itens: [
+          { id: "ci-cl-1", tipo: "classificar", texto: "Baleia", colunaId: "mamifero", explicacao: "Vive no mar, mas respira ar e mama quando filhote: é mamífero." },
+          { id: "ci-cl-2", tipo: "classificar", texto: "Tubarão", colunaId: "peixe", explicacao: "O tubarão respira pelas brânquias: é peixe." },
+          { id: "ci-cl-3", tipo: "classificar", texto: "Golfinho", colunaId: "mamifero", explicacao: "O golfinho sobe para respirar e amamenta os filhotes: é mamífero." },
+          { id: "ci-cl-4", tipo: "classificar", texto: "Sardinha", colunaId: "peixe", explicacao: "A sardinha tem brânquias e escamas: é peixe." },
+          { id: "ci-cl-5", tipo: "classificar", texto: "Morcego", colunaId: "mamifero", explicacao: "Voa, mas não é ave: tem pelos e amamenta. É mamífero." },
+        ],
+      },
+      {
+        id: "ci-relacionar",
+        tipo: "relacionar",
+        titulo: "Relacione o órgão à função",
+        instrucoes: "Toque num item da esquerda e depois no par dele à direita.",
+        itens: [
+          { id: "ci-rel-1", tipo: "relacionar", esquerda: "Coração", direita: "Bombear o sangue", explicacao: "O coração bate e empurra o sangue." },
+          { id: "ci-rel-2", tipo: "relacionar", esquerda: "Pulmões", direita: "Respirar", explicacao: "Nos pulmões o oxigênio entra no sangue." },
+          { id: "ci-rel-3", tipo: "relacionar", esquerda: "Estômago", direita: "Digerir os alimentos", explicacao: "O estômago quebra a comida em partes menores." },
+          { id: "ci-rel-4", tipo: "relacionar", esquerda: "Cérebro", direita: "Comandar o corpo", explicacao: "O cérebro recebe e manda as mensagens do corpo." },
+        ],
+      },
+      {
+        id: "ci-producao",
+        tipo: "producao",
+        titulo: "Explique com suas palavras",
+        instrucoes: producaoInstrucoes,
+        itens: [
+          {
+            id: "ci-prod-1",
+            tipo: "producao",
+            enunciado: "Explique como a chuva se forma, do mar até cair de novo.",
+            modo: "escrita",
+            orientacao: "Evaporação, condensação, precipitação.",
+          },
+          {
+            id: "ci-prod-2",
+            tipo: "producao",
+            enunciado: "Grave um áudio contando por que a baleia não é peixe.",
+            modo: "oral",
+            orientacao: "Respira ar, amamenta: mamífero.",
+          },
+        ],
+      },
+      { id: "ci-kahoot", tipo: "kahoot", titulo: "Jogue um Kahoot", instrucoes: kahootInstrucoes, link: KAHOOT, itens: [] },
+    ],
+  },
 ];
+
+/** Matérias da escola e idiomas intercalados, para a Repasa não parecer só de idiomas. */
+const ordem = ["portugues", "matematica", "ciencias", "espanhol", "ingles"];
+export const aulasDemo: AulaDemo[] = [...aulas].sort((a, b) => ordem.indexOf(a.slug) - ordem.indexOf(b.slug));
 
 export function aulaDemo(slug: string): AulaDemo | undefined {
   return aulasDemo.find((a) => a.slug === slug);

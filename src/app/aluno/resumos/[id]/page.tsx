@@ -8,6 +8,7 @@ import { documentoTemConteudo } from "@/lib/documento";
 import { validarMapa } from "@/lib/mapas";
 import { apagarResumoAluno, gerarMapaDoResumo } from "@/app/aluno/materias/actions";
 import { formatarData, tituloAula } from "@/lib/aulas";
+import { idiomaNaMateria } from "@/lib/idiomas";
 import { iaConfigurada } from "@/lib/pratica/gerar";
 import { exigirPapel } from "@/lib/perfil";
 import { camposResumo, documentoDoResumo, type Resumo } from "@/lib/resumos";
@@ -20,16 +21,21 @@ export default async function ResumoDoAluno({ params }: { params: Promise<{ id: 
   const [{ data }, { data: praticas }] = await Promise.all([
     supabase
       .from("resumo")
-      .select(`${camposResumo}, materia_id, turma(nome), aula(data, titulo), materia(id, nome)`)
+      .select(`${camposResumo}, materia_id, turma(nome, materia, idioma_ensinado), aula(data, titulo), materia(id, nome, curso(nome))`)
       .eq("id", id)
       .maybeSingle(),
     supabase.from("pratica").select("id, titulo").eq("resumo_id", id).order("criada_em", { ascending: false }),
   ]);
   if (!data) notFound();
 
-  const turma = data.turma as unknown as { nome: string } | null;
+  const turma = data.turma as unknown as { nome: string; materia: string | null; idioma_ensinado: string | null } | null;
   const aula = data.aula as unknown as { data: string; titulo: string } | null;
-  const materia = data.materia as unknown as { id: string; nome: string } | null;
+  const materia = data.materia as unknown as { id: string; nome: string; curso: { nome: string } | null } | null;
+  // Resumo de um curso de idioma: a turma de idioma, ou a matéria/curso com nome de idioma ("Espanhol").
+  const idiomaDoCurso =
+    (turma && !turma.materia?.trim() ? turma.idioma_ensinado : null) ??
+    (turma?.materia ? idiomaNaMateria(turma.materia) : null) ??
+    (materia ? (idiomaNaMateria(materia.nome) ?? (materia.curso ? idiomaNaMateria(materia.curso.nome) : null)) : null);
   const subtitulo = [materia?.nome, turma?.nome, aula && (aula.titulo.trim() ? `${aula.titulo} · ${formatarData(aula.data)}` : tituloAula(aula))].filter(Boolean).join(" · ");
 
   const temTexto = documentoTemConteudo(documentoDoResumo(data as unknown as Resumo));
@@ -60,7 +66,7 @@ export default async function ResumoDoAluno({ params }: { params: Promise<{ id: 
           />
         </div>
         <div className="mt-5">
-          <VerResumo resumo={data as unknown as Resumo} subtitulo={subtitulo} />
+          <VerResumo resumo={data as unknown as Resumo} subtitulo={subtitulo} idiomaDoCurso={idiomaDoCurso} />
         </div>
 
         {temTexto && iaConfigurada() && (
