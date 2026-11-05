@@ -58,3 +58,48 @@ export function faseDoProgresso(progresso: number) {
   if (progresso >= 1) return ULTIMA_FASE;
   return Math.min(ULTIMA_FASE - 1, Math.floor(Math.max(0, progresso) * ULTIMA_FASE));
 }
+
+/**
+ * Sessão de foco guardada no navegador, para seguir o aluno por todas as páginas da Repasa.
+ * Rodando: fimEm tem o horário de término. Pausada: fimEm é null e restanteMs guarda o que falta.
+ */
+export type Sessao = { duracaoMin: number; fimEm: number | null; restanteMs: number };
+
+export const CHAVE_SESSAO = "repasa:foco";
+
+export function novaSessao(duracaoMin: number, agora: number): Sessao {
+  const total = duracaoMin * 60_000;
+  return { duracaoMin, fimEm: agora + total, restanteMs: total };
+}
+
+export function restanteDa(s: Sessao, agora: number) {
+  return Math.max(0, s.fimEm === null ? s.restanteMs : s.fimEm - agora);
+}
+
+export function pausarSessao(s: Sessao, agora: number): Sessao {
+  if (s.fimEm === null) return s;
+  return { ...s, fimEm: null, restanteMs: restanteDa(s, agora) };
+}
+
+export function retomarSessao(s: Sessao, agora: number): Sessao {
+  if (s.fimEm !== null) return s;
+  return { ...s, fimEm: agora + s.restanteMs };
+}
+
+/** Progresso de 0 a 1. */
+export function progressoDa(s: Sessao, agora: number) {
+  const total = s.duracaoMin * 60_000;
+  return total > 0 ? 1 - restanteDa(s, agora) / total : 1;
+}
+
+export function lerSessao(bruto: string | null): Sessao | null {
+  if (!bruto) return null;
+  try {
+    const s = JSON.parse(bruto) as Partial<Sessao>;
+    if (typeof s.duracaoMin !== "number" || s.duracaoMin <= 0 || typeof s.restanteMs !== "number") return null;
+    if (s.fimEm !== null && typeof s.fimEm !== "number") return null;
+    return { duracaoMin: s.duracaoMin, fimEm: s.fimEm, restanteMs: Math.max(0, s.restanteMs) };
+  } catch {
+    return null;
+  }
+}

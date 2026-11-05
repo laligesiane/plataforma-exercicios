@@ -269,6 +269,11 @@ body {
   }
 }
 
+/* Durante o modo foco, avisos da Repasa que interrompem o estudo ficam escondidos. Use em toasts e banners novos. */
+html[data-foco="ativo"] .silenciar-no-foco {
+  display: none !important;
+}
+
 /* Cor escolhida para o resumo: troca o verde dos destaques só dentro dele. */
 [data-cor="azul"] { --primaria: #2f6fd6; --primaria-suave: #e6efff; --marca: #cfe0ff; }
 [data-cor="rosa"] { --primaria: #c2417e; --primaria-suave: #fce8f2; --marca: #ffd3e8; }

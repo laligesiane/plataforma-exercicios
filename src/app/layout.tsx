@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
+import { FocoProvider } from "@/components/foco/FocoProvider";
+import { MiniBrotinho } from "@/components/foco/MiniBrotinho";
 import "./globals.css";
 
 const figtree = Figtree({
@@ -19,7 +21,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`${figtree.variable} antialiased`}>{children}</body>
+      <body className={`${figtree.variable} antialiased`}>
+        <FocoProvider>
+          {children}
+          <MiniBrotinho />
+        </FocoProvider>
+      </body>
     </html>
   );
 }
