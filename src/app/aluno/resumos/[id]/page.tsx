@@ -56,7 +56,6 @@ export default async function ResumoDoAluno({ params }: { params: Promise<{ id: 
                 🃏 Estudar com cartões
               </Link>
             )}
-            <ExportarPdf id={data.id} temTexto={temTexto} temMapa={temMapa} />
             {materia && (
               <>
               <Link
@@ -74,6 +73,8 @@ export default async function ResumoDoAluno({ params }: { params: Promise<{ id: 
               </>
             )}
           </span>
+          {/* Baixar em PDF continua disponível no modo foco. */}
+          <ExportarPdf id={data.id} temTexto={temTexto} temMapa={temMapa} />
         </div>
         <div className="mt-3">
           <VerResumo resumo={data as unknown as Resumo} subtitulo={subtitulo} />

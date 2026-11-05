@@ -14,7 +14,10 @@ function textoDe(no: No): string {
 export function encurtar(texto: string, max: number = LIMITES.texto) {
   let t = texto.replace(/\s+/g, " ").trim();
   if (t.length > max) {
-    const frase = t.split(/(?<=[.!?;:])\s/)[0];
+    // Um rótulo como "Complemento:" sozinho não diz nada: junta com a frase que vem depois.
+    const pedacos = t.split(/(?<=[.!?;:])\s/);
+    let frase = pedacos[0];
+    for (let i = 1; frase.endsWith(":") && i < pedacos.length; i++) frase += ` ${pedacos[i]}`;
     if (frase.length <= max) t = frase;
   }
   if (t.length <= max) return t;
