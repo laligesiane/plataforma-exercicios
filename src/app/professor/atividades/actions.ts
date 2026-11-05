@@ -5,10 +5,12 @@ import { redirect } from "next/navigation";
 import {
   categorias,
   configDoExercicio,
+  ehEtapa,
   ehExercicio,
   ehUuid,
   limparExercicio,
   niveis,
+  normalizarTemas,
   problemasDaAtividade,
   type Atividade,
   type Exercicio,
@@ -63,6 +65,9 @@ export async function salvarAtividade(dados: DadosAtividade): Promise<ResultadoS
 
   if (!niveis.includes(atividade.nivel)) return { ok: false, erro: "Nível inválido." };
   if (!(atividade.categoria in categorias)) return { ok: false, erro: "Categoria inválida." };
+  const etapa = atividade.etapa ?? "";
+  if (etapa !== "" && !ehEtapa(etapa)) return { ok: false, erro: "Etapa de ensino inválida." };
+  const temas = Array.isArray(atividade.temas) ? normalizarTemas(atividade.temas) : [];
   const materia = typeof atividade.materia === "string" ? atividade.materia.trim().slice(0, 60) : "";
   const idiomaEnsinado = atividade.idioma_ensinado;
   const idiomaInstrucao = atividade.idioma_instrucao;
@@ -109,6 +114,8 @@ export async function salvarAtividade(dados: DadosAtividade): Promise<ResultadoS
       publicada: atividade.publicada,
       publica: atividade.publica,
       prazo,
+      etapa,
+      temas,
     })
     .eq("id", atividade.id)
     .select("id")

@@ -14,6 +14,39 @@ export const categorias = {
 } as const;
 export type Categoria = keyof typeof categorias;
 
+/** Etapa de ensino: vale para qualquer matéria, inclusive idiomas. Vazia = não informada. */
+export const etapas = {
+  infantil: "Educação Infantil",
+  fundamental_1: "Fundamental I",
+  fundamental_2: "Fundamental II",
+  medio: "Ensino Médio",
+  vestibular: "Enem e vestibular",
+  superior: "Ensino Superior",
+  concursos: "Concursos",
+  livre: "Curso livre",
+} as const;
+export type Etapa = keyof typeof etapas;
+
+export function ehEtapa(valor: unknown): valor is Etapa {
+  return typeof valor === "string" && valor in etapas;
+}
+
+export const LIMITE_TEMAS = 8;
+const TAMANHO_TEMA = 30;
+
+/** "Frações, Porcentagem,  frações" vira ["frações", "porcentagem"]: minúsculas, sem repetir, até 8. */
+export function normalizarTemas(entrada: string | readonly string[]): string[] {
+  const partes = typeof entrada === "string" ? entrada.split(/[,;\n]/) : entrada;
+  const temas: string[] = [];
+  for (const parte of partes) {
+    if (typeof parte !== "string") continue;
+    const tema = parte.replace(/\s+/g, " ").trim().replace(/^#+\s*/, "").toLowerCase().slice(0, TAMANHO_TEMA).trim();
+    if (tema && !temas.includes(tema)) temas.push(tema);
+    if (temas.length === LIMITE_TEMAS) break;
+  }
+  return temas;
+}
+
 export const tiposExercicio = {
   lacuna: "Completar lacunas",
   multipla_escolha: "Múltipla escolha",
@@ -167,16 +200,21 @@ export type Atividade = {
   publica: boolean;
   /** "Entregar até" (AAAA-MM-DD), opcional. */
   prazo?: string | null;
+  /** Etapa de ensino (qualquer matéria); vazia quando o professor não informou. */
+  etapa: Etapa | "";
+  /** Assuntos livres, em minúsculas, para achar a atividade na biblioteca. */
+  temas: string[];
 };
 
-/** Etiquetas curtas da atividade: "A2 · Gramática · Espanhol" ou só "Matemática". */
+/** Etiquetas curtas da atividade: "A2 · Gramática · Espanhol" ou "Matemática · Fundamental II". */
 export function etiquetasDaAtividade(
-  a: { materia?: string | null; nivel: string; categoria: string; idioma_ensinado?: string | null },
+  a: { materia?: string | null; nivel: string; categoria: string; idioma_ensinado?: string | null; etapa?: string | null },
 ): string[] {
+  const etapa = ehEtapa(a.etapa) ? [etapas[a.etapa]] : [];
   const materia = a.materia?.trim();
-  if (materia) return [materia];
+  if (materia) return [materia, ...etapa];
   const tema = categorias[a.categoria as Categoria] ?? a.categoria;
-  return [a.nivel, tema, ...(a.idioma_ensinado ? [nomeIdioma(a.idioma_ensinado)] : [])];
+  return [a.nivel, tema, ...(a.idioma_ensinado ? [nomeIdioma(a.idioma_ensinado)] : []), ...etapa];
 }
 
 const formatoUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
