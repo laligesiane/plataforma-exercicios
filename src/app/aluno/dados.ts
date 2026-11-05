@@ -2,7 +2,7 @@ import "server-only";
 import { camposResumo, tituloResumo, type Resumo } from "@/lib/resumos";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
-export type ResumoComOrigem = Resumo & { titulo_exibido: string; origem: string; cor: string | null };
+export type ResumoComOrigem = Resumo & { titulo_exibido: string; origem: string; cor_materia: string | null };
 
 /** Todos os resumos que o aluno vê: os das suas matérias e os das suas turmas. */
 export async function carregarResumosDoAluno(): Promise<ResumoComOrigem[]> {
@@ -20,7 +20,7 @@ export async function carregarResumosDoAluno(): Promise<ResumoComOrigem[]> {
       ...r,
       titulo_exibido: tituloResumo(r),
       origem: materia?.nome ?? turma?.nome ?? "",
-      cor: materia?.cor ?? null,
+      cor_materia: materia?.cor ?? null,
     };
   });
 }

@@ -8,7 +8,7 @@ import { botaoIcone, botaoPrimario, botaoTexto, campo, rotulo } from "@/componen
 import { validarDocumento, type Documento } from "@/lib/documento";
 import { mapaDoDocumento } from "@/lib/documento/mapa";
 import { cores, LIMITES, novoId, ordemCores, type Cor, type Mapa, type No } from "@/lib/mapas";
-import { documentoDoResumo, type Resumo } from "@/lib/resumos";
+import { coresResumo, documentoDoResumo, type CorResumo, type Resumo } from "@/lib/resumos";
 
 type AulaOpcao = { id: string; rotulo: string };
 
@@ -109,6 +109,7 @@ export function EditorResumo({
   const docAtual = useRef<Documento>(docInicial);
   const [titulo, setTitulo] = useState(resumo?.titulo ?? "");
   const [aviso, setAviso] = useState("");
+  const [cor, setCor] = useState<CorResumo>(resumo?.cor ?? "menta");
 
   const gerarMapa = () => {
     const doc = validarDocumento(docAtual.current);
@@ -153,6 +154,7 @@ export function EditorResumo({
       ))}
       {resumo && <input type="hidden" name="id" value={resumo.id} />}
       <input type="hidden" name="mapa" value={JSON.stringify(mapa)} />
+      <input type="hidden" name="cor" value={cor} />
 
       <div className={`grid gap-4 ${aulas ? "sm:grid-cols-2" : ""}`}>
         <div>
@@ -186,8 +188,26 @@ export function EditorResumo({
       </div>
 
 
-      <div>
-        <p className={rotulo}>Resumo</p>
+      <div data-cor={cor}>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className={rotulo}>Resumo</p>
+          <fieldset className="mb-1.5 flex items-center gap-1.5">
+            <legend className="sr-only">Cor dos destaques</legend>
+            <span aria-hidden className="mr-1 text-sm text-tinta-suave">Cor dos destaques</span>
+            {(Object.entries(coresResumo) as [CorResumo, (typeof coresResumo)[CorResumo]][]).map(([c, info]) => (
+              <button
+                key={c}
+                type="button"
+                title={info.nome}
+                aria-label={`Destaques em ${info.nome.toLowerCase()}`}
+                aria-pressed={cor === c}
+                onClick={() => setCor(c)}
+                className={`size-6 rounded-full outline-offset-2 ${cor === c ? "outline-2 outline-tinta" : ""}`}
+                style={{ background: info.amostra }}
+              />
+            ))}
+          </fieldset>
+        </div>
         <EditorDocumento nome="conteudo" inicial={docInicial} aoMudar={(d) => (docAtual.current = d)} />
         <div className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
           <button type="button" onClick={gerarMapa} className={botaoTexto}>

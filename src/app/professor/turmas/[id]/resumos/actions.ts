@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { EstadoFormulario } from "@/components/ui/Mensagem";
 import { validarMapa } from "@/lib/mapas";
-import { lerConteudo } from "@/lib/resumos";
+import { lerConteudo, lerCorResumo } from "@/lib/resumos";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
@@ -30,7 +30,7 @@ export async function salvarResumo(_estado: EstadoFormulario, formData: FormData
   }
 
   const supabase = await criarClienteServidor();
-  const valores = { aula_id: aulaId, titulo, texto, conteudo, mapa };
+  const valores = { aula_id: aulaId, titulo, texto, conteudo, mapa, cor: lerCorResumo(formData.get("cor")) };
   const { error } = id
     ? await supabase
         .from("resumo")

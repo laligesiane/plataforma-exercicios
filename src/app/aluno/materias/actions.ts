@@ -8,7 +8,7 @@ import { ordemCores, validarMapa, type Cor } from "@/lib/mapas";
 import { exigirPapel } from "@/lib/perfil";
 import { validarDocumento } from "@/lib/documento";
 import { mapaDoDocumento } from "@/lib/documento/mapa";
-import { camposResumo, documentoDoResumo, lerConteudo, type Resumo } from "@/lib/resumos";
+import { camposResumo, documentoDoResumo, lerConteudo, type Resumo, lerCorResumo } from "@/lib/resumos";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
 export async function criarMateria(_estado: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
@@ -57,7 +57,7 @@ export async function salvarResumoAluno(_estado: EstadoFormulario, formData: For
   }
 
   const supabase = await criarClienteServidor();
-  const valores = { titulo, texto, conteudo, mapa };
+  const valores = { titulo, texto, conteudo, mapa, cor: lerCorResumo(formData.get("cor")) };
   const { error } = id
     ? await supabase
         .from("resumo")

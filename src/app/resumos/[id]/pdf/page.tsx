@@ -6,7 +6,7 @@ import { formatarData, tituloAula } from "@/lib/aulas";
 import { documentoTemConteudo } from "@/lib/documento";
 import { validarMapa } from "@/lib/mapas";
 import { obterPerfil } from "@/lib/perfil";
-import { camposResumo, documentoDoResumo, tituloResumo, type Resumo } from "@/lib/resumos";
+import { camposResumo, documentoDoResumo, lerCorResumo, tituloResumo, type Resumo } from "@/lib/resumos";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { BarraImpressao } from "./BarraImpressao";
 
@@ -70,7 +70,7 @@ export default async function ResumoEmPdf({
         {subtitulo && <p className="mt-1 text-tinta-suave">{subtitulo}</p>}
 
         {mostrarTexto && (
-          <div className="mt-8">
+          <div className="mt-8" data-cor={lerCorResumo((resumo as { cor?: string }).cor)}>
             <Documento doc={doc} />
           </div>
         )}
