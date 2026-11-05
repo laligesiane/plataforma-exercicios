@@ -15,13 +15,13 @@ const abas = [
   { href: "/aluno/foco", rotulo: "Modo foco" },
 ];
 
-/** Abas da área Minha conta do aluno. "Práticas" só aparece com a geração por IA ligada. */
+/** Abas do aluno no modo foco do celular (fora do foco, o menu fica na barra de baixo). "Práticas" só aparece com a geração por IA ligada. */
 export function NavConta({ comPraticas = false, className = "mt-6" }: { comPraticas?: boolean; className?: string }) {
   const caminho = usePathname();
   const ativa = (href: string) => (href === "/aluno" ? caminho === href : caminho.startsWith(href));
 
   return (
-    <nav aria-label="Minha conta" className={`-mx-4 overflow-x-auto px-4 ${className}`}>
+    <nav aria-label="Minha conta" className={`sem-rolagem -mx-4 overflow-x-auto px-4 ${className}`}>
       <ul className="flex w-max gap-2">
         {abas.filter((a) => comPraticas || a.href !== "/aluno/praticas").map((a) => (
           <li key={a.href}>
