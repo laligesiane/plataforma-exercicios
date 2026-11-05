@@ -6,8 +6,14 @@ import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { EditorAtividade } from "./EditorAtividade";
 
-export default async function PaginaEditor({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function PaginaEditor({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ copia?: string }>;
+}) {
+  const [{ id }, { copia }] = await Promise.all([params, searchParams]);
   const professor = await exigirPapel("professor");
   if (!ehUuid(id)) notFound();
 
@@ -25,6 +31,11 @@ export default async function PaginaEditor({ params }: { params: Promise<{ id: s
     <>
       <Cabecalho />
       <main className="mx-auto w-full max-w-3xl px-4 pt-6">
+        {copia && (
+          <p role="status" className="mb-4 rounded-xl bg-primaria-suave px-3.5 py-2.5 text-sm">
+            Esta é uma cópia em rascunho. Troque o título se quiser, marque as turmas e publique.
+          </p>
+        )}
         <EditorAtividade
           inicial={atividade}
           exerciciosIniciais={carregada.exercicios}

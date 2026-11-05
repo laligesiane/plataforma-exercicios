@@ -9,10 +9,26 @@ export type Resumo = {
   texto: string;
   conteudo: Documento | null;
   mapa: Mapa;
+  /** Cor dos destaques da página do resumo. */
+  cor?: CorResumo;
   atualizado_em: string;
 };
 
-export const camposResumo = "id, turma_id, aula_id, titulo, texto, conteudo, mapa, atualizado_em";
+export const camposResumo = "id, turma_id, aula_id, titulo, texto, conteudo, mapa, cor, atualizado_em";
+
+/** Cores de destaque que o resumo pode usar; menta é a cor padrão da Repasa. */
+export const coresResumo = {
+  menta: { nome: "Verde", amostra: "#0f9d6b" },
+  azul: { nome: "Azul", amostra: "#2f6fd6" },
+  rosa: { nome: "Rosa", amostra: "#c2417e" },
+  roxo: { nome: "Roxo", amostra: "#7a4fd1" },
+  laranja: { nome: "Laranja", amostra: "#e0701b" },
+} as const;
+export type CorResumo = keyof typeof coresResumo;
+
+export function lerCorResumo(valor: unknown): CorResumo {
+  return typeof valor === "string" && valor in coresResumo ? (valor as CorResumo) : "menta";
+}
 
 export function tituloResumo(r: Pick<Resumo, "titulo" | "mapa">) {
   return r.titulo.trim() || r.mapa?.centro?.trim() || "Resumo sem título";

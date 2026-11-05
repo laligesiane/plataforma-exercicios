@@ -3,6 +3,7 @@ import { Cabecalho } from "@/components/Cabecalho";
 import { etiquetasDaAtividade } from "@/lib/atividades/modelo";
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
+import { duplicarAtividade } from "./actions";
 import { BotaoNovaAtividade } from "./novo-botao";
 
 export default async function AtividadesProfessor({ searchParams }: { searchParams: Promise<{ erro?: string }> }) {
@@ -32,6 +33,10 @@ export default async function AtividadesProfessor({ searchParams }: { searchPara
         ) : erro === "criar" ? (
           <p role="alert" className="mt-8 rounded-xl bg-erro-fundo px-3.5 py-2.5 text-sm text-erro">
             Não foi possível criar a atividade. Tente de novo em instantes.
+          </p>
+        ) : erro === "duplicar" ? (
+          <p role="alert" className="mt-8 rounded-xl bg-erro-fundo px-3.5 py-2.5 text-sm text-erro">
+            Não foi possível duplicar a atividade. Tente de novo em instantes.
           </p>
         ) : null}
 
@@ -64,6 +69,12 @@ export default async function AtividadesProfessor({ searchParams }: { searchPara
                     <Link href={`/professor/atividades/${a.id}`} className="font-bold text-primaria hover:underline">
                       Editar
                     </Link>
+                    <form action={duplicarAtividade}>
+                      <input type="hidden" name="id" value={a.id} />
+                      <button type="submit" className="font-bold text-primaria hover:underline" title="Cria uma cópia em rascunho para usar em outra turma">
+                        Duplicar
+                      </button>
+                    </form>
                     {a.publicada && (
                       <Link href={`/professor/atividades/${a.id}/respostas`} className="font-bold text-primaria hover:underline">
                         Respostas dos alunos

@@ -24,7 +24,7 @@ export function ListaResumos({ resumos, vazio, agrupar = true }: { resumos: Resu
           {origem && <h2 className="text-lg font-bold">{origem}</h2>}
           <ul className="mt-3 grid gap-3 sm:grid-cols-2">
             {lista.map((r) => {
-              const cor = r.cor ? cores[(r.cor as Cor) in cores ? (r.cor as Cor) : "menta"] : null;
+              const cor = r.cor_materia ? cores[(r.cor_materia as Cor) in cores ? (r.cor_materia as Cor) : "menta"] : null;
               return (
                 <li key={r.id}>
                   <Link

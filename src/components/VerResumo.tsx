@@ -15,7 +15,7 @@ export function VerResumo({ resumo, subtitulo }: { resumo: Resumo; subtitulo?: s
   const temSumario = secoes.length >= 2;
 
   return (
-    <article>
+    <article data-cor={resumo.cor ?? "menta"}>
       <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{tituloResumo(resumo)}</h1>
       {subtitulo && <p className="mt-2 text-tinta-suave">{subtitulo}</p>}
 

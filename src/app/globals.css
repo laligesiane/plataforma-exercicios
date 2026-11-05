@@ -273,3 +273,18 @@ body {
 html[data-foco="ativo"] .silenciar-no-foco {
   display: none !important;
 }
+
+/* Cor escolhida para o resumo: troca o verde dos destaques só dentro dele. */
+[data-cor="azul"] { --primaria: #2f6fd6; --primaria-suave: #e6efff; --marca: #cfe0ff; }
+[data-cor="rosa"] { --primaria: #c2417e; --primaria-suave: #fce8f2; --marca: #ffd3e8; }
+[data-cor="roxo"] { --primaria: #7a4fd1; --primaria-suave: #efe9ff; --marca: #e2d6ff; }
+[data-cor="laranja"] { --primaria: #c75d0e; --primaria-suave: #fdeedf; --marca: #ffdcb8; }
+
+@media (prefers-color-scheme: dark) {
+  [data-cor="azul"] { --primaria: #7aa7f5; --primaria-suave: #17264a; --marca: #24406e; }
+  [data-cor="rosa"] { --primaria: #f08cbc; --primaria-suave: #3d1a2c; --marca: #5e2643; }
+  [data-cor="roxo"] { --primaria: #b49af5; --primaria-suave: #2a1f47; --marca: #43316e; }
+  [data-cor="laranja"] { --primaria: #f5a464; --primaria-suave: #3b2412; --marca: #5e3a17; }
+}
+[data-cor]:not([data-cor="menta"]) .documento blockquote { background: var(--primaria-suave); }
+[data-cor]:not([data-cor="menta"]) .documento blockquote::before { color: var(--primaria); }
