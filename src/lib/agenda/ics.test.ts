@@ -21,3 +21,13 @@ describe("gerarIcs", () => {
     expect(ics.endsWith("END:VCALENDAR\r\n")).toBe(true);
   });
 });
+
+describe("evento de vários dias", () => {
+  it("termina no dia seguinte ao último", () => {
+    const ics = gerarIcs([], "Repasa", new Date("2026-11-04T16:22:00Z"), [
+      { id: "ferias", titulo: "Férias", data: "2027-07-01", ate: "2027-07-31" },
+    ]);
+    expect(ics).toContain("DTSTART;VALUE=DATE:20270701");
+    expect(ics).toContain("DTEND;VALUE=DATE:20270801");
+  });
+});

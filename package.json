@@ -21,6 +21,7 @@
     "@tiptap/starter-kit": "^2.27.3",
     "@types/qrcode": "^1.5.5",
     "next": "^15.5.29",
+    "pdfjs-dist": "6.4.299",
     "qrcode": "^1.5.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",

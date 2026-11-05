@@ -9,10 +9,12 @@ import { camposPedido, proximasAulas, rotuloStatus, separarPedidos, type PedidoA
 import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { LayoutConta } from "../LayoutConta";
-import { cancelarPedido } from "./actions";
+import { cancelarPedido, importarCompromissos } from "./actions";
 import { FormularioCompromisso } from "./FormularioCompromisso";
 import { FormularioPedido } from "./FormularioPedido";
 import { ListaCompromissos } from "./ListaCompromissos";
+import { ImportarCalendario } from "@/components/ImportarCalendario";
+import { camposDataTurma, datasPelaFrente, quandoTexto, rotuloTipoImportado, somarDias, type DataTurma } from "@/lib/importar-calendario";
 
 const corStatus = {
   pendente: "bg-suave text-tinta-suave",
@@ -25,13 +27,15 @@ export default async function AgendaDoAluno() {
   const supabase = await criarClienteServidor();
   const hoje = hojeNoFuso();
 
-  const [{ data: turmas }, { data: horarios }, { data: aulasDb }, { data: pedidosDb }, { data: compromissosDb }] = await Promise.all([
+  const [{ data: turmas }, { data: horarios }, { data: aulasDb }, { data: pedidosDb }, { data: compromissosDb }, { data: datasDb }] = await Promise.all([
     supabase.from("turma").select("id, nome").order("nome"),
     supabase.from("turma_horario").select("id, turma_id, dia_semana, hora_inicio, duracao_min, fuso"),
     supabase.from("aula").select(camposAula).gte("data", hoje).order("data"),
     supabase.from("pedido_aula").select(camposPedido).eq("aluno_id", perfil.id).order("data"),
     supabase.from("compromisso").select(camposCompromisso).eq("aluno_id", perfil.id).order("data"),
+    supabase.from("data_turma").select(camposDataTurma).gte("data", somarDias(hoje, -120)).order("data"),
   ]);
+  const datasTurmas = datasPelaFrente((datasDb ?? []) as DataTurma[], hoje);
   const compromissos = separarCompromissos((compromissosDb ?? []) as Compromisso[], hoje);
   const listaTurmas = turmas ?? [];
   const nomeTurma = new Map(listaTurmas.map((t) => [t.id, t.nome]));
@@ -54,6 +58,18 @@ export default async function AgendaDoAluno() {
           <summary className="cursor-pointer font-bold text-primaria">Adicionar compromisso</summary>
           <div className="mt-4">
             <FormularioCompromisso hoje={hoje} />
+          </div>
+        </details>
+        <details className="mt-3 rounded-2xl border border-linha p-5 sm:p-6">
+          <summary className="cursor-pointer font-bold text-primaria">Importar calendário acadêmico</summary>
+          <div className="mt-4">
+            <ImportarCalendario
+              hoje={hoje}
+              existentes={(compromissosDb ?? []) as Compromisso[]}
+              salvar={importarCompromissos}
+              ondeSalva="na agenda"
+              pedirMateria
+            />
           </div>
         </details>
         {compromissos.pelaFrente.length > 0 && (
@@ -80,6 +96,26 @@ export default async function AgendaDoAluno() {
           descricao="Assine uma vez: seus compromissos e as aulas das turmas aparecem e se atualizam sozinhos."
         />
       </div>
+
+      {datasTurmas.length > 0 && (
+        <section className="mt-8">
+          <h2 className="text-lg font-bold">Datas das turmas</h2>
+          <p className="mt-1 text-sm text-tinta-suave">Do calendário que o professor colocou na turma.</p>
+          <ul className="mt-3 divide-y divide-linha rounded-2xl border border-linha">
+            {datasTurmas.map((d) => (
+              <li key={d.id} className="flex flex-wrap items-baseline justify-between gap-2 px-5 py-3.5">
+                <span>
+                  <span className="block font-bold">{d.titulo}</span>
+                  <span className="text-sm text-tinta-suave">
+                    {rotuloTipoImportado[d.tipo]} · {nomeTurma.get(d.turma_id)}
+                  </span>
+                </span>
+                <span className="text-sm font-semibold text-primaria">{quandoTexto(d)}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="mt-8">
         <h2 className="text-lg font-bold">Próximas aulas marcadas</h2>
