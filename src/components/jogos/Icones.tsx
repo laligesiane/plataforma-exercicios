@@ -69,6 +69,12 @@ const caminhos = {
   errado: <path d="M6 6l12 12M18 6 6 18" />,
   pasta: <path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />,
   mais: <path d="M12 5v14M5 12h14" />,
+  cadeado: (
+    <>
+      <rect x="5" y="11" width="14" height="10" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </>
+  ),
   brilho: <path d="M12 3c.6 4.6 2.4 6.4 7 7-4.6.6-6.4 2.4-7 7-.6-4.6-2.4-6.4-7-7 4.6-.6 6.4-2.4 7-7z" />,
 } satisfies Record<ModoJogo | string, ReactNode>;
 

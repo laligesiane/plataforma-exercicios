@@ -10,17 +10,37 @@ import { exigirPapel } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { CampoCodigoTurma } from "@/components/CampoCodigoTurma";
 import { estadoTrilha } from "@/lib/trilha";
+import { Icone } from "@/components/jogos/Icones";
+import { carregarResumosDoAluno } from "../dados";
+import { contarItens } from "../praticas/dados";
 import { LayoutConta } from "../LayoutConta";
+import { GerarAtividade } from "./GerarAtividade";
+
+/** Quantas atividades criadas pelo aluno aparecem aqui; o resto fica em "Ver todas". */
+const CRIADAS_NA_PAGINA = 6;
 
 type AtividadeResumo = { id: string; titulo: string; nivel: string; categoria: string; atualizada_em: string };
+
+const formatoData = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short" });
 
 export default async function AtividadesDoAluno({ searchParams }: { searchParams: Promise<{ codigo?: string }> }) {
   const { codigo } = await searchParams;
   const perfil = await exigirPapel("aluno");
   const supabase = await criarClienteServidor();
 
-  const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }, { data: aulasDb }, { data: resumosDb }, { data: envios }] =
-    await Promise.all([
+  const [
+    { data: turmas },
+    { data: atribuicoes },
+    { data: respostas },
+    { data: horarios },
+    { data: aulasDb },
+    { data: resumosDb },
+    { data: envios },
+    todosResumos,
+    { data: materiasDb },
+    { data: cursosDb },
+    { data: praticasDb },
+  ] = await Promise.all([
       supabase.from("turma").select("id, nome, trilha, materia, idioma_ensinado, idioma_instrucao").order("nome"),
       supabase.from("atividade_turma").select("turma_id, ordem, atividade(id, titulo, nivel, categoria, materia, idioma_ensinado, atualizada_em)").order("ordem"),
       supabase.from("resposta").select("atividade_id, item_id").eq("aluno_id", perfil.id),
@@ -28,7 +48,17 @@ export default async function AtividadesDoAluno({ searchParams }: { searchParams
       supabase.from("aula").select(camposAula).order("data", { ascending: false }),
       supabase.from("resumo").select(camposResumo).not("turma_id", "is", null).order("atualizado_em", { ascending: false }),
       supabase.from("envio").select("atividade_id").eq("aluno_id", perfil.id),
+      carregarResumosDoAluno(),
+      supabase.from("materia").select("id, nome, resumo(count)").order("nome"),
+      supabase.from("curso").select("id, nome").order("nome"),
+      supabase.from("pratica").select("id, titulo, exercicios, criada_em").order("criada_em", { ascending: false }).limit(CRIADAS_NA_PAGINA + 1),
     ]);
+  const praticas = praticasDb ?? [];
+  const materias = (materiasDb ?? []).map((m) => ({
+    id: m.id as string,
+    nome: m.nome as string,
+    resumos: (m.resumo as unknown as { count: number }[] | null)?.[0]?.count ?? 0,
+  }));
   const enviadas = new Set((envios ?? []).map((e) => e.atividade_id as string));
   const resumos = (resumosDb ?? []) as Resumo[];
   const linkResumo = (r: Resumo) => ({ id: r.id, titulo: tituloResumo(r), href: `/aluno/resumos/${r.id}` });
@@ -56,8 +86,44 @@ export default async function AtividadesDoAluno({ searchParams }: { searchParams
   }
 
   return (
-    <LayoutConta titulo="Minhas atividades" descricao="As atividades e aulas das turmas em que você está.">
+    <LayoutConta titulo="Minhas atividades" descricao="As atividades das suas turmas e as que você cria com seus resumos.">
       <CampoCodigoTurma invalido={codigo === "invalido"} />
+      <GerarAtividade
+        resumos={todosResumos.map((r) => ({ id: r.id, nome: r.titulo_exibido, origem: r.origem }))}
+        materias={materias}
+        cursos={(cursosDb ?? []).map((c) => ({ id: c.id as string, nome: c.nome as string }))}
+      />
+
+      {praticas.length > 0 && (
+        <section className="mt-8">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-lg font-bold">Criadas por você</h2>
+            {praticas.length > CRIADAS_NA_PAGINA && (
+              <Link href="/aluno/praticas" className="text-sm font-bold text-primaria hover:underline">
+                Ver todas
+              </Link>
+            )}
+          </div>
+          <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+            {praticas.slice(0, CRIADAS_NA_PAGINA).map((p) => {
+              const itens = contarItens(p.exercicios);
+              return (
+                <li key={p.id}>
+                  <Link
+                    href={`/aluno/praticas/${p.id}`}
+                    className="block h-full rounded-2xl border border-linha p-5 transition-colors hover:border-primaria"
+                  >
+                    <span className="block font-bold">{p.titulo}</span>
+                    <span className="mt-1 block text-sm text-tinta-suave">
+                      {itens} {itens === 1 ? "pergunta" : "perguntas"} · {formatoData.format(new Date(p.criada_em))}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
       {(turmas ?? []).map((turma) => {
         // Na trilha vale a ordem do professor; fora dela, as mais recentes primeiro.
         const daTurma = porTurma.get(turma.id) ?? [];
@@ -100,7 +166,10 @@ export default async function AtividadesDoAluno({ searchParams }: { searchParams
                           <span className="block font-bold">
                             {i + 1}. {a.titulo}
                           </span>
-                          <span className="mt-3 inline-block rounded-full bg-suave px-3 py-1 text-xs font-bold">🔒 Abre depois da anterior</span>
+                          <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-suave px-3 py-1 text-xs font-bold">
+                            <Icone nome="cadeado" className="size-3.5" />
+                            Abre depois da anterior
+                          </span>
                         </div>
                       </li>
                     );
@@ -117,13 +186,18 @@ export default async function AtividadesDoAluno({ searchParams }: { searchParams
                         </span>
                         <span className="mt-1 block text-sm text-tinta-suave">{etiquetasDaAtividade(a).join(" · ")}</span>
                         <span
-                          className={`mt-3 inline-block rounded-full px-3 py-1 text-xs font-bold ${feitos > 0 ? "bg-suave text-tinta-suave" : "bg-primaria-suave text-primaria"}`}
+                          className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${feitos > 0 ? "bg-suave text-tinta-suave" : "bg-primaria-suave text-primaria"}`}
                         >
-                          {a.enviada
-                            ? "✓ Enviada"
-                            : feitos > 0
-                              ? `Começada · ${feitos} ${feitos === 1 ? "item respondido" : "itens respondidos"}`
-                              : "Nova"}
+                          {a.enviada ? (
+                            <>
+                              <Icone nome="certo" className="size-3.5" />
+                              Enviada
+                            </>
+                          ) : feitos > 0 ? (
+                            `Começada · ${feitos} ${feitos === 1 ? "item respondido" : "itens respondidos"}`
+                          ) : (
+                            "Nova"
+                          )}
                         </span>
                       </Link>
                     </li>
