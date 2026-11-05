@@ -30,7 +30,7 @@ export default async function PaginaEditor({
   return (
     <>
       <Cabecalho />
-      <main className="mx-auto w-full max-w-3xl px-4 pt-6">
+      <main className="mx-auto w-full max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
         {copia && (
           <p role="status" className="mb-4 rounded-xl bg-primaria-suave px-3.5 py-2.5 text-sm">
             Esta é uma cópia em rascunho, só sua. Ajuste o que quiser, marque as turmas e publique.

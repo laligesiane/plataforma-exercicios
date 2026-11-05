@@ -37,7 +37,7 @@ export default async function MateriasDoAluno({ searchParams }: { searchParams: 
   const podeCriar = !chegouAoLimite(materias.length, plano?.max_materias);
 
   const grade = (lista: MateriaLista[]) => (
-    <ul className="mt-3 grid gap-3 sm:grid-cols-3">
+    <ul className="mt-3 grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
       {lista.map((m) => (
         <li key={m.id} className="flex flex-col">
           <div className="grow">

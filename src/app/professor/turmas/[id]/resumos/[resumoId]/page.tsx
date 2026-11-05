@@ -26,7 +26,7 @@ export default async function EditarResumo({ params }: { params: Promise<{ id: s
   return (
     <>
       <Cabecalho />
-      <main className="mx-auto w-full max-w-4xl px-4 pt-8 pb-16">
+      <main className="mx-auto w-full max-w-7xl px-4 pt-8 pb-16 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <Link href={`/professor/turmas/${turma.id}`} className="text-sm font-bold text-primaria hover:underline">
             ← {turma.nome}

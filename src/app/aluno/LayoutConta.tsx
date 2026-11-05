@@ -18,7 +18,7 @@ export function LayoutConta({
   return (
     <>
       <Cabecalho />
-      <main className="mx-auto w-full max-w-3xl px-4 pt-8 pb-16">
+      <main className="mx-auto w-full max-w-7xl px-4 pt-8 pb-16 sm:px-6 lg:px-8">
         {voltar ? (
           <Link href={voltar.href} className="esconder-no-foco inline-flex items-center gap-1.5 text-sm font-bold text-primaria hover:underline">
             <svg viewBox="0 0 24 24" className="size-4 shrink-0" aria-hidden fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">

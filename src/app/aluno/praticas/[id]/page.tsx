@@ -18,13 +18,13 @@ export default async function FazerPratica({ params }: { params: Promise<{ id: s
   return (
     <>
       <Cabecalho />
-      <main className="mx-auto w-full max-w-3xl px-4 pt-8 pb-16">
+      <main className="mx-auto w-full max-w-7xl px-4 pt-8 pb-16 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <Link
-            href={pratica.resumo_id ? `/aluno/resumos/${pratica.resumo_id}` : "/aluno/praticas"}
+            href={pratica.resumo_id ? `/aluno/resumos/${pratica.resumo_id}` : "/aluno/atividades"}
             className="text-sm font-bold text-primaria hover:underline"
           >
-            ← {pratica.resumo_id ? "Voltar ao resumo" : "Minhas práticas"}
+            ← {pratica.resumo_id ? "Voltar ao resumo" : "Minhas atividades"}
           </Link>
           <span className="flex items-baseline gap-4">
             <Link href={`/aluno/praticas/${id}/editar`} className="text-sm font-bold text-primaria hover:underline">
@@ -39,7 +39,7 @@ export default async function FazerPratica({ params }: { params: Promise<{ id: s
           </span>
         </div>
         <h1 className="mt-3 text-3xl font-extrabold tracking-tight">{pratica.titulo}</h1>
-        <p className="mt-2 text-sm text-tinta-suave">Prática só sua, feita a partir do resumo. Pode refazer quantas vezes quiser.</p>
+        <p className="mt-2 text-sm text-tinta-suave">Atividade só sua, feita dos seus resumos. Pode refazer quantas vezes quiser.</p>
         <div className="mt-6">
           {pratica.exercicios.length > 0 ? (
             <AulaAtividade exercicios={pratica.exercicios} />

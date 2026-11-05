@@ -45,7 +45,7 @@ export default async function PaginaMateria({
   return (
     <>
       <Cabecalho />
-      <main className="mx-auto w-full max-w-3xl px-4 pt-8 pb-16">
+      <main className="mx-auto w-full max-w-7xl px-4 pt-8 pb-16 sm:px-6 lg:px-8">
         <Link href="/aluno/materias" className="text-sm font-bold text-primaria hover:underline">
           ← Minhas matérias
         </Link>
@@ -85,7 +85,7 @@ export default async function PaginaMateria({
         )}
 
         {resumos.length > 0 ? (
-          <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+          <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {resumos.map((r) => (
               <li key={r.id} className="flex flex-col rounded-2xl border border-linha transition-colors hover:border-primaria">
                 <Link href={`/aluno/resumos/${r.id}`} className="block grow p-5 pb-3">
