@@ -25,7 +25,7 @@ export function BarraInferior({ papel, comPraticas = false }: { papel: "aluno" |
 
   const abas = papel === "aluno" ? abasAluno : abasProfessor;
   const mais = papel === "aluno" ? [...maisAluno(comPraticas), { href: "/perfil", rotulo: "Perfil", icone: icones.perfil }] : [];
-  const maisAtivo = mais.some((m) => caminho.startsWith(m.href));
+  const maisAtivo = mais.some((m) => abaAtiva(caminho, m.href));
 
   const estiloAba = (ativa: boolean) =>
     `flex min-w-0 flex-1 flex-col items-center gap-0.5 pt-2 pb-1.5 text-[11px] font-bold ${ativa ? "text-primaria" : "text-tinta-suave"}`;

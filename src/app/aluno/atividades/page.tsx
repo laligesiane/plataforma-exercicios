@@ -14,6 +14,7 @@ import { Icone } from "@/components/jogos/Icones";
 import { carregarResumosDoAluno } from "../dados";
 import { contarItens } from "../praticas/dados";
 import { LayoutConta } from "../LayoutConta";
+import { CartaoRepasar } from "./CartaoRepasar";
 import { GerarAtividade } from "./GerarAtividade";
 
 /** Quantas atividades criadas pelo aluno aparecem aqui; o resto fica em "Ver todas". */
@@ -87,6 +88,7 @@ export default async function AtividadesDoAluno({ searchParams }: { searchParams
 
   return (
     <LayoutConta titulo="Minhas atividades" descricao="As atividades das suas turmas e as que você cria com seus resumos.">
+      <CartaoRepasar alunoId={perfil.id} />
       <CampoCodigoTurma invalido={codigo === "invalido"} />
       <GerarAtividade
         resumos={todosResumos.map((r) => ({ id: r.id, nome: r.titulo_exibido, origem: r.origem }))}

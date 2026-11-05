@@ -43,7 +43,7 @@ export default async function MinhasPraticas() {
         <div className="mt-8 rounded-2xl border border-dashed border-linha p-6 text-center">
           <p className="font-semibold">Nenhuma prática ainda.</p>
           <p className="mt-1 text-sm text-tinta-suave">Abra um resumo e toque em &quot;Gerar atividade&quot; para treinar com ele.</p>
-          <Link href="/aluno/resumos" className="mt-3 inline-block text-sm font-bold text-primaria hover:underline">
+          <Link href="/aluno/materias" className="mt-3 inline-block text-sm font-bold text-primaria hover:underline">
             Ver meus resumos
           </Link>
         </div>

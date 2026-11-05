@@ -122,9 +122,12 @@ export default async function MinhaConta() {
       numero: atividades.size,
       detalhe: atividades.size === 0 ? "Nenhuma ainda" : novas > 0 ? `${novas} ${novas === 1 ? "nova" : "novas"}` : "Todas começadas",
     },
-    { href: "/aluno/materias", titulo: "Matérias", numero: (materias ?? []).length, detalhe: "Seus resumos por matéria" },
-    { href: "/aluno/resumos", titulo: "Resumos", numero: resumos.length, detalhe: "Seus e das turmas" },
-    { href: "/aluno/mapas", titulo: "Mapas mentais", numero: mapas.length, detalhe: "Para revisar de relance" },
+    {
+      href: "/aluno/materias",
+      titulo: "Matérias",
+      numero: (materias ?? []).length,
+      detalhe: `${resumos.length} ${resumos.length === 1 ? "resumo" : "resumos"} · ${mapas.length} ${mapas.length === 1 ? "mapa" : "mapas"}`,
+    },
   ];
 
   return (
@@ -210,7 +213,7 @@ export default async function MinhaConta() {
         </Link>
       )}
 
-      <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <ul className="mt-6 grid grid-cols-2 gap-3">
         {atalhos.map((a) => (
           <li key={a.href}>
             <Link href={a.href} className="block h-full rounded-2xl border border-linha p-4 transition-colors hover:border-primaria">
@@ -244,7 +247,7 @@ export default async function MinhaConta() {
         <section className="mt-8">
           <div className="flex items-baseline justify-between">
             <h2 className="text-lg font-bold">Resumos recentes</h2>
-            <Link href="/aluno/resumos" className="text-sm font-bold text-primaria hover:underline">
+            <Link href="/aluno/materias" className="text-sm font-bold text-primaria hover:underline">
               Ver todos
             </Link>
           </div>
