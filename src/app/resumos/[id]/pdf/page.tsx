@@ -66,18 +66,18 @@ export default async function ResumoEmPdf({
       <BarraImpressao />
       <main className="mx-auto w-full max-w-3xl px-4 pt-8 pb-16 print:max-w-none print:p-0">
         <p className="text-sm font-extrabold text-primaria">Repasa</p>
-        <h1 className="mt-1 text-3xl font-extrabold tracking-tight">{tituloResumo(resumo)}</h1>
-        {subtitulo && <p className="mt-1 text-tinta-suave">{subtitulo}</p>}
+        <h1 className="mt-1 text-3xl font-extrabold tracking-tight print:mt-0.5 print:text-[20pt]">{tituloResumo(resumo)}</h1>
+        {subtitulo && <p className="mt-1 text-tinta-suave print:mt-0.5 print:text-[10pt]">{subtitulo}</p>}
 
         {mostrarTexto && (
-          <div className="mt-8" data-cor={lerCorResumo((resumo as { cor?: string }).cor)}>
+          <div className="mt-8 print:mt-4" data-cor={lerCorResumo((resumo as { cor?: string }).cor)}>
             <Documento doc={doc} />
           </div>
         )}
 
         {mostrarMapa && (
           <section className={mostrarTexto ? "folha-paisagem mt-10 print:mt-0" : "folha-paisagem mt-8 print:mt-4"}>
-            {mostrarTexto && <h2 className="mb-4 text-xl font-extrabold">Mapa mental</h2>}
+            {mostrarTexto && <h2 className="mb-4 text-xl font-extrabold print:mb-2 print:text-[14pt]">Mapa mental</h2>}
             <MapaMental mapa={mapa!} titulo={tituloResumo(resumo)} impressao />
           </section>
         )}
