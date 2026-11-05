@@ -1,5 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { faseDoProgresso, formatarTempo, lerJardim, plantarArvore, ULTIMA_FASE } from ".";
+import {
+  faseDoProgresso,
+  formatarTempo,
+  lerJardim,
+  lerSessao,
+  novaSessao,
+  pausarSessao,
+  plantarArvore,
+  progressoDa,
+  restanteDa,
+  retomarSessao,
+  ULTIMA_FASE,
+} from ".";
 
 describe("faseDoProgresso", () => {
   it("começa como semente e só vira árvore no fim", () => {
@@ -39,5 +51,30 @@ describe("jardim", () => {
     const j = plantarArvore({ dia: "2026-11-05", arvores: 1, minutos: 25 }, 45, "2026-11-05");
     expect(j).toEqual({ dia: "2026-11-05", arvores: 2, minutos: 70 });
     expect(plantarArvore(j, 15, "2026-11-06")).toEqual({ dia: "2026-11-06", arvores: 1, minutos: 15 });
+  });
+});
+
+describe("sessão de foco", () => {
+  const t0 = 1_000_000;
+  it("conta pelo horário de término, mesmo trocando de página", () => {
+    const s = novaSessao(25, t0);
+    expect(restanteDa(s, t0 + 60_000)).toBe(24 * 60_000);
+    expect(progressoDa(s, t0 + 12.5 * 60_000)).toBeCloseTo(0.5);
+    expect(restanteDa(s, t0 + 99 * 60_000)).toBe(0);
+  });
+  it("pausa e retoma sem perder tempo", () => {
+    const pausada = pausarSessao(novaSessao(15, t0), t0 + 5 * 60_000);
+    expect(pausada.fimEm).toBeNull();
+    expect(restanteDa(pausada, t0 + 60 * 60_000)).toBe(10 * 60_000);
+    const retomada = retomarSessao(pausada, t0 + 60 * 60_000);
+    expect(restanteDa(retomada, t0 + 61 * 60_000)).toBe(9 * 60_000);
+  });
+  it("lê só sessões válidas", () => {
+    const s = novaSessao(45, t0);
+    expect(lerSessao(JSON.stringify(s))).toEqual(s);
+    expect(lerSessao(JSON.stringify(pausarSessao(s, t0)))).toEqual(pausarSessao(s, t0));
+    expect(lerSessao(null)).toBeNull();
+    expect(lerSessao("oi")).toBeNull();
+    expect(lerSessao(JSON.stringify({ duracaoMin: 0, fimEm: 1, restanteMs: 1 }))).toBeNull();
   });
 });
