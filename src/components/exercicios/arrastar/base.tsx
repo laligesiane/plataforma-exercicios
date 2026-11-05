@@ -78,7 +78,7 @@ export function Peca({
       }}
       disabled={desativada}
       aria-pressed={estado === "selecionada"}
-      className={`touch-none border-2 font-bold ${cartao ? "rounded-xl p-1.5 pb-1" : "rounded-full px-4 py-1.5"} transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria disabled:cursor-default ${estiloPeca[estado]} ${isDragging ? "relative z-20 shadow-lg" : ""}`}
+      className={`touch-none border-2 font-bold ${cartao ? "rounded-xl p-1.5 pb-1" : "min-h-11 rounded-full px-4 py-1.5 sm:min-h-0"} transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria disabled:cursor-default ${estiloPeca[estado]} ${isDragging ? "relative z-20 shadow-lg" : ""}`}
     >
       {children}
     </button>

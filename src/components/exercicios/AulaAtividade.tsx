@@ -11,6 +11,8 @@ import { ItemProducao, type ProducaoSalva, type EnviarProducao } from "./Produca
 import { CartaoExercicio } from "./CartaoExercicio";
 import { NaoEntendi, type DuvidaSalva, type EnviarDuvida } from "./NaoEntendi";
 import { IdiomaFala } from "./Ouvir";
+import { BarraAtividade } from "./BarraAtividade";
+import { idExercicio, proximoPendente } from "@/lib/atividades/proximo";
 import { BotaoSom } from "./BotaoSom";
 import { tocarResultado } from "@/lib/som";
 import { Lacuna } from "./Lacuna";
@@ -45,10 +47,13 @@ type Props = {
   onDuvida?: EnviarDuvida;
   /** Idioma ensinado (es, en...). Com ele, as frases ganham o botão de ouvir. */
   idioma?: string | null;
+  /** false nas prévias dos editores, que já têm a própria barra presa embaixo. */
+  comBarra?: boolean;
 };
 
 export function AulaAtividade({
   exercicios,
+  comBarra = true,
   respostasAnteriores = {},
   primeirasAnteriores,
   onResposta,
@@ -112,8 +117,8 @@ export function AulaAtividade({
         )}
 
         {exercicios.map((exercicio, i) => (
+          <div key={exercicio.id} id={idExercicio(exercicio.id)} className="scroll-mt-4">
           <CartaoExercicio
-            key={exercicio.id}
             numero={i + 1}
             titulo={exercicio.titulo}
             instrucoes={exercicio.instrucoes}
@@ -132,6 +137,7 @@ export function AulaAtividade({
               onProducao={onProducao}
             />
           </CartaoExercicio>
+          </div>
         ))}
 
         {totalItens > 0 && (
@@ -147,6 +153,19 @@ export function AulaAtividade({
               </div>
             )}
           </div>
+        )}
+
+        {comBarra && totalItens > 0 && !resumo && (
+          <BarraAtividade
+            acertos={acertos}
+            total={totalItens}
+            proximo={proximoPendente(exercicios, certos) !== null}
+            onProximo={() => {
+              const id = proximoPendente(exercicios, certos);
+              if (id) document.getElementById(idExercicio(id))?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+            onEnviar={enviar}
+          />
         )}
       </div>
     </IdiomaFala.Provider>

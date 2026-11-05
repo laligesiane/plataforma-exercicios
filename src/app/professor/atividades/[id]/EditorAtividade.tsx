@@ -720,7 +720,7 @@ function Previa({ atividade, exercicios }: { atividade: Atividade; exercicios: E
       </p>
       <CabecalhoAtividade atividade={atividade} />
       <div className="mt-6">
-        <AulaAtividade exercicios={exercicios} />
+        <AulaAtividade exercicios={exercicios} comBarra={false} />
       </div>
     </div>
   );

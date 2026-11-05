@@ -180,7 +180,7 @@ export function EditorPratica({ resumo, pratica }: Props) {
               <p className="mb-4 rounded-xl bg-aviso-fundo px-3.5 py-2.5 text-sm">
                 Experimente como fica. Nada do que você responder aqui é salvo.
               </p>
-              <AulaAtividade key={JSON.stringify(exercicios).length} exercicios={exercicios.map(limparExercicio)} />
+              <AulaAtividade key={JSON.stringify(exercicios).length} exercicios={exercicios.map(limparExercicio)} comBarra={false} />
             </div>
           )}
 

@@ -372,6 +372,39 @@ html[data-dislexia] li {
   line-height: 1.8;
 }
 
+/*
+ * Barras presas no rodapé do celular (abas do menu ou a barra da atividade).
+ * --altura-barra diz quanto espaço elas ocupam; outras barras fixas usam bottom: var(--altura-barra, 0px).
+ */
+@media (max-width: 639.98px) {
+  body:has(.barra-inferior),
+  body:has(.barra-atividade) {
+    --altura-barra: calc(4rem + env(safe-area-inset-bottom));
+    padding-bottom: var(--altura-barra);
+  }
+  html[data-foco="ativo"] body:has(.barra-inferior):not(:has(.barra-atividade)) {
+    --altura-barra: 0px;
+    padding-bottom: 0;
+  }
+}
+
+/* Títulos do resumo não ficam escondidos atrás da faixa do sumário presa no topo. */
+.documento :is(h2, h3) {
+  scroll-margin-top: 5rem;
+}
+
+/* Mapa mental na tela cheia: sem moldura nem rolagem, o tamanho vem do zoom. */
+.mapa-tela-cheia figure {
+  overflow: visible;
+  border: 0;
+  background: transparent;
+}
+.mapa-tela-cheia svg {
+  max-width: none;
+  width: min(90vw, 56rem);
+  min-width: 0;
+}
+
 /* Leitura em voz alta do resumo: o trecho lido fica marcado e, com a leitura ligada,
    tocar num parágrafo lê a partir dele. */
 .leitura-ativa [data-trecho] {
