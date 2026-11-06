@@ -1,14 +1,13 @@
+import { fmt } from "@/i18n/config";
+import { obterDicionario } from "@/i18n/servidor";
 import Link from "next/link";
 import { Icone } from "@/components/jogos/Icones";
 import { progressoCurso } from "@/lib/cursos";
 import { cores, type Cor } from "@/lib/mapas";
 
-function plural(n: number, um: string, varios: string) {
-  return `${n} ${n === 1 ? um : varios}`;
-}
 
 /** Cartão do curso na lista: nome, quantas matérias e resumos, etapa e a barrinha de progresso. */
-export function CartaoCurso({
+export async function CartaoCurso({
   href,
   nome,
   materias,
@@ -30,7 +29,9 @@ export function CartaoCurso({
   /** Para o grupo "Sem curso": borda tracejada. */
   discreto?: boolean;
 }) {
-  const p = progressoCurso(inicio, duracaoMeses);
+  const d = await obterDicionario();
+  const tx = d.cursos;
+  const p = progressoCurso(inicio, duracaoMeses, undefined, d.datas);
   return (
     <Link
       href={href}
@@ -48,7 +49,7 @@ export function CartaoCurso({
       <span className="min-w-0 grow">
         <span className="block truncate text-lg leading-tight font-extrabold group-hover:text-primaria">{nome}</span>
         <span className="mt-0.5 block text-sm text-tinta-suave">
-          {plural(materias, "matéria", "matérias")} · {plural(resumos, "resumo", "resumos")}
+          {materias === 1 ? tx.materias1 : fmt(tx.materiasN, { n: materias })} · {resumos === 1 ? d.aluno.resumos1 : fmt(d.aluno.resumosN, { n: resumos })}
         </span>
         {coresMaterias.length > 0 && (
           <span className="mt-2 flex gap-1" aria-hidden>
@@ -75,7 +76,7 @@ export function CartaoCurso({
                 />
               </span>
             )}
-            {p && <span className="sr-only">{`${p.porcentagem}% do curso. ${p.falta}.`}</span>}
+            {p && <span className="sr-only">{fmt(tx.porcentagemCurso, { p: p.porcentagem, falta: p.falta })}</span>}
           </span>
         )}
       </span>

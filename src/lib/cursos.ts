@@ -1,5 +1,8 @@
 // Contas do curso do aluno: quando termina e quanto já passou.
 
+import { fmt } from "../i18n/config";
+import { datasPt, type TextosDatas } from "../i18n/dicionarios/datasPt";
+
 export type UnidadeDuracao = "meses" | "semestres" | "anos";
 
 export const mesesPorUnidade: Record<UnidadeDuracao, number> = { meses: 1, semestres: 6, anos: 12 };
@@ -14,11 +17,11 @@ export function duracaoEmMeses(quantidade: unknown, unidade: unknown): number | 
 }
 
 /** Mostra a duração na unidade mais redonda: 48 → "4 anos", 18 → "3 semestres", 5 → "5 meses". */
-export function descreverDuracao(meses: number): { quantidade: number; unidade: UnidadeDuracao; texto: string } {
+export function descreverDuracao(meses: number, t: TextosDatas = datasPt): { quantidade: number; unidade: UnidadeDuracao; texto: string } {
   const [quantidade, unidade] =
     meses % 12 === 0 ? [meses / 12, "anos" as const] : meses % 6 === 0 ? [meses / 6, "semestres" as const] : [meses, "meses" as const];
-  const singular = { anos: "ano", semestres: "semestre", meses: "mês" }[unidade];
-  return { quantidade, unidade, texto: `${quantidade} ${quantidade === 1 ? singular : unidade}` };
+  const [um, varios] = { anos: [t.ano1, t.anosN], semestres: [t.semestre1, t.semestresN], meses: [t.mes1, t.mesesN] }[unidade];
+  return { quantidade, unidade, texto: quantidade === 1 ? um : fmt(varios, { n: quantidade }) };
 }
 
 /** Lê "2026-03-01" como data local (sem fuso). */
@@ -47,37 +50,38 @@ export type ProgressoCurso = {
 };
 
 function plural(n: number, um: string, varios: string) {
-  return `${n} ${n === 1 ? um : varios}`;
+  return n === 1 ? um : fmt(varios, { n });
 }
 
 /** Tempo entre duas datas em texto curto: "2 anos e 3 meses", "5 meses", "12 dias". */
-export function tempoEntre(de: Date, ate: Date): string {
+export function tempoEntre(de: Date, ate: Date, t: TextosDatas = datasPt): string {
   let meses = (ate.getFullYear() - de.getFullYear()) * 12 + ate.getMonth() - de.getMonth();
   if (ate.getDate() < de.getDate()) meses -= 1;
   if (meses < 1) {
     const dias = Math.max(1, Math.ceil((ate.getTime() - de.getTime()) / 86_400_000));
-    return plural(dias, "dia", "dias");
+    return plural(dias, t.dia1, t.diasN);
   }
   const anos = Math.floor(meses / 12);
   const resto = meses % 12;
-  if (anos === 0) return plural(resto, "mês", "meses");
-  return resto === 0 ? plural(anos, "ano", "anos") : `${plural(anos, "ano", "anos")} e ${plural(resto, "mês", "meses")}`;
+  if (anos === 0) return plural(resto, t.mes1, t.mesesN);
+  return resto === 0 ? plural(anos, t.ano1, t.anosN) : fmt(t.e, { a: plural(anos, t.ano1, t.anosN), b: plural(resto, t.mes1, t.mesesN) });
 }
 
 export function progressoCurso(
   inicioTexto: string | null | undefined,
   duracaoMeses: number | null | undefined,
   hoje: Date = new Date(),
+  t: TextosDatas = datasPt,
 ): ProgressoCurso | null {
   const inicio = lerData(inicioTexto);
   if (!inicio || !duracaoMeses || duracaoMeses < 1) return null;
   const fim = somarMeses(inicio, duracaoMeses);
   const dia = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
 
-  if (dia < inicio) return { inicio, fim, porcentagem: 0, situacao: "nao-comecou", falta: `Começa em ${tempoEntre(dia, inicio)}` };
-  if (dia >= fim) return { inicio, fim, porcentagem: 100, situacao: "terminou", falta: "Curso concluído" };
+  if (dia < inicio) return { inicio, fim, porcentagem: 0, situacao: "nao-comecou", falta: fmt(t.comecaEm, { tempo: tempoEntre(dia, inicio, t) }) };
+  if (dia >= fim) return { inicio, fim, porcentagem: 100, situacao: "terminou", falta: t.cursoConcluido };
 
   const total = fim.getTime() - inicio.getTime();
   const porcentagem = Math.min(99, Math.max(0, Math.round(((dia.getTime() - inicio.getTime()) / total) * 100)));
-  return { inicio, fim, porcentagem, situacao: "andamento", falta: `Faltam ${tempoEntre(dia, fim)}` };
+  return { inicio, fim, porcentagem, situacao: "andamento", falta: fmt(t.faltam, { tempo: tempoEntre(dia, fim, t) }) };
 }

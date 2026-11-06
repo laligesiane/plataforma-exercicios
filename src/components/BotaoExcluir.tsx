@@ -1,10 +1,12 @@
 "use client";
 
+import { useDicionario } from "@/i18n/cliente";
 import { useFormStatus } from "react-dom";
 import { botaoSecundario } from "@/components/ui/estilos";
 
 function Botao({ rotulo, discreto }: { rotulo: string; discreto?: boolean }) {
   const { pending } = useFormStatus();
+  const d = useDicionario();
   return (
     <button
       type="submit"
@@ -15,7 +17,7 @@ function Botao({ rotulo, discreto }: { rotulo: string; discreto?: boolean }) {
           : `${botaoSecundario} hover:border-erro hover:text-erro`
       }
     >
-      {pending ? "Excluindo..." : rotulo}
+      {pending ? d.comum.excluindo : rotulo}
     </button>
   );
 }
@@ -24,7 +26,7 @@ function Botao({ rotulo, discreto }: { rotulo: string; discreto?: boolean }) {
 export function BotaoExcluir({
   acao,
   campos,
-  rotulo = "Excluir",
+  rotulo,
   pergunta,
   discreto,
   className,
@@ -36,6 +38,7 @@ export function BotaoExcluir({
   discreto?: boolean;
   className?: string;
 }) {
+  const d = useDicionario();
   return (
     <form
       action={acao}
@@ -47,7 +50,7 @@ export function BotaoExcluir({
       {Object.entries(campos).map(([nome, valor]) => (
         <input key={nome} type="hidden" name={nome} value={valor} />
       ))}
-      <Botao rotulo={rotulo} discreto={discreto} />
+      <Botao rotulo={rotulo ?? d.comum.excluir} discreto={discreto} />
     </form>
   );
 }

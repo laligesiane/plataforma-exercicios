@@ -1,12 +1,15 @@
+import { LANG_HTML } from "@/i18n/config";
+import { obterDicionario, obterIdioma } from "@/i18n/servidor";
 import Link from "next/link";
 import { cores, type Cor } from "@/lib/mapas";
 import { temMapa } from "@/lib/pedidos";
 import type { ResumoComOrigem } from "./dados";
 
-const formatoData = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short", timeZone: "America/Sao_Paulo" });
 
 /** Cartões de resumos agrupados por matéria ou turma. */
-export function ListaResumos({ resumos, vazio, agrupar = true }: { resumos: ResumoComOrigem[]; vazio: string; agrupar?: boolean }) {
+export async function ListaResumos({ resumos, vazio, agrupar = true }: { resumos: ResumoComOrigem[]; vazio: string; agrupar?: boolean }) {
+  const [d, idioma] = await Promise.all([obterDicionario(), obterIdioma()]);
+  const formatoData = new Intl.DateTimeFormat(LANG_HTML[idioma], { day: "numeric", month: "short", timeZone: "America/Sao_Paulo" });
   if (resumos.length === 0) {
     return <p className="mt-8 rounded-2xl border border-dashed border-linha p-5 text-sm text-tinta-suave">{vazio}</p>;
   }
@@ -35,7 +38,7 @@ export function ListaResumos({ resumos, vazio, agrupar = true }: { resumos: Resu
                     <span>
                       <span className="block font-bold">{r.titulo_exibido}</span>
                       <span className="mt-1 block text-sm text-tinta-suave">
-                        {[!agrupar && r.origem, temMapa(r) ? "Com mapa mental" : "Resumo", formatoData.format(new Date(r.atualizado_em))]
+                        {[!agrupar && r.origem, temMapa(r) ? d.cursos.comMapa : d.cursos.resumo, formatoData.format(new Date(r.atualizado_em))]
                           .filter(Boolean)
                           .join(" · ")}
                       </span>

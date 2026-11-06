@@ -1,5 +1,6 @@
 "use client";
 
+import { useDicionario } from "@/i18n/cliente";
 import { useState, useTransition } from "react";
 import { moverMateria } from "./actions";
 
@@ -20,6 +21,7 @@ export function SeletorCurso({
   const [valor, setValor] = useState(cursoId ?? "");
   const [erro, setErro] = useState("");
   const [salvando, iniciar] = useTransition();
+  const d = useDicionario();
 
   function mudar(novo: string) {
     const anterior = valor;
@@ -37,7 +39,7 @@ export function SeletorCurso({
   return (
     <div className={compacto ? "mt-1.5" : ""}>
       <label className={compacto ? "flex items-center gap-2 text-xs text-tinta-suave" : "flex flex-wrap items-center gap-2 text-sm font-bold"}>
-        {compacto ? "Curso:" : "Curso"}
+        {compacto ? d.cursos.cursoDoisPontos : d.cursos.curso}
         <select
           value={valor}
           disabled={salvando}
@@ -46,14 +48,14 @@ export function SeletorCurso({
             compacto ? "min-w-0 grow px-2 py-1 text-xs" : "px-3 py-1.5 text-sm font-normal"
           }`}
         >
-          <option value="">Sem curso</option>
+          <option value="">{d.cursos.semCurso}</option>
           {cursos.map((c) => (
             <option key={c.id} value={c.id}>
               {c.nome}
             </option>
           ))}
         </select>
-        {salvando && <span className="text-xs font-normal text-tinta-suave">Salvando...</span>}
+        {salvando && <span className="text-xs font-normal text-tinta-suave">{d.comum.salvando}</span>}
       </label>
       {erro && (
         <p role="alert" className="mt-1 text-xs text-erro">
