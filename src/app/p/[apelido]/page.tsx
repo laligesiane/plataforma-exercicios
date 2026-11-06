@@ -122,53 +122,112 @@ export default async function PaginaDoProfessor({ params }: Params) {
   const redes = REDES.filter((r) => pagina[r]);
   const materias = pagina.materias.split(/[,;\n]/).map((m) => m.trim()).filter(Boolean);
   const formacao = (pagina.formacao ?? "").split("\n").map((f) => f.trim()).filter(Boolean);
-  const detalhes = [
-    { icone: icones.tempo, texto: tempoEnsinando(pagina.ensina_desde) },
-    { icone: icones.aulas, texto: MODALIDADES[pagina.modalidade as Modalidade] ?? null },
-    { icone: icones.cidade, texto: pagina.cidade || null },
-  ].filter((d) => d.texto);
+  const experiencia = [
+    { icone: icones.tempo, titulo: tempoEnsinando(pagina.ensina_desde), detalhe: pagina.ensina_desde ? `Começou em ${pagina.ensina_desde}` : null },
+    { icone: icones.aulas, titulo: MODALIDADES[pagina.modalidade as Modalidade] ?? null, detalhe: null },
+    { icone: icones.cidade, titulo: pagina.cidade || null, detalhe: null },
+  ].filter((d) => d.titulo);
 
   return (
     <>
       <Cabecalho />
       {/* A página fica sempre na cor escolhida pelo professor, não na cor de quem visita. */}
-      <main data-cores-repasa data-cor={lerCorResumo(pagina.cor)} className="mx-auto w-full max-w-3xl px-4 pt-6 pb-16">
+      <main data-cores-repasa data-cor={lerCorResumo(pagina.cor)} className="mx-auto w-full max-w-3xl px-4 pt-10 pb-16">
         {!pagina.publicada && (
           <p className="mb-6 rounded-xl bg-aviso-fundo px-3.5 py-2.5 text-sm">
             Só você está vendo: a página está como rascunho. Marque &quot;Deixar a página no ar&quot; no{" "}
-            <Link href="/perfil" className="font-bold underline">
-              seu perfil
+            <Link href="/professor/site" className="font-bold underline">
+              Site do professor
             </Link>
             .
           </p>
         )}
 
-        <div className="overflow-hidden rounded-3xl border border-linha">
-          <div className="h-28 bg-primaria-suave sm:h-36" aria-hidden>
-            <svg viewBox="0 0 400 100" preserveAspectRatio="none" className="size-full text-primaria opacity-20">
-              <path d="M0 70 C80 30 160 100 240 60 S360 20 400 40 V100 H0z" fill="currentColor" />
-            </svg>
+        {/* Quem é e o que ensina: o foco da página. */}
+        <header className="flex flex-col gap-5 sm:flex-row sm:items-center">
+          <Avatar nome={pagina.nome} foto={urlDaFoto(foto)} className="size-24 text-4xl sm:size-28" />
+          <div className="min-w-0">
+            <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{pagina.nome}</h1>
+            {pagina.destaque && <p className="mt-2 text-lg text-tinta-suave">{pagina.destaque}</p>}
           </div>
-          <div className="px-5 pb-6 sm:px-8">
-            <div className="-mt-12 sm:-mt-14">
-              <Avatar nome={pagina.nome} foto={urlDaFoto(foto)} className="size-24 text-4xl ring-4 ring-fundo sm:size-28" />
-            </div>
-            <h1 className="mt-3 text-3xl font-extrabold tracking-tight">{pagina.nome}</h1>
-            {pagina.destaque && <p className="mt-1 text-lg text-tinta-suave">{pagina.destaque}</p>}
+        </header>
 
-            {detalhes.length > 0 && (
-              <ul className="mt-4 flex flex-wrap gap-2">
-                {detalhes.map((d) => (
-                  <li key={d.texto} className="flex items-center gap-1.5 rounded-full bg-suave px-3 py-1 text-sm font-semibold [&_svg]:text-primaria">
-                    {d.icone}
-                    {d.texto}
-                  </li>
-                ))}
-              </ul>
+        {materias.length > 0 && (
+          <section className="mt-8">
+            <h2 className="text-lg font-extrabold tracking-tight">O que ensina</h2>
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {materias.map((m) => (
+                <li key={m} className="rounded-full bg-primaria-suave px-4 py-1.5 font-bold text-primaria">
+                  {m}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {experiencia.length > 0 && (
+          <section className="mt-8">
+            <h2 className="text-lg font-extrabold tracking-tight">Experiência</h2>
+            <ul className="mt-3 grid gap-3 sm:grid-cols-3">
+              {experiencia.map((e) => (
+                <li key={e.titulo} className="flex items-start gap-3 rounded-2xl border border-linha p-4">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primaria-suave text-primaria [&_svg]:size-5">{e.icone}</span>
+                  <span>
+                    <span className="block font-bold">{e.titulo}</span>
+                    {e.detalhe && <span className="block text-sm text-tinta-suave">{e.detalhe}</span>}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {(pagina.bio || formacao.length > 0) && (
+          <div className={`mt-8 grid gap-6 ${pagina.bio && formacao.length > 0 ? "sm:grid-cols-[3fr_2fr]" : ""}`}>
+            {pagina.bio && (
+              <Bloco titulo="Sobre">
+                <p className="leading-relaxed whitespace-pre-line">{pagina.bio}</p>
+              </Bloco>
             )}
+            {formacao.length > 0 && (
+              <Bloco titulo="Formação">
+                <ul className="space-y-2.5">
+                  {formacao.map((f) => (
+                    <li key={f} className="flex gap-2 text-sm [&_svg]:mt-0.5 [&_svg]:text-primaria">
+                      {icones.formacao}
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+              </Bloco>
+            )}
+          </div>
+        )}
 
-            {(redes.length > 0 || contato) && (
-              <ul className="mt-5 flex flex-wrap gap-2">
+        <section className="mt-10">
+          <h2 className="text-lg font-extrabold tracking-tight">Atividades para praticar</h2>
+          {atividades && atividades.length > 0 ? (
+            <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+              {atividades.map((a) => (
+                <li key={a.id}>
+                  <Link href={`/atividades/${a.id}`} className="block h-full rounded-2xl border border-linha p-5 transition-colors hover:border-primaria">
+                    <span className="block font-bold">{a.titulo}</span>
+                    <span className="mt-1 block text-sm text-tinta-suave">{etiquetasDaAtividade(a).join(" · ")}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 rounded-2xl border border-dashed border-linha p-5 text-sm text-tinta-suave">
+              Ainda não há atividades públicas por aqui.
+            </p>
+          )}
+        </section>
+
+        {(redes.length > 0 || contato) && (
+          <section className="mt-10">
+            <Bloco titulo="Contato">
+              <ul className="grid gap-2 sm:grid-cols-2">
                 {redes.map((rede) => {
                   const valor = pagina[rede]!;
                   return (
@@ -177,103 +236,52 @@ export default async function PaginaDoProfessor({ params }: Params) {
                         href={infoRedes[rede].link(valor)}
                         target="_blank"
                         rel="noopener nofollow"
-                        className="flex items-center gap-2 rounded-full border-2 border-linha py-1 pr-3.5 pl-1 text-sm font-bold transition-colors hover:border-tinta"
+                        className="flex items-center gap-3 rounded-2xl px-2 py-2 transition-colors hover:bg-suave"
                       >
-                        <span className="grid size-7 place-items-center rounded-full text-white" style={{ background: coresRedes[rede] }}>
-                          <IconeRede rede={rede} className="size-4" />
+                        <span className="grid size-9 shrink-0 place-items-center rounded-full text-white" style={{ background: coresRedes[rede] }}>
+                          <IconeRede rede={rede} className="size-5" />
                         </span>
-                        <span className="sr-only">{infoRedes[rede].nome}: </span>
-                        {infoRedes[rede].rotulo(valor)}
+                        <span className="min-w-0">
+                          <span className="block text-xs font-bold text-tinta-suave">{infoRedes[rede].nome}</span>
+                          <span className="block truncate font-bold">{infoRedes[rede].rotulo(valor)}</span>
+                        </span>
                       </a>
                     </li>
                   );
                 })}
                 {contato && (
                   <li>
-                    {contato.href ? (
-                      <a
-                        href={contato.href}
-                        rel="noopener nofollow"
-                        className="flex items-center gap-2 rounded-full border-2 border-linha py-1 pr-3.5 pl-1 text-sm font-bold transition-colors hover:border-tinta"
-                      >
-                        <span className="grid size-7 place-items-center rounded-full bg-primaria text-white">
-                          {contato.href.startsWith("mailto:") ? icones.email : icones.site}
-                        </span>
-                        {contato.texto}
-                      </a>
-                    ) : (
-                      <span className="flex items-center gap-2 rounded-full border-2 border-linha py-1 pr-3.5 pl-1 text-sm font-bold">
-                        <span className="grid size-7 place-items-center rounded-full bg-primaria text-white">{icones.email}</span>
-                        {contato.texto}
-                      </span>
-                    )}
+                    <ItemContato contato={contato} icone={contato.href?.startsWith("http") ? icones.site : icones.email} />
                   </li>
                 )}
               </ul>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-6 grid gap-6">
-          {pagina.bio && (
-            <Bloco titulo="Sobre">
-              <p className="leading-relaxed whitespace-pre-line">{pagina.bio}</p>
             </Bloco>
-          )}
-
-          {(materias.length > 0 || formacao.length > 0) && (
-            <div className="grid gap-6 sm:grid-cols-2">
-              {materias.length > 0 && (
-                <Bloco titulo="O que ensina">
-                  <ul className="flex flex-wrap gap-2">
-                    {materias.map((m) => (
-                      <li key={m} className="rounded-full bg-primaria-suave px-3 py-1 text-sm font-bold text-primaria">
-                        {m}
-                      </li>
-                    ))}
-                  </ul>
-                </Bloco>
-              )}
-              {formacao.length > 0 && (
-                <Bloco titulo="Formação">
-                  <ul className="space-y-2">
-                    {formacao.map((f) => (
-                      <li key={f} className="flex gap-2 text-sm [&_svg]:mt-0.5 [&_svg]:text-primaria">
-                        {icones.formacao}
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                </Bloco>
-              )}
-            </div>
-          )}
-
-          <section>
-            <h2 className="text-xl font-extrabold tracking-tight">Atividades para praticar</h2>
-            {atividades && atividades.length > 0 ? (
-              <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-                {atividades.map((a) => (
-                  <li key={a.id}>
-                    <Link href={`/atividades/${a.id}`} className="block h-full rounded-2xl border border-linha p-5 transition-colors hover:border-primaria">
-                      <span className="block font-bold">{a.titulo}</span>
-                      <span className="mt-1 block text-sm text-tinta-suave">{etiquetasDaAtividade(a).join(" · ")}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-4 rounded-2xl border border-dashed border-linha p-5 text-sm text-tinta-suave">
-                Ainda não há atividades públicas por aqui.
-              </p>
-            )}
           </section>
-        </div>
+        )}
 
         <p className="mt-10 text-center text-sm text-tinta-suave">
           Grátis e sem anúncios, com a correção na hora e a explicação de cada erro.
         </p>
       </main>
     </>
+  );
+}
+
+function ItemContato({ contato, icone }: { contato: { texto: string; href?: string }; icone: ReactNode }) {
+  const conteudo = (
+    <>
+      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primaria text-white [&_svg]:size-5">{icone}</span>
+      <span className="min-w-0">
+        <span className="block text-xs font-bold text-tinta-suave">{contato.href?.startsWith("http") ? "Site" : "E-mail"}</span>
+        <span className="block truncate font-bold">{contato.texto}</span>
+      </span>
+    </>
+  );
+  return contato.href ? (
+    <a href={contato.href} rel="noopener nofollow" className="flex items-center gap-3 rounded-2xl px-2 py-2 transition-colors hover:bg-suave">
+      {conteudo}
+    </a>
+  ) : (
+    <span className="flex items-center gap-3 px-2 py-2">{conteudo}</span>
   );
 }

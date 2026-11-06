@@ -78,6 +78,13 @@ export const icones = {
       <path d="M4 21a8 8 0 0 1 16 0" />
     </Icone>
   ),
+  site: (
+    <Icone>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M3 9h18M7 6.5h.01M10 6.5h.01" />
+      <path d="M7 13h6M7 16h4" />
+    </Icone>
+  ),
   sair: (
     <Icone>
       <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4" />
