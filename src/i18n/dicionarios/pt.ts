@@ -255,6 +255,9 @@ export const pt = {
       beta: "A Repasa está em versão beta: nova, grátis e sem limites enquanto está em testes. Conte o que achou em Sugestões.",
     },
   },
+  biblioteca: {
+    soIdioma: "Aqui aparece só o que foi escrito em {idioma}. Para ver o de outro idioma, troque no globo do topo.",
+  },
   palavrao: {
     aviso: "Esse texto tem uma palavra que não é permitida na Repasa: “{palavra}”. Troque a palavra para salvar.",
   },

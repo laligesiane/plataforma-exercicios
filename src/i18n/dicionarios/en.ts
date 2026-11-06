@@ -254,6 +254,9 @@ export const en: Dicionario = {
       beta: "Repasa is in beta: new, free and unlimited while we test it. Tell us what you think in Feedback.",
     },
   },
+  biblioteca: {
+    soIdioma: "Only content written in {idioma} shows up here. To see another language, switch it with the globe at the top.",
+  },
   palavrao: {
     aviso: "This text has a word that isn't allowed on Repasa: “{palavra}”. Change it to save.",
   },

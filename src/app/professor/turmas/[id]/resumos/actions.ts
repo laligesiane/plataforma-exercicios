@@ -1,5 +1,6 @@
 "use server";
 
+import { obterIdioma } from "@/i18n/servidor";
 import { textosDoObjeto } from "@/lib/palavroes";
 import { avisoPalavrao } from "@/lib/palavroes/servidor";
 import { revalidatePath } from "next/cache";
@@ -51,7 +52,7 @@ export async function salvarResumo(_estado: EstadoFormulario, formData: FormData
         .from("resumo")
         .update({ ...valores, atualizado_em: new Date().toISOString() })
         .eq("id", id)
-    : await supabase.from("resumo").insert({ turma_id: turmaId, ...valores });
+    : await supabase.from("resumo").insert({ turma_id: turmaId, ...valores, idioma: await obterIdioma() });
   if (error) return { erro: "Não foi possível salvar o resumo." };
   if (!id) await marcarEvento("resumo_criado", { papel: "professor" });
 

@@ -255,6 +255,9 @@ export const es: Dicionario = {
       beta: "Repasa está en versión beta: nueva, gratis y sin límites mientras está en pruebas. Cuéntanos qué te pareció en Sugerencias.",
     },
   },
+  biblioteca: {
+    soIdioma: "Aquí aparece solo lo que está escrito en {idioma}. Para ver lo de otro idioma, cámbialo en el globo de arriba.",
+  },
   palavrao: {
     aviso: "Este texto tiene una palabra que no está permitida en Repasa: “{palavra}”. Cámbiala para guardar.",
   },

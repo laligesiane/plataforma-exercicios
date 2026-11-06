@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { fmt, NOME_NATIVO } from "@/i18n/config";
+import { obterDicionario, obterIdioma } from "@/i18n/servidor";
 import Link from "next/link";
 import { AbasBiblioteca } from "@/components/AbasBiblioteca";
 import { Cabecalho } from "@/components/Cabecalho";
@@ -21,12 +23,15 @@ export default async function BibliotecaDeResumos({ searchParams }: { searchPara
   const { busca, materia, tema } = lerFiltros(await searchParams);
 
   const supabase = await criarClienteServidor();
+  const idioma = await obterIdioma();
   // Só os públicos e publicados (as regras do banco também garantem).
   let consulta = supabase
     .from("resumo")
     .select("id, titulo, mapa, temas, materia, idioma_ensinado, atualizado_em")
     .eq("publicado", true)
     .eq("publico", true)
+    // Só o que está no idioma de quem visita (0041).
+    .eq("idioma", idioma)
     .order("atualizado_em", { ascending: false })
     .limit(60);
   if (busca) {
@@ -40,7 +45,7 @@ export default async function BibliotecaDeResumos({ searchParams }: { searchPara
   const [{ data }, { data: todas }] = await Promise.all([
     consulta,
     // Só para montar o filtro "Matéria" com o que existe na biblioteca.
-    supabase.from("resumo").select("materia, idioma_ensinado").eq("publicado", true).eq("publico", true).limit(2000),
+    supabase.from("resumo").select("materia, idioma_ensinado").eq("publicado", true).eq("publico", true).eq("idioma", idioma).limit(2000),
   ]);
   const resumos = (data ?? []) as unknown as Linha[];
   const opcoes = opcoesDeMateria(todas ?? []);
@@ -148,6 +153,7 @@ export default async function BibliotecaDeResumos({ searchParams }: { searchPara
             <p className="mt-1 text-sm text-tinta-suave">
               {busca || materia || tema ? "Tente outros filtros." : "Quando os professores marcarem resumos como públicos, eles aparecem aqui."}
             </p>
+            <p className="mt-2 text-sm text-tinta-suave">{fmt((await obterDicionario()).biblioteca.soIdioma, { idioma: NOME_NATIVO[idioma] })}</p>
           </div>
         )}
       </main>
