@@ -7,100 +7,44 @@ import type { CSSProperties } from "react";
 import { botaoPrimario } from "@/components/ui/estilos";
 import { obterPerfil, paginaInicial } from "@/lib/perfil";
 import { dadosEstruturadosInicio } from "@/lib/seo/site";
+import { TextoRico } from "@/components/ui/TextoRico";
+import { obterDicionario } from "@/i18n/servidor";
 
 const botaoContorno =
   "rounded-full border-2 border-linha px-6 py-2 font-bold text-tinta transition-colors hover:border-tinta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primaria";
 
-const acepcoes = [
-  {
-    texto: "Voltar a estudar o que já se aprendeu, para que fique firme.",
-    exemplo: "Repasa los verbos antes del examen.",
-  },
-  {
-    texto: "Passar de novo por um mesmo caminho.",
-    exemplo: "Repasamos la calle hasta encontrar la casa.",
-  },
-  {
-    texto: "Examinar com calma um trabalho já feito, procurando o que corrigir.",
-    exemplo: "Repasa tus respuestas antes de entregar.",
-  },
+/** Ícones dos recursos, na mesma ordem dos textos em d.landing.recursos. */
+const iconesRecursos = [
+  <>
+    <path d="M2 4.5h6a4 4 0 0 1 4 4V20a3 3 0 0 0-3-3H2z" />
+    <path d="M22 4.5h-6a4 4 0 0 0-4 4V20a3 3 0 0 1 3-3h7z" />
+  </>,
+  <>
+    <path d="M12 20h9" />
+    <path d="M16.4 3.6a2.1 2.1 0 0 1 3 3L7.5 18.5 3.5 19.5l1-4z" />
+  </>,
+  <>
+    <circle cx="12" cy="12" r="3" />
+    <circle cx="4.5" cy="5" r="2" />
+    <circle cx="19.5" cy="5" r="2" />
+    <circle cx="4.5" cy="19" r="2" />
+    <circle cx="19.5" cy="19" r="2" />
+    <path d="M6 6.4 9.8 10M18 6.4 14.2 10M6 17.6l3.8-3.6M18 17.6l-3.8-3.6" />
+  </>,
+  <>
+    <circle cx="12" cy="12" r="9" />
+    <path d="m8 12.5 2.8 2.8L16.5 9.5" />
+  </>,
 ];
 
-const recursos = [
-  {
-    icone: (
-      <>
-        <path d="M2 4.5h6a4 4 0 0 1 4 4V20a3 3 0 0 0-3-3H2z" />
-        <path d="M22 4.5h-6a4 4 0 0 0-4 4V20a3 3 0 0 1 3-3h7z" />
-      </>
-    ),
-    titulo: "Suas matérias, organizadas",
-    texto: "Português, espanhol, história, o que for. Cada matéria guarda os seus resumos, mapas e atividades num lugar só.",
-  },
-  {
-    icone: (
-      <>
-        <path d="M12 20h9" />
-        <path d="M16.4 3.6a2.1 2.1 0 0 1 3 3L7.5 18.5 3.5 19.5l1-4z" />
-      </>
-    ),
-    titulo: "Resumos do seu jeito",
-    texto: "Escreva com títulos, negrito, marca-texto, listas e notas. O sumário fica do lado, e dá para exportar em PDF.",
-  },
-  {
-    icone: (
-      <>
-        <circle cx="12" cy="12" r="3" />
-        <circle cx="4.5" cy="5" r="2" />
-        <circle cx="19.5" cy="5" r="2" />
-        <circle cx="4.5" cy="19" r="2" />
-        <circle cx="19.5" cy="19" r="2" />
-        <path d="M6 6.4 9.8 10M18 6.4 14.2 10M6 17.6l3.8-3.6M18 17.6l-3.8-3.6" />
-      </>
-    ),
-    titulo: "Mapas mentais",
-    texto: "Gere um mapa mental a partir do seu resumo, com um clique, e veja o assunto de cima. Ótimo para a véspera da prova.",
-  },
-  {
-    icone: (
-      <>
-        <circle cx="12" cy="12" r="9" />
-        <path d="m8 12.5 2.8 2.8L16.5 9.5" />
-      </>
-    ),
-    titulo: "Exercícios que explicam o erro",
-    texto: "Cada resposta é corrigida na hora. Errou? A explicação aparece logo abaixo, e você tenta de novo.",
-  },
+/** Exemplos em espanhol das acepções de "repasar" (iguais em todos os idiomas). */
+const exemplos = ["Repasa los verbos antes del examen.", "Repasamos la calle hasta encontrar la casa.", "Repasa tus respuestas antes de entregar."];
+
+/** Lojas do app (nomes próprios, iguais em todos os idiomas). */
+const lojas = [
+  { nome: "iPhone", detalhe: "App Store" },
+  { nome: "Android", detalhe: "Google Play" },
 ];
-
-const promessas = [
-  { titulo: "Sem anúncios. Nunca.", texto: "Lugar de estudo não é vitrine. Ninguém vai interromper sua atividade para vender nada." },
-  { titulo: "Grátis e sem limites", texto: "Crie quantas turmas, atividades e matérias quiser, com quantos alunos precisar. Sem pagar nada." },
-  { titulo: "Seus estudos são seus", texto: "Seus resumos e mapas ficam guardados com você, organizados por matéria, para voltar sempre que precisar." },
-];
-
-const titulo = { antes: "Seu melhor amigo na hora de", destaque: "aprender" };
-
-const app = {
-  selo: "Em breve: app para iPhone e Android",
-  sobretitulo: "Em breve",
-  titulo: "A Repasa vai caber no seu bolso",
-  texto:
-    "Estamos preparando o aplicativo da Repasa para iPhone e Android, com tudo o que você já usa no site: matérias, resumos, mapas mentais e exercícios. E, claro, sem anúncios.",
-  lojas: [
-    { nome: "iPhone", detalhe: "App Store" },
-    { nome: "Android", detalhe: "Google Play" },
-  ],
-  emBreve: "Em breve",
-  enquantoIsso:
-    "Enquanto isso, a Repasa já funciona no navegador do celular, e dá para colocá-la na tela inicial como se fosse um app.",
-  tela: {
-    saudacao: "Bom dia!",
-    hoje: "Para hoje",
-    tarefas: ["Revisar verbos", "Mapa de História", "10 exercícios"],
-    sequencia: "3 dias seguidos",
-  },
-};
 
 /** Atraso de cada item numa sequência, para eles aparecerem um depois do outro. */
 const atraso = (i: number, passo = 90): CSSProperties => ({ "--atraso": `${i * passo}ms` }) as CSSProperties;
@@ -145,7 +89,10 @@ function IconeCelular({ className = "" }: { className?: string }) {
 export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default async function Inicio() {
-  const perfil = await obterPerfil();
+  const [perfil, dicionario] = await Promise.all([obterPerfil(), obterDicionario()]);
+  const d = dicionario.landing;
+  const titulo = { antes: d.tituloAntes, destaque: d.tituloDestaque };
+  const app = d.app;
 
   return (
     // data-cores-repasa: a landing fica sempre no verde da Repasa, mesmo com a cor pessoal escolhida no perfil.
@@ -175,7 +122,7 @@ export default async function Inicio() {
               </span>
             </a>
             <p className="entrada mt-6 text-sm font-bold tracking-wide text-primaria uppercase" style={atraso(1)}>
-              Repasa, do espanhol repasar
+              {d.origem}
             </p>
             <h1
               className="entrada mt-3 text-4xl leading-[1.08] font-extrabold tracking-tight text-balance sm:text-5xl"
@@ -203,21 +150,20 @@ export default async function Inicio() {
               .
             </h1>
             <p className="entrada mt-6 max-w-prose text-lg text-tinta-suave" style={atraso(3)}>
-              Organize suas matérias, escreva resumos, monte mapas mentais e pratique com exercícios que explicam cada
-              erro. Sozinho ou com o seu professor.
+              {d.subtitulo}
             </p>
             <div className="entrada mt-8 flex flex-wrap gap-3" style={atraso(4)}>
               {perfil ? (
                 <Link href={paginaInicial(perfil.papel)} className={`${botaoPrimario} botao-pula`}>
-                  {perfil.papel === "professor" ? "Ir para minhas turmas" : "Ir para meus estudos"}
+                  {perfil.papel === "professor" ? d.irTurmas : d.irEstudos}
                 </Link>
               ) : (
                 <>
                   <Link href="/cadastro?papel=aluno" className={`${botaoPrimario} botao-pula`}>
-                    Começar a estudar
+                    {d.comecar}
                   </Link>
                   <Link href="/entrar" className={botaoContorno}>
-                    Entrar
+                    {d.entrar}
                   </Link>
                 </>
               )}
@@ -231,7 +177,7 @@ export default async function Inicio() {
             <Folha className="flutua absolute -bottom-10 left-6 size-7 text-primaria/70" style={atraso(4, 150)} />
             <div className="cartao-mesa relative rounded-3xl border border-linha bg-suave p-5 shadow-[0_18px_40px_-24px_rgb(15_157_107/0.45)] sm:p-6">
               <div className="flex flex-wrap gap-1.5">
-                {["Português", "Espanhol", "História"].map((m, i) => (
+                {d.mesa.materias.map((m, i) => (
                   <span
                     key={m}
                     className={`entrada rounded-full px-3 py-1 text-xs font-bold ${i === 1 ? "bg-primaria text-white" : "bg-fundo text-tinta-suave"}`}
@@ -242,11 +188,10 @@ export default async function Inicio() {
                 ))}
               </div>
               <div className="entrada mt-4 rounded-2xl border border-linha bg-fundo p-4" style={atraso(6)}>
-                <p className="text-xs font-bold tracking-wide text-tinta-suave uppercase">Resumo</p>
-                <p className="mt-1 text-lg font-extrabold">Pretérito imperfeito</p>
+                <p className="text-xs font-bold tracking-wide text-tinta-suave uppercase">{d.mesa.resumo}</p>
+                <p className="mt-1 text-lg font-extrabold">{d.mesa.resumoTitulo}</p>
                 <p className="mt-2 text-sm text-tinta-suave">
-                  Usado para <mark className="marca-texto rounded px-1 text-tinta">hábitos no passado</mark> e para
-                  descrever cenas.
+                  <TextoRico texto={d.mesa.resumoTexto} classeMarca="marca-texto rounded px-1 text-tinta" />
                 </p>
                 <ul className="mt-2 list-disc pl-5 text-sm text-tinta-suave">
                   <li>-ar → -aba: repasaba</li>
@@ -255,20 +200,20 @@ export default async function Inicio() {
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-2 rounded-2xl border border-linha bg-fundo p-4 text-sm font-bold">
                 <span className="entrada rounded-full bg-primaria-suave px-3 py-1 text-primaria" style={atraso(9)}>
-                  Imperfeito
+                  {d.mesa.mapa[0]}
                 </span>
                 <span className="linha-mapa h-0.5 w-5 bg-linha" style={atraso(10)} />
                 <span className="entrada rounded-full border border-linha px-3 py-1" style={atraso(11)}>
-                  Hábitos
+                  {d.mesa.mapa[1]}
                 </span>
                 <span className="linha-mapa h-0.5 w-5 bg-linha" style={atraso(12)} />
                 <span className="entrada rounded-full border border-linha px-3 py-1" style={atraso(13)}>
-                  Descrições
+                  {d.mesa.mapa[2]}
                 </span>
               </div>
               <div data-mascote className="absolute -right-1 -bottom-14 flex items-end gap-1 sm:-right-6">
                 <span className="balao mb-3 rounded-2xl rounded-br-sm border border-linha bg-fundo px-3 py-1.5 text-sm font-bold shadow-sm">
-                  Bora repassar?
+                  {d.mesa.balao}
                 </span>
                 <span className="brotinho-chega">
                   <span className="brotinho-pulinho block">
@@ -284,14 +229,13 @@ export default async function Inicio() {
         <section className="border-y border-linha bg-suave">
           <div className="mx-auto w-full max-w-5xl px-4 py-16">
             <h2 data-surgir className="text-3xl font-extrabold tracking-tight">
-              Tudo o que ajuda você a aprender
+              {d.recursosTitulo}
             </h2>
             <p data-surgir className="mt-3 max-w-prose text-tinta-suave" style={atraso(1)}>
-              A Repasa junta num lugar só o que normalmente fica espalhado entre caderno, aplicativo de notas e folha de
-              exercício.
+              {d.recursosTexto}
             </p>
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              {recursos.map((r, i) => (
+              {d.recursos.map((r, i) => (
                 <div
                   key={r.titulo}
                   data-surgir
@@ -309,7 +253,7 @@ export default async function Inicio() {
                       strokeLinejoin="round"
                       aria-hidden="true"
                     >
-                      {r.icone}
+                      {iconesRecursos[i]}
                     </svg>
                   </span>
                   <h3 className="mt-4 text-lg font-extrabold">{r.titulo}</h3>
@@ -323,19 +267,18 @@ export default async function Inicio() {
         {/* Exemplo de correção */}
         <section className="mx-auto grid w-full max-w-5xl items-center gap-10 px-4 py-16 md:grid-cols-2">
           <div data-surgir>
-            <h2 className="text-3xl font-extrabold tracking-tight">Errou? A Repasa explica.</h2>
+            <h2 className="text-3xl font-extrabold tracking-tight">{d.correcao.titulo}</h2>
             <p className="mt-4 text-tinta-suave">
-              Nada de “sete de dez, tente de novo”. Cada item é corrigido na hora e, quando a resposta não está certa, a
-              explicação aparece logo abaixo, como se alguém estivesse estudando do seu lado.
+              {d.correcao.texto}
             </p>
             <Link href="/experimente" className={`${botaoContorno} mt-6 inline-block`}>
-              Experimentar uma atividade
+              {d.correcao.botao}
             </Link>
           </div>
           <figure data-surgir style={atraso(1)} className="correcao rounded-3xl border border-linha bg-suave p-5 sm:p-6">
-            <figcaption className="text-xs font-bold tracking-wide text-tinta-suave uppercase">Como é a correção</figcaption>
+            <figcaption className="text-xs font-bold tracking-wide text-tinta-suave uppercase">{d.correcao.legenda}</figcaption>
             <div className="mt-3 rounded-2xl border border-linha bg-fundo p-4">
-              <p className="font-semibold">
+              <p className="font-semibold" lang="es">
                 Antes del examen, yo siempre{" "}
                 <span className="palavra-errada inline-block rounded-lg border-2 border-erro bg-erro-fundo px-2 py-0.5 text-erro line-through">
                   repasso
@@ -343,14 +286,14 @@ export default async function Inicio() {
                 mis apuntes.
               </p>
               <div className="correcao-dica mt-3 rounded-xl bg-erro-fundo p-3 text-sm">
-                <p className="font-bold text-erro">Quase! A resposta é “repaso”.</p>
+                <p className="font-bold text-erro">{d.correcao.quase}</p>
                 <p className="mt-1 text-tinta">
-                  Em espanhol não existe “ss”. O som é o mesmo, mas a grafia leva um “s” só.
+                  {d.correcao.explicacao}
                 </p>
               </div>
             </div>
             <div className="correcao-certa mt-3 rounded-2xl border border-linha bg-fundo p-4">
-              <p className="font-semibold">
+              <p className="font-semibold" lang="es">
                 Antes del examen, yo siempre{" "}
                 <span className="palavra-certa inline-block rounded-lg border-2 border-certo bg-certo-fundo px-2 py-0.5 text-certo">
                   repaso
@@ -370,7 +313,7 @@ export default async function Inicio() {
                 >
                   <path d="m5 12.5 4.5 4.5L19 7.5" />
                 </svg>
-                Isso! Agora está certo.
+                {d.correcao.certo}
               </p>
             </div>
           </figure>
@@ -380,33 +323,30 @@ export default async function Inicio() {
         <section className="border-y border-linha bg-suave">
           <div className="mx-auto grid w-full max-w-5xl gap-10 px-4 py-16 md:grid-cols-2">
             <div data-surgir>
-              <h2 className="text-3xl font-extrabold tracking-tight">De onde vem o nome</h2>
+              <h2 className="text-3xl font-extrabold tracking-tight">{d.nome.titulo}</h2>
               <p className="mt-4 text-tinta-suave">
-                Em espanhol, <em>repasar</em> é o que se faz na véspera da prova: abrir o caderno de novo, rever o que já
-                foi visto, passar outra vez pelo mesmo caminho até ele ficar conhecido. E <em>¡repasa!</em> é o que todo
-                professor diz no fim da aula.
+                <TextoRico texto={d.nome.p1} />
               </p>
               <p className="mt-4 text-tinta-suave">
-                Em português, a palavra é quase a mesma e ganha mais um sentido: <strong className="text-tinta">repassar</strong>{" "}
-                é passar adiante. A Repasa está aqui para isso: estudar junto com você até a matéria ser sua.
+                <TextoRico texto={d.nome.p2} classeNegrito="text-tinta" />
               </p>
             </div>
 
             <div data-surgir style={atraso(1)} className="rounded-3xl border border-linha bg-fundo p-6">
               <p className="text-3xl font-extrabold tracking-tight">
                 re·pa·sar
-                <span className="ml-3 align-middle text-sm font-semibold text-tinta-suave">verbo · espanhol</span>
+                <span className="ml-3 align-middle text-sm font-semibold text-tinta-suave">{d.nome.verbo}</span>
               </p>
               <ol className="mt-5 space-y-4">
-                {acepcoes.map((a, i) => (
-                  <li key={a.exemplo} data-surgir style={atraso(i + 2, 120)} className="flex gap-3">
+                {d.nome.acepcoes.map((texto, i) => (
+                  <li key={i} data-surgir style={atraso(i + 2, 120)} className="flex gap-3">
                     <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primaria-suave text-sm font-extrabold text-primaria">
                       {i + 1}
                     </span>
                     <div>
-                      <p className="font-semibold">{a.texto}</p>
+                      <p className="font-semibold">{texto}</p>
                       <p className="mt-0.5 text-sm text-tinta-suave italic" lang="es">
-                        {a.exemplo}
+                        {exemplos[i]}
                       </p>
                     </div>
                   </li>
@@ -420,27 +360,25 @@ export default async function Inicio() {
         <section>
           <div className="mx-auto grid w-full max-w-5xl gap-4 px-4 py-16 md:grid-cols-2">
             <div data-surgir className="cartao-recurso rounded-3xl border border-linha p-6">
-              <h2 className="text-2xl font-extrabold tracking-tight">Para quem estuda</h2>
+              <h2 className="text-2xl font-extrabold tracking-tight">{d.estuda.titulo}</h2>
               <ul className="mt-4 space-y-2 text-tinta-suave">
-                <li>Crie suas matérias e estude por conta própria, sem precisar de professor.</li>
-                <li>Escreva resumos e monte mapas mentais para revisar.</li>
-                <li>Se um professor te convidar, as turmas e atividades dele aparecem junto.</li>
-                <li>Veja os horários das suas aulas na sua agenda.</li>
+                {d.estuda.itens.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
               </ul>
               <Link href="/cadastro?papel=aluno" className={`${botaoPrimario} mt-6 inline-block`}>
-                Criar conta de aluno
+                {d.estuda.botao}
               </Link>
             </div>
             <div data-surgir style={atraso(1)} className="cartao-recurso rounded-3xl border border-linha p-6">
-              <h2 className="text-2xl font-extrabold tracking-tight">Para quem ensina</h2>
+              <h2 className="text-2xl font-extrabold tracking-tight">{d.ensina.titulo}</h2>
               <ul className="mt-4 space-y-2 text-tinta-suave">
-                <li>Crie turmas de qualquer matéria e convide seus alunos por e-mail.</li>
-                <li>Registre as aulas e compartilhe resumos com a turma.</li>
-                <li>Monte exercícios e escreva a explicação de cada erro uma vez só.</li>
-                <li>Veja o que cada aluno respondeu.</li>
+                {d.ensina.itens.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
               </ul>
               <Link href="/cadastro" className={`${botaoContorno} mt-6 inline-block`}>
-                Criar conta de professor
+                {d.ensina.botao}
               </Link>
             </div>
           </div>
@@ -459,7 +397,7 @@ export default async function Inicio() {
               <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-balance sm:text-4xl">{app.titulo}</h2>
               <p className="mt-4 max-w-prose text-tinta-suave">{app.texto}</p>
               <div className="mt-6 flex flex-wrap gap-3">
-                {app.lojas.map((l, i) => (
+                {lojas.map((l, i) => (
                   <div
                     key={l.nome}
                     data-surgir
@@ -487,10 +425,10 @@ export default async function Inicio() {
                   <IconeLogo tamanho={26} />
                   <span className="text-sm font-extrabold">Repasa</span>
                 </div>
-                <p className="mt-3 text-lg font-extrabold">{app.tela.saudacao}</p>
-                <p className="text-[11px] font-bold tracking-wide text-tinta-suave uppercase">{app.tela.hoje}</p>
+                <p className="mt-3 text-lg font-extrabold">{app.saudacao}</p>
+                <p className="text-[11px] font-bold tracking-wide text-tinta-suave uppercase">{app.hoje}</p>
                 <ul className="mt-2 space-y-1.5">
-                  {app.tela.tarefas.map((t, i) => (
+                  {app.tarefas.map((t, i) => (
                     <li
                       key={t}
                       className="flex items-center gap-2 rounded-xl border border-linha bg-suave px-2.5 py-2 text-xs font-bold"
@@ -509,7 +447,7 @@ export default async function Inicio() {
                   ))}
                 </ul>
                 <div className="mt-3 flex items-center justify-between rounded-xl bg-primaria-suave px-2.5 py-2">
-                  <span className="text-xs font-extrabold text-primaria">{app.tela.sequencia}</span>
+                  <span className="text-xs font-extrabold text-primaria">{app.sequencia}</span>
                   <Mascote pose="lendo" tamanho={44} animado />
                 </div>
                 <div className="mx-auto mt-3 h-1 w-16 rounded-full bg-linha" />
@@ -524,10 +462,10 @@ export default async function Inicio() {
         {/* Promessas */}
         <section className="mx-auto w-full max-w-5xl px-4 pb-16">
           <h2 data-surgir className="text-3xl font-extrabold tracking-tight">
-            O que a gente promete
+            {d.promessasTitulo}
           </h2>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
-            {promessas.map((p, i) => (
+            {d.promessas.map((p, i) => (
               <div key={p.titulo} data-surgir style={atraso(i, 120)} className="border-l-4 border-primaria pl-4">
                 <h3 className="text-lg font-extrabold">{p.titulo}</h3>
                 <p className="mt-2 text-tinta-suave">{p.texto}</p>
@@ -552,33 +490,33 @@ export default async function Inicio() {
               ¡Repasa!
             </p>
             <p className="mx-auto mt-3 max-w-md opacity-80">
-              Crie sua conta, abra sua primeira matéria e comece a estudar. É grátis.
+              {d.fecho}
             </p>
             <Link
               href={perfil ? paginaInicial(perfil.papel) : "/cadastro?papel=aluno"}
               className="botao-pula mt-6 inline-block rounded-full bg-primaria px-6 py-2.5 font-bold text-white transition-opacity hover:opacity-90"
             >
-              {perfil ? "Ir para meus estudos" : "Começar a estudar"}
+              {perfil ? d.irEstudos : d.comecar}
             </Link>
           </div>
         </section>
       </main>
 
       <footer className="border-t border-linha py-6 text-center text-xs text-tinta-suave">
-        Repasa · repasa.com.br · Sem anúncios, nunca. ·{" "}
+        Repasa · repasa.com.br · {d.rodape.semAnuncios} ·{" "}
         <Link href="/privacidade" className="hover:underline">
-          Privacidade
+          {d.rodape.privacidade}
         </Link>{" "}
         ·{" "}
         <Link href="/termos" className="hover:underline">
-          Termos de uso
+          {d.rodape.termos}
         </Link>{" "}
         ·{" "}
         <Link href="/sugestoes" className="hover:underline">
-          Sugestões e contato
+          {d.rodape.sugestoes}
         </Link>
         <br />
-        A Repasa está em versão beta: nova, grátis e sem limites enquanto está em testes. Conte o que achou em Sugestões.
+        {d.rodape.beta}
       </footer>
     </div>
   );

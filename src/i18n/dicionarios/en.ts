@@ -106,7 +106,8 @@ export const en: Dicionario = {
     contaProfessor: "Teacher account",
     textoAluno:
       "Organize your studies by subject, with summaries and mind maps. You don't need a teacher: if a teacher invites you later, their classes show up here too.",
-    textoProfessor: "Create classes for any subject, log your lessons, build exercises that explain every mistake and invite your students.",
+    textoProfessor:
+      "Create classes for any subject, log your lessons, build exercises that explain every mistake and invite your students.",
     naoConfigurado: "Sign-up hasn't been set up yet.",
     jaTemConta: "Already have an account?",
     entrar: "Sign in",
@@ -135,6 +136,123 @@ export const en: Dicionario = {
     erroDigiteEmail: "Type your email.",
     erroMuitos: "Too many requests in a row. Wait a few minutes and try again.",
     sucesso: "If {email} has a Repasa account, we sent a link to create a new password. Check your spam folder too.",
+  },
+  landing: {
+    origem: "Repasa, from the Spanish verb repasar",
+    tituloAntes: "Your best friend when it's time to",
+    tituloDestaque: "learn",
+    subtitulo:
+      "Organize your subjects, write summaries, build mind maps and practice with exercises that explain every mistake. On your own or with your teacher.",
+    irTurmas: "Go to my classes",
+    irEstudos: "Go to my studies",
+    comecar: "Start studying",
+    entrar: "Sign in",
+    mesa: {
+      materias: ["Portuguese", "Spanish", "History"],
+      resumo: "Summary",
+      resumoTitulo: "Spanish imperfect tense",
+      resumoTexto: "Used for ==habits in the past== and to describe scenes.",
+      mapa: ["Imperfect", "Habits", "Descriptions"],
+      balao: "Ready to review?",
+    },
+    recursosTitulo: "Everything that helps you learn",
+    recursosTexto: "Repasa brings together in one place what's usually scattered between your notebook, a notes app and a worksheet.",
+    recursos: [
+      {
+        titulo: "Your subjects, organized",
+        texto: "Portuguese, Spanish, history, whatever it is. Each subject keeps your summaries, maps and activities in one place.",
+      },
+      {
+        titulo: "Summaries your way",
+        texto:
+          "Write with headings, bold, highlighter, lists and notes. The table of contents sits on the side, and you can export to PDF.",
+      },
+      {
+        titulo: "Mind maps",
+        texto: "Turn your summary into a mind map with one click and see the whole topic at a glance. Great for the night before the test.",
+      },
+      {
+        titulo: "Exercises that explain the mistake",
+        texto: "Every answer is checked right away. Got it wrong? The explanation shows up right below, and you try again.",
+      },
+    ],
+    correcao: {
+      titulo: "Got it wrong? Repasa explains.",
+      texto:
+        "No more “seven out of ten, try again”. Each item is checked right away and, when the answer isn't right, the explanation shows up just below, as if someone were studying next to you.",
+      botao: "Try an activity",
+      legenda: "How checking works",
+      quase: "Almost! The answer is “repaso”.",
+      explicacao: "Spanish doesn't use “ss”. The sound is the same, but it's spelled with a single “s”.",
+      certo: "That's it! Now it's right.",
+    },
+    nome: {
+      titulo: "Where the name comes from",
+      p1: "In Spanish, *repasar* is what you do the night before a test: open your notebook again, go over what you've already seen, walk the same path again until you know it well. And *¡repasa!* is what every teacher says at the end of class.",
+      p2: "In Portuguese the word is almost the same and gets one more meaning: **repassar** is to pass something on. That's what Repasa is here for: studying with you until the subject is yours.",
+      verbo: "verb · Spanish",
+      acepcoes: [
+        "To study again what you've already learned, so it sticks.",
+        "To go along the same path again.",
+        "To look calmly over finished work, looking for what to fix.",
+      ],
+    },
+    estuda: {
+      titulo: "For students",
+      itens: [
+        "Create your subjects and study on your own, no teacher needed.",
+        "Write summaries and build mind maps to review.",
+        "If a teacher invites you, their classes and activities show up too.",
+        "See your class times in your schedule.",
+      ],
+      botao: "Create a student account",
+    },
+    ensina: {
+      titulo: "For teachers",
+      itens: [
+        "Create classes for any subject and invite your students by email.",
+        "Log your lessons and share summaries with the class.",
+        "Build exercises and write the explanation for each mistake just once.",
+        "See what each student answered.",
+      ],
+      botao: "Create a teacher account",
+    },
+    app: {
+      selo: "Coming soon: app for iPhone and Android",
+      sobretitulo: "Coming soon",
+      titulo: "Repasa is going to fit in your pocket",
+      texto:
+        "We're building the Repasa app for iPhone and Android, with everything you already use on the website: subjects, summaries, mind maps and exercises. And, of course, no ads.",
+      emBreve: "Coming soon",
+      enquantoIsso: "Meanwhile, Repasa already works in your phone's browser, and you can add it to your home screen like an app.",
+      saudacao: "Good morning!",
+      hoje: "For today",
+      tarefas: ["Review verbs", "History map", "10 exercises"],
+      sequencia: "3-day streak",
+    },
+    promessasTitulo: "What we promise",
+    promessas: [
+      {
+        titulo: "No ads. Ever.",
+        texto: "A place to study isn't a shop window. Nobody will interrupt your activity to sell you anything.",
+      },
+      {
+        titulo: "Free and unlimited",
+        texto: "Create as many classes, activities and subjects as you want, with as many students as you need. Without paying anything.",
+      },
+      {
+        titulo: "Your studies are yours",
+        texto: "Your summaries and maps stay with you, organized by subject, so you can come back whenever you need.",
+      },
+    ],
+    fecho: "Create your account, open your first subject and start studying. It's free.",
+    rodape: {
+      semAnuncios: "No ads, ever.",
+      privacidade: "Privacy",
+      termos: "Terms of use",
+      sugestoes: "Feedback and contact",
+      beta: "Repasa is in beta: new, free and unlimited while we test it. Tell us what you think in Feedback.",
+    },
   },
   palavrao: {
     aviso: "This text has a word that isn't allowed on Repasa: “{palavra}”. Change it to save.",
