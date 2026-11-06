@@ -1,5 +1,7 @@
 "use client";
 
+import { fmt } from "@/i18n/config";
+import { useDicionario } from "@/i18n/cliente";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
@@ -68,12 +70,13 @@ function usePosicao() {
 }
 
 function Alca(props: ReturnType<typeof usePosicao>["alca"]) {
+  const t = useDicionario().foco;
   return (
     <span
       {...props}
       onPointerCancel={props.onPointerUp}
       role="presentation"
-      title="Arraste para mover"
+      title={t.arraste}
       className="flex cursor-grab touch-none items-center self-stretch px-1 text-tinta-suave select-none active:cursor-grabbing"
     >
       <svg width="10" height="18" viewBox="0 0 10 18" aria-hidden>
@@ -95,6 +98,7 @@ function Alca(props: ReturnType<typeof usePosicao>["alca"]) {
  */
 export function MiniBrotinho() {
   const { sessao, agora, concluida, pausar, retomar, dispensarConclusao, verArvore, celebrando } = useFoco();
+  const t = useDicionario().foco;
   const caminho = usePathname();
   const { ref, estilo, alca } = usePosicao();
   if (caminho === PAGINA_FOCO) return null;
@@ -107,18 +111,18 @@ export function MiniBrotinho() {
     return (
       <div ref={ref} style={estilo} role="status" className={caixa}>
         <Alca {...alca} />
-        <PlantaFoco fase={ULTIMA_FASE} tamanho={52} />
+        <PlantaFoco fase={ULTIMA_FASE} tamanho={52} textos={t} />
         <div className="text-left">
-          <p className="text-sm font-extrabold">Sua árvore cresceu!</p>
-          <p className="text-xs text-tinta-suave">{concluida} minutos de foco.</p>
+          <p className="text-sm font-extrabold">{t.cresceu}</p>
+          <p className="text-xs text-tinta-suave">{fmt(t.minutosFoco, { n: concluida })}</p>
           <button type="button" onClick={verArvore} className="text-xs font-bold text-primaria hover:underline">
-            Ver árvore
+            {t.verArvore}
           </button>
         </div>
         <button
           type="button"
           onClick={dispensarConclusao}
-          aria-label="Fechar"
+          aria-label={t.fechar}
           className="ml-1 self-start rounded-full px-1.5 text-tinta-suave hover:text-tinta"
         >
           ×
@@ -132,13 +136,13 @@ export function MiniBrotinho() {
   const fase = faseDoProgresso(progressoDa(sessao, agora));
 
   return (
-    <div ref={ref} style={estilo} className={caixa} aria-label="Modo foco">
+    <div ref={ref} style={estilo} className={caixa} aria-label={t.titulo}>
       <Alca {...alca} />
-      <Link href={PAGINA_FOCO} className="flex items-center gap-2" title="Abrir o modo foco">
-        <PlantaFoco fase={fase} pausado={pausado} tamanho={40} />
+      <Link href={PAGINA_FOCO} className="flex items-center gap-2" title={t.abrir}>
+        <PlantaFoco fase={fase} pausado={pausado} tamanho={40} textos={t} />
         <span className="text-left">
           <span className="block text-lg leading-tight font-extrabold tabular-nums">{formatarTempo(restanteDa(sessao, agora))}</span>
-          <span className="block text-xs font-semibold text-tinta-suave">{pausado ? "Pausado" : "Modo foco"}</span>
+          <span className="block text-xs font-semibold text-tinta-suave">{pausado ? t.pausado : t.titulo}</span>
         </span>
       </Link>
       <button
@@ -146,7 +150,7 @@ export function MiniBrotinho() {
         onClick={pausado ? retomar : pausar}
         className="rounded-full border-2 border-linha px-3 py-1 text-xs font-bold hover:border-tinta"
       >
-        {pausado ? "Continuar" : "Pausar"}
+        {pausado ? t.continuar : t.pausar}
       </button>
     </div>
   );

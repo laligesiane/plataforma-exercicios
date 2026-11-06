@@ -1,5 +1,8 @@
 /** Coleção de árvores do modo foco: as espécies que o aluno pode ganhar e os selos das metas. */
 
+import { fmt } from "../../i18n/config";
+import { focoPt, seloTx, type TextosFoco } from "../../i18n/dicionarios/focoPt";
+
 export type Especie = {
   id: string;
   nome: string;
@@ -229,23 +232,24 @@ export function selosNovos(antes: ArvoreColhida[], depois: ArvoreColhida[]): Sel
 }
 
 /** Uma frase sobre a próxima meta, para dar vontade de plantar mais uma. */
-export function proximaMeta(arvores: ArvoreColhida[], hoje: string): string | null {
+export function proximaMeta(arvores: ArvoreColhida[], hoje: string, t: TextosFoco = focoPt): string | null {
   const hojeTotal = arvores.filter((a) => a.dia === hoje).length;
   const selos = calcularSelos(arvores);
   const falta = (id: string) => selos.find((s) => s.id === id && !s.conquistado);
   const doDia = falta("jardim-do-dia") ?? falta("bosque-do-dia");
   if (doDia && hojeTotal < doDia.meta) {
     const n = doDia.meta - hojeTotal;
-    return `Plante mais ${n} ${n === 1 ? "árvore" : "árvores"} hoje e ganhe o selo ${doDia.nome}.`;
+    return fmt(t.metaDoDia, { arvores: n === 1 ? t.arvore1 : fmt(t.arvoresN, { n }), selo: seloTx(t, doDia.id).nome });
   }
   const seguidos = falta("ritmo") ?? falta("constancia") ?? falta("semana");
   if (seguidos) {
     const atual = sequenciaAtual(arvores.map((a) => a.dia), hoje);
     const n = seguidos.meta - atual;
-    if (atual > 0 && n > 0) return `Você está há ${atual} ${atual === 1 ? "dia" : "dias"} seguidos. Volte amanhã: faltam ${n} para o selo ${seguidos.nome}.`;
+    if (atual > 0 && n > 0)
+      return fmt(t.metaSeguidos, { dias: atual === 1 ? t.dia1 : fmt(t.diasN, { n: atual }), n, selo: seloTx(t, seguidos.id).nome });
   }
   const especies = new Set(arvores.map((a) => a.especie)).size;
-  if (especies < ESPECIES.length) return `Você tem ${especies} de ${ESPECIES.length} espécies. A próxima árvore é surpresa!`;
+  if (especies < ESPECIES.length) return fmt(t.metaEspecies, { n: especies, total: ESPECIES.length });
   return null;
 }
 
