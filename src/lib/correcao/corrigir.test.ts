@@ -56,6 +56,7 @@ describe("lacuna", () => {
       expect(corrigir(arcoIris(false), resposta)).toEqual({
         status: "certo_com_aviso",
         aviso: 'A grafia correta é "arco-íris".',
+        grafia: "arco-íris",
       });
     });
 

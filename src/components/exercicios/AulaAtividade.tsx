@@ -1,5 +1,7 @@
 "use client";
 
+import { fmt } from "@/i18n/config";
+import { useDicionario } from "@/i18n/cliente";
 import { useRef, useState } from "react";
 import { resumirAtividade, type ResumoAtividade } from "@/lib/atividades/resumo";
 import { botaoPrimario } from "@/components/ui/estilos";
@@ -65,6 +67,7 @@ export function AulaAtividade({
   onDuvida,
   idioma = null,
 }: Props) {
+  const tx = useDicionario().exercicio;
   const totalItens = exercicios.filter(ehAutomatico).reduce((soma, e) => soma + e.itens.length, 0);
   const temOutros = exercicios.some((e) => !ehAutomatico(e));
   const [certos, setCertos] = useState(() => contarAnteriores(exercicios, respostasAnteriores));
@@ -87,8 +90,8 @@ export function AulaAtividade({
   function enviar() {
     const novo = resumirAtividade(exercicios, certos, primeira);
     if (novo.semResposta > 0) {
-      const itens = novo.semResposta === 1 ? "1 item" : `${novo.semResposta} itens`;
-      if (!confirm(`Você ainda não respondeu ${itens}. Enviar mesmo assim?`)) return;
+      const pergunta = novo.semResposta === 1 ? tx.naoRespondeu1 : fmt(tx.naoRespondeuN, { n: novo.semResposta });
+      if (!confirm(pergunta)) return;
     }
     setResumo(novo);
     onEnviar?.(novo);
@@ -97,7 +100,7 @@ export function AulaAtividade({
   }
 
   if (totalItens === 0 && !temOutros) {
-    return <p className="text-tinta-suave">Esta atividade ainda não tem exercícios.</p>;
+    return <p className="text-tinta-suave">{tx.semExercicios}</p>;
   }
 
   return (
@@ -106,7 +109,7 @@ export function AulaAtividade({
         {totalItens > 0 && (
           <div className="flex items-center gap-3 text-sm font-semibold text-tinta-suave">
             <span className="tabular-nums">
-              {acertos} de {totalItens} certos
+              {fmt(tx.certosDe, { certos: acertos, total: totalItens })}
             </span>
             <div className="h-2 flex-1 overflow-hidden rounded-full bg-suave">
               <div
@@ -148,9 +151,9 @@ export function AulaAtividade({
               <PainelResumo resumo={resumo} onFechar={() => setResumo(null)} />
             ) : (
               <div className="flex flex-col items-center gap-2 rounded-2xl bg-suave p-5 text-center">
-                <p className="text-sm text-tinta-suave">Terminou? Envie para ver o resumo dos seus acertos.</p>
+                <p className="text-sm text-tinta-suave">{tx.terminou}</p>
                 <button type="button" onClick={enviar} className={botaoPrimario}>
-                  Enviar respostas
+                  {tx.enviarRespostas}
                 </button>
               </div>
             )}

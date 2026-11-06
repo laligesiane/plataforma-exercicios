@@ -1,5 +1,7 @@
 "use client";
 
+import { fmt } from "@/i18n/config";
+import { useDicionario } from "@/i18n/cliente";
 import { useMemo, useState } from "react";
 import { corrigirArrastar, podeVerResposta, type Resultado } from "@/lib/correcao";
 import type { ExercicioArrastar as Tipo } from "@/lib/atividades/modelo";
@@ -18,6 +20,7 @@ type Props = {
 type Estado = { palavra: string; resultado: Resultado; erros: number };
 
 export function ExercicioArrastar({ exercicio, anteriores, onResultado }: Props) {
+  const tx = useDicionario().exercicio;
   // Banco: as respostas de todos os itens e as palavras extras, numa ordem fixa por exercício.
   const banco = useMemo(
     () =>
@@ -70,7 +73,7 @@ export function ExercicioArrastar({ exercicio, anteriores, onResultado }: Props)
 
   return (
     <AreaArrastar onSoltar={colocar}>
-      <div className="mb-2 flex flex-wrap gap-2 rounded-2xl bg-suave p-3" aria-label="Banco de palavras">
+      <div className="mb-2 flex flex-wrap gap-2 rounded-2xl bg-suave p-3" aria-label={tx.bancoPalavras}>
         {disponiveis.length > 0 ? (
           disponiveis.map((p) => (
             <Peca
@@ -107,7 +110,7 @@ export function ExercicioArrastar({ exercicio, anteriores, onResultado }: Props)
               <Alvo
                 id={item.id}
                 inline
-                rotulo={estado ? `Lacuna com "${estado.palavra}"` : "Lacuna vazia"}
+                rotulo={estado ? fmt(tx.lacunaCom, { palavra: estado.palavra }) : tx.lacunaVazia}
                 onToque={selecionada && status !== "certo" ? () => colocar(selecionada, item.id) : undefined}
                 className={`mx-1 inline-flex min-h-10 min-w-24 items-center justify-center rounded-[10px] border-2 px-3 py-0.5 align-middle sm:min-h-0 leading-normal font-bold transition-colors ${cor}`}
               >
@@ -123,7 +126,7 @@ export function ExercicioArrastar({ exercicio, anteriores, onResultado }: Props)
                 onClick={() => setVerResposta((v) => ({ ...v, [item.id]: true }))}
                 className="mt-2 text-sm font-bold text-primaria underline-offset-4 hover:underline"
               >
-                {verResposta[item.id] ? `Resposta: ${item.resposta}` : "Ver resposta"}
+                {verResposta[item.id] ? fmt(tx.respostaX, { resposta: item.resposta }) : tx.verResposta}
               </button>
             )}
           </div>

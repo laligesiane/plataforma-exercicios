@@ -1,5 +1,7 @@
 "use client";
 
+import { fmt } from "@/i18n/config";
+import { useDicionario } from "@/i18n/cliente";
 import { useMemo, useState } from "react";
 import { corrigirRelacionar, type Resultado } from "@/lib/correcao";
 import { normalizarBasico } from "@/lib/correcao/normalizar";
@@ -16,6 +18,7 @@ type Props = {
 
 /** O aluno arrasta (ou toca) um item da esquerda até o par dele na direita. */
 export function ExercicioRelacionar({ exercicio, anteriores, onResultado }: Props) {
+  const tx = useDicionario().exercicio;
   // Direita sem repetir textos iguais, em ordem embaralhada.
   const direitas = useMemo(() => {
     const unicas = new Map<string, string>();
@@ -85,7 +88,7 @@ export function ExercicioRelacionar({ exercicio, anteriores, onResultado }: Prop
               <Alvo
                 key={d.id}
                 id={d.id}
-                rotulo={`Par: ${d.texto}`}
+                rotulo={fmt(tx.par, { texto: d.texto })}
                 onToque={selecionado && !concluida ? () => ligar(selecionado, d.id) : undefined}
                 className={`flex min-h-10 items-center justify-between gap-2 rounded-xl border-2 px-3 py-1.5 font-bold transition-colors ${concluida ? "border-certo bg-certo-fundo text-certo" : selecionado ? "cursor-pointer border-dashed border-primaria" : "border-linha"}`}
               >

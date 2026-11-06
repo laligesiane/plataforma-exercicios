@@ -2,22 +2,25 @@ import Link from "next/link";
 import { Cabecalho } from "@/components/Cabecalho";
 import { tiposExercicio } from "@/lib/atividades/modelo";
 import { aulasDemo } from "@/lib/exemplos/aulasDemo";
+import { obterDicionario } from "@/i18n/servidor";
 
-export const metadata = { title: "Aula de demonstração · Repasa" };
+export async function generateMetadata() {
+  return { title: (await obterDicionario()).experimente.tituloPagina };
+}
 
-export default function Experimente() {
+export default async function Experimente() {
+  const tx = (await obterDicionario()).experimente;
   return (
     <div className="flex min-h-screen flex-col">
       <Cabecalho />
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 pt-8 pb-16 sm:px-6 lg:px-8">
-        <span className="rounded-full bg-primaria-suave px-3 py-1 text-xs font-bold text-primaria">Aula de demonstração</span>
+        <span className="rounded-full bg-primaria-suave px-3 py-1 text-xs font-bold text-primaria">{tx.selo}</span>
         <h1 className="mt-3 text-3xl leading-tight font-extrabold tracking-tight text-balance sm:text-4xl">
-          O que você quer experimentar?
+          {tx.titulo}
         </h1>
         <p className="mt-3 max-w-prose text-tinta-suave">
-          Escolha uma matéria. Cada aula tem um exercício de cada tipo que a Repasa oferece, para você sentir como é
-          estudar aqui. Não precisa de conta.
+          {tx.texto}
         </p>
 
         <ul className="mt-8 grid gap-3 sm:grid-cols-2">
@@ -43,19 +46,19 @@ export default function Experimente() {
         </ul>
 
         <section className="mt-10 rounded-2xl bg-suave p-5">
-          <h2 className="font-bold">Em cada aula você vai encontrar</h2>
+          <h2 className="font-bold">{tx.emCadaAula}</h2>
           <ul className="mt-3 flex flex-wrap gap-2 text-sm">
             {Object.values(tiposExercicio).map((tipo) => (
               <li key={tipo} className="rounded-full bg-fundo px-3 py-1 font-semibold text-tinta-suave">
                 {tipo}
               </li>
             ))}
-            <li className="rounded-full bg-fundo px-3 py-1 font-semibold text-tinta-suave">Exercício com imagem</li>
+            <li className="rounded-full bg-fundo px-3 py-1 font-semibold text-tinta-suave">{tx.comImagem}</li>
           </ul>
         </section>
       </main>
 
-      <footer className="border-t border-linha py-6 text-center text-xs text-tinta-suave">Versão de teste</footer>
+      <footer className="border-t border-linha py-6 text-center text-xs text-tinta-suave">{tx.versaoTeste}</footer>
     </div>
   );
 }

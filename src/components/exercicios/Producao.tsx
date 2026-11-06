@@ -1,5 +1,7 @@
 "use client";
 
+import { fmt } from "@/i18n/config";
+import { useDicionario } from "@/i18n/cliente";
 import { useEffect, useId, useRef, useState } from "react";
 import { botaoPrimario, botaoSecundario, campo } from "@/components/ui/estilos";
 import type { ItemProducao as Item } from "@/lib/atividades/modelo";
@@ -39,6 +41,7 @@ export function ItemProducao({
   salva?: ProducaoSalva;
   onEnviar?: (dados: DadosProducao) => ReturnType<EnviarProducao>;
 }) {
+  const tx = useDicionario().exercicio;
   const [salva, setSalva] = useState(salvaInicial);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -48,7 +51,7 @@ export function ItemProducao({
     if (!onEnviar) return;
     setEnviando(true);
     setErro(null);
-    const r = await onEnviar(dados).catch(() => ({ ok: false as const, erro: "Sem conexão. Tente de novo." }));
+    const r = await onEnviar(dados).catch(() => ({ ok: false as const, erro: tx.semConexao }));
     setEnviando(false);
     if (r.ok) {
       setSalva(r.salva);
@@ -81,26 +84,27 @@ export function ItemProducao({
       )}
       {acabouDeEnviar && !erro && (
         <p role="status" className="mt-2 text-sm font-semibold text-certo">
-          Enviado! O professor vai ler e comentar.
+          {tx.enviadoComentar}
         </p>
       )}
       {!acabouDeEnviar && salva && !salva.correcao && (
-        <p className="mt-2 text-sm text-tinta-suave">Enviado. Aguardando a correção do professor.</p>
+        <p className="mt-2 text-sm text-tinta-suave">{tx.aguardando}</p>
       )}
       {!onEnviar && (
-        <p className="mt-2 text-sm text-tinta-suave">Só os alunos da turma podem enviar a produção ao professor.</p>
+        <p className="mt-2 text-sm text-tinta-suave">{tx.soAlunos}</p>
       )}
     </div>
   );
 }
 
 function CaixaCorrecao({ correcao }: { correcao: Correcao }) {
+  const tx = useDicionario().exercicio;
   const bem = correcao.avaliacao === "muito_bem";
   return (
     <div className={`mt-3 rounded-xl p-3.5 text-sm ${bem ? "bg-certo-fundo text-certo" : "bg-aviso-fundo text-aviso"}`}>
       <p className="font-bold">
-        {correcao.anterior ? "Sobre a versão anterior: " : ""}
-        {bem ? "Muito bem!" : "O professor pediu para refazer"}
+        {correcao.anterior ? tx.versaoAnterior : ""}
+        {bem ? tx.muitoBem : tx.refazer}
       </p>
       {correcao.comentario && <p className="mt-1 whitespace-pre-line text-tinta">{correcao.comentario}</p>}
     </div>
@@ -120,13 +124,14 @@ function Escrita({
   podeEnviar: boolean;
   onEnviar: (texto: string) => void;
 }) {
+  const tx = useDicionario().exercicio;
   const id = useId();
   const [texto, setTexto] = useState(inicial);
   const vazio = !texto.trim();
   return (
     <div className="space-y-2">
       <label htmlFor={id} className="sr-only">
-        Sua resposta
+        {tx.suaResposta}
       </label>
       <textarea
         id={id}
@@ -134,7 +139,7 @@ function Escrita({
         onChange={(e) => setTexto(e.target.value)}
         rows={5}
         maxLength={5000}
-        placeholder="Escreva aqui…"
+        placeholder={tx.escrevaAqui}
         className={campo}
       />
       <div className="flex items-center justify-between gap-3">
@@ -145,7 +150,7 @@ function Escrita({
           onClick={() => onEnviar(texto.trim())}
           className={botaoPrimario}
         >
-          {enviando ? "Enviando…" : jaEnviou ? "Enviar nova versão" : "Enviar para o professor"}
+          {enviando ? tx.enviando : jaEnviou ? tx.enviarNovaVersao : tx.enviarParaProfessor}
         </button>
       </div>
     </div>
@@ -169,6 +174,7 @@ function Oral({
   podeEnviar: boolean;
   onEnviar: (audio: Blob) => void;
 }) {
+  const tx = useDicionario().exercicio;
   const [estado, setEstado] = useState<"parado" | "gravando">("parado");
   const [gravacao, setGravacao] = useState<{ blob: Blob; url: string } | null>(null);
   const [segundos, setSegundos] = useState(0);
@@ -202,14 +208,14 @@ function Oral({
     setAviso(null);
     const formato = formatoDeGravacao();
     if (formato === null || !navigator.mediaDevices?.getUserMedia) {
-      setAviso("Este navegador não grava áudio. Tente pelo Chrome, Safari ou Firefox atualizados.");
+      setAviso(tx.semGravar);
       return;
     }
     let stream: MediaStream;
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch {
-      setAviso("Não conseguimos usar o microfone. Libere o acesso ao microfone nas permissões do navegador.");
+      setAviso(tx.semMicrofone);
       return;
     }
     const rec = new MediaRecorder(stream, formato ? { mimeType: formato } : undefined);
@@ -235,14 +241,14 @@ function Oral({
     <div className="space-y-3 rounded-xl bg-suave p-3.5">
       {audioEnviado && !gravacao && (
         <div>
-          <p className="mb-1 text-sm font-bold">Sua gravação enviada</p>
+          <p className="mb-1 text-sm font-bold">{tx.gravacaoEnviada}</p>
           <audio controls preload="metadata" src={audioEnviado} className="w-full" />
         </div>
       )}
 
       {gravacao && (
         <div>
-          <p className="mb-1 text-sm font-bold">Ouça antes de enviar</p>
+          <p className="mb-1 text-sm font-bold">{tx.ouca}</p>
           <audio controls src={gravacao.url} className="w-full" />
         </div>
       )}
@@ -251,16 +257,16 @@ function Oral({
         {estado === "gravando" ? (
           <>
             <button type="button" onClick={() => gravador.current?.stop()} className={botaoSecundario}>
-              ■ Parar
+              ■ {tx.parar}
             </button>
             <span className="flex items-center gap-2 text-sm font-bold text-erro tabular-nums" role="status">
               <span className="size-2.5 animate-pulse rounded-full bg-erro motion-reduce:animate-none" aria-hidden />
-              Gravando {tempo}
+              {fmt(tx.gravando, { tempo })}
             </span>
           </>
         ) : (
           <button type="button" onClick={gravar} disabled={enviando} className={botaoSecundario}>
-            ● {gravacao || audioEnviado ? "Gravar de novo" : "Gravar"}
+            ● {gravacao || audioEnviado ? tx.gravarDeNovo : tx.gravar}
           </button>
         )}
         {gravacao && estado === "parado" && (
@@ -270,7 +276,7 @@ function Oral({
             onClick={() => onEnviar(gravacao.blob)}
             className={botaoPrimario}
           >
-            {enviando ? "Enviando…" : "Enviar para o professor"}
+            {enviando ? tx.enviando : tx.enviarParaProfessor}
           </button>
         )}
       </div>
@@ -279,7 +285,7 @@ function Oral({
           {aviso}
         </p>
       )}
-      <p className="text-xs text-tinta-suave">Até 5 minutos.</p>
+      <p className="text-xs text-tinta-suave">{tx.ate5}</p>
     </div>
   );
 }

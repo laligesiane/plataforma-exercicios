@@ -1,5 +1,7 @@
 "use client";
 
+import { fmt } from "@/i18n/config";
+import { useDicionario } from "@/i18n/cliente";
 import { useMemo, useState } from "react";
 import { corrigirClassificar, type Resultado } from "@/lib/correcao";
 import type { ExercicioClassificar as Tipo } from "@/lib/atividades/modelo";
@@ -14,6 +16,7 @@ type Props = {
 };
 
 export function ExercicioClassificar({ exercicio, anteriores, onResultado }: Props) {
+  const tx = useDicionario().exercicio;
   const cartoes = useMemo(() => embaralhar(exercicio.itens, exercicio.id), [exercicio]);
   const [certos, setCertos] = useState<Set<string>>(
     () => new Set(exercicio.itens.filter((i) => anteriores[i.id] === i.colunaId).map((i) => i.id)),
@@ -38,7 +41,7 @@ export function ExercicioClassificar({ exercicio, anteriores, onResultado }: Pro
 
   return (
     <AreaArrastar onSoltar={colocar}>
-      <div className="flex min-h-14 flex-wrap items-center gap-2 rounded-2xl bg-suave p-3" aria-label="Cartões para classificar">
+      <div className="flex min-h-14 flex-wrap items-center gap-2 rounded-2xl bg-suave p-3" aria-label={tx.cartoesClassificar}>
         {soltos.length > 0 ? (
           soltos.map((c) => (
             <Peca
@@ -61,7 +64,7 @@ export function ExercicioClassificar({ exercicio, anteriores, onResultado }: Pro
           <Feedback
             resultado={
               ultimo.resultado.status === "errado"
-                ? { ...ultimo.resultado, explicacao: `"${textoUltimo}" não vai em ${ultimo.coluna}. ${ultimo.resultado.explicacao}` }
+                ? { ...ultimo.resultado, explicacao: `${fmt(tx.naoVaiEm, { texto: textoUltimo ?? "", coluna: ultimo.coluna })} ${ultimo.resultado.explicacao}` }
                 : ultimo.resultado
             }
           />
@@ -73,7 +76,7 @@ export function ExercicioClassificar({ exercicio, anteriores, onResultado }: Pro
           <Alvo
             key={coluna.id}
             id={coluna.id}
-            rotulo={`Coluna ${coluna.nome}`}
+            rotulo={fmt(tx.coluna, { nome: coluna.nome })}
             onToque={selecionado ? () => colocar(selecionado, coluna.id) : undefined}
             className={`min-h-32 rounded-2xl border-2 p-3 transition-colors ${selecionado ? "cursor-pointer border-dashed border-primaria" : "border-linha"}`}
           >

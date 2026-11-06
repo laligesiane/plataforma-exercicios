@@ -1,5 +1,6 @@
 "use client";
 
+import { useDicionario } from "@/i18n/cliente";
 import {
   DndContext,
   KeyboardSensor,
@@ -18,6 +19,7 @@ import { useId, type ReactNode } from "react";
  * o que é mais fácil no celular e para quem usa teclado.
  */
 export function AreaArrastar({ children, onSoltar }: { children: ReactNode; onSoltar: (peca: string, destino: string) => void }) {
+  const tx = useDicionario().exercicio;
   // Id estável evita diferença entre o HTML do servidor e o do navegador.
   const id = useId();
   const sensores = useSensors(
@@ -31,7 +33,7 @@ export function AreaArrastar({ children, onSoltar }: { children: ReactNode; onSo
   }
 
   return (
-    <DndContext id={id} sensors={sensores} onDragEnd={aoSoltar} accessibility={{ screenReaderInstructions: { draggable: "Aperte espaço para pegar, setas para mover e espaço para soltar." } }}>
+    <DndContext id={id} sensors={sensores} onDragEnd={aoSoltar} accessibility={{ screenReaderInstructions: { draggable: tx.instrucoesArrastar } }}>
       {children}
     </DndContext>
   );

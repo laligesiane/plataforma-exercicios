@@ -1,5 +1,6 @@
 "use client";
 
+import { useDicionario } from "@/i18n/cliente";
 import { useState } from "react";
 import { AulaAtividade, type RespostaDada } from "@/components/exercicios/AulaAtividade";
 import type { Exercicio } from "@/lib/atividades/modelo";
@@ -30,6 +31,7 @@ export function ResolverAtividade({
   duvidas,
   idioma,
 }: Props) {
+  const tx = useDicionario().exercicio;
   const [falhou, setFalhou] = useState(false);
 
   async function aoResponder(r: RespostaDada) {
@@ -55,7 +57,7 @@ export function ResolverAtividade({
     <>
       {falhou && (
         <p role="alert" className="mb-4 rounded-xl bg-erro-fundo px-3.5 py-2.5 text-sm text-erro">
-          Não conseguimos salvar sua última resposta ou envio. Confira sua conexão; a correção continua funcionando.
+          {tx.falhaSalvar}
         </p>
       )}
       <AulaAtividade

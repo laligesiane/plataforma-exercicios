@@ -24,8 +24,8 @@ export function corrigirLacuna(item: ItemLacuna, resposta: string): Resultado {
   if (aceitaParecida) {
     const aviso = `A grafia correta é "${aceitaParecida}".`;
     return item.grafiaExata
-      ? { status: "errado", explicacao: aviso, aviso }
-      : { status: "certo_com_aviso", aviso };
+      ? { status: "errado", explicacao: aviso, aviso, grafia: aceitaParecida }
+      : { status: "certo_com_aviso", aviso, grafia: aceitaParecida };
   }
 
   const erro =

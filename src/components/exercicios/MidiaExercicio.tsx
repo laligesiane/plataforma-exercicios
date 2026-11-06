@@ -1,7 +1,11 @@
+"use client";
+
+import { useDicionario } from "@/i18n/cliente";
 import { ehMidia, enderecoDoVideo, type Midia } from "@/lib/atividades/midia";
 
 /** Imagem, áudio ou vídeo no topo do exercício. Mídia com link inválido não aparece. */
 export function MidiaExercicio({ midia }: { midia?: Midia }) {
+  const tx = useDicionario().exercicio;
   if (!midia || !ehMidia(midia)) return null;
   const legenda = midia.legenda ? <figcaption className="mt-2 text-sm text-tinta-suave">{midia.legenda}</figcaption> : null;
 
@@ -24,7 +28,7 @@ export function MidiaExercicio({ midia }: { midia?: Midia }) {
     return (
       <figure className="mb-4 rounded-xl bg-suave p-3">
         <audio controls preload="metadata" src={midia.url} className="w-full">
-          Seu navegador não toca este áudio.
+          {tx.semAudio}
         </audio>
         {legenda}
       </figure>
@@ -38,7 +42,7 @@ export function MidiaExercicio({ midia }: { midia?: Midia }) {
       <div className="aspect-video overflow-hidden rounded-xl bg-suave">
         <iframe
           src={endereco}
-          title={midia.legenda || "Vídeo do exercício"}
+          title={midia.legenda || tx.videoExercicio}
           className="size-full"
           loading="lazy"
           allow="encrypted-media; picture-in-picture; fullscreen"

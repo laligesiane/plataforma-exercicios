@@ -1,8 +1,12 @@
+"use client";
+
+import { useDicionario } from "@/i18n/cliente";
 import { etiquetasDaAtividade, type Atividade } from "@/lib/atividades/modelo";
 
 type Dados = Pick<Atividade, "titulo" | "nivel" | "categoria" | "materia" | "idioma_ensinado" | "explicacao">;
 
 export function CabecalhoAtividade({ atividade }: { atividade: Dados }) {
+  const tx = useDicionario().exercicio;
   const [primeira, ...resto] = etiquetasDaAtividade(atividade);
   return (
     <>
@@ -14,7 +18,7 @@ export function CabecalhoAtividade({ atividade }: { atividade: Dados }) {
           </span>
         ))}
       </div>
-      <h1 className="mt-3 text-3xl font-extrabold tracking-tight">{atividade.titulo || "Atividade sem título"}</h1>
+      <h1 className="mt-3 text-3xl font-extrabold tracking-tight">{atividade.titulo || tx.semTitulo}</h1>
       {atividade.explicacao && (
         <div className="mt-4 rounded-2xl bg-suave p-5 leading-relaxed whitespace-pre-line">{atividade.explicacao}</div>
       )}
