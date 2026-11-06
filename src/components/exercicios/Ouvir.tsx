@@ -5,7 +5,7 @@ import { melhorVoz } from "../../lib/fala";
 
 const vozes: Record<string, string> = { es: "es-ES", en: "en-US", fr: "fr-FR", it: "it-IT", de: "de-DE", pt: "pt-BR" };
 
-/** Idioma ensinado na atividade. Sem ele (outras matérias), o botão de ouvir não aparece. */
+/** Idioma ensinado na atividade, ou "pt" nas de outras matérias. Sem ele, o botão de ouvir não aparece. */
 export const IdiomaFala = createContext<string | null>(null);
 
 /** Texto pronto para ler: a lacuna vira a resposta, quando já se sabe, ou uma pausa. */
@@ -13,7 +13,7 @@ export function textoParaFala(enunciado: string, resposta?: string) {
   return enunciado.replace(/_{3,}/g, resposta?.trim() ? resposta : "…").replace(/\s+/g, " ").trim();
 }
 
-/** 🔊 Lê o texto com a voz do próprio navegador, no idioma da atividade. Não grava nem envia nada. */
+/** Lê o texto com a voz do próprio navegador, no idioma da atividade. Não grava nem envia nada. */
 export function Ouvir({ texto }: { texto: string }) {
   const idioma = useContext(IdiomaFala);
   const [disponivel, setDisponivel] = useState(false);

@@ -31,9 +31,10 @@ import {
   type Nivel,
   type TipoExercicio,
 } from "@/lib/atividades/modelo";
-import { idiomas } from "@/lib/idiomas";
+import { idiomaNaMateria, idiomas } from "@/lib/idiomas";
 import { conversoes, converterExercicio } from "@/lib/atividades/converter";
 import { ExemplosDoEditor, useExemplos } from "./exemplos";
+import { AvisoMateriaIdioma } from "../../AvisoMateriaIdioma";
 import { ColarItens } from "./ColarItens";
 import { sugestoesMateria } from "@/lib/turmas";
 import { apagarAtividade, salvarAtividade, type ResultadoSalvar } from "../actions";
@@ -282,6 +283,14 @@ export function EditorAtividade({ inicial, exerciciosIniciais, turmas, turmasIni
                   maxLength={60}
                   placeholder="Ex.: Matemática"
                   className={campo}
+                />
+                <AvisoMateriaIdioma
+                  idioma={idiomaNaMateria(atividade.materia)}
+                  onUsarIdioma={(codigo) => {
+                    setAtividade((a) => ({ ...a, idioma_ensinado: codigo, idioma_instrucao: a.idioma_instrucao ?? "pt" }));
+                    setTipo("idioma");
+                    mudar();
+                  }}
                 />
                 <datalist id="sugestoes-materia">
                   {sugestoesMateria.map((m) => (

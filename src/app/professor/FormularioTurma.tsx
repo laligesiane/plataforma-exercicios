@@ -3,7 +3,8 @@
 import { useActionState, useState } from "react";
 import { Mensagem } from "@/components/ui/Mensagem";
 import { botaoPrimario, campo, rotulo } from "@/components/ui/estilos";
-import { idiomas } from "@/lib/idiomas";
+import { idiomaNaMateria, idiomas } from "@/lib/idiomas";
+import { AvisoMateriaIdioma } from "./AvisoMateriaIdioma";
 import { sugestoesMateria } from "@/lib/turmas";
 import { criarTurma } from "./actions";
 
@@ -12,6 +13,8 @@ const opcoes = Object.entries(idiomas);
 export function FormularioTurma() {
   const [estado, acao, enviando] = useActionState(criarTurma, null);
   const [tipo, setTipo] = useState<"idioma" | "materia">("materia");
+  const [materia, setMateria] = useState("");
+  const [ensinado, setEnsinado] = useState("");
 
   return (
     <form action={acao} className="space-y-4">
@@ -61,7 +64,7 @@ export function FormularioTurma() {
             <label htmlFor="idioma_ensinado" className={rotulo}>
               Idioma que você ensina
             </label>
-            <select id="idioma_ensinado" name="idioma_ensinado" required defaultValue="" className={campo}>
+            <select id="idioma_ensinado" name="idioma_ensinado" required value={ensinado} onChange={(e) => setEnsinado(e.target.value)} className={campo}>
               <option value="" disabled>
                 Escolha
               </option>
@@ -100,7 +103,16 @@ export function FormularioTurma() {
             maxLength={80}
             list="sugestoes-materia"
             placeholder="Ex.: Matemática, Violão, Direito"
+            value={materia}
+            onChange={(e) => setMateria(e.target.value)}
             className={campo}
+          />
+          <AvisoMateriaIdioma
+            idioma={idiomaNaMateria(materia)}
+            onUsarIdioma={(codigo) => {
+              setEnsinado(codigo);
+              setTipo("idioma");
+            }}
           />
           <datalist id="sugestoes-materia">
             {sugestoesMateria.map((m) => (
