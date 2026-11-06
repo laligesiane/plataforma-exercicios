@@ -1,11 +1,12 @@
+import { obterDicionario } from "@/i18n/servidor";
 import { headers } from "next/headers";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
 /** Link de assinatura: as aulas de todas as turmas entram no Google Agenda e se atualizam sozinhas. */
 export async function AssinarAgenda({
   perfilId,
-  titulo = "Aulas na sua agenda",
-  descricao = "Assine uma vez: os horários de todas as turmas aparecem e se atualizam sozinhos.",
+  titulo,
+  descricao,
 }: {
   perfilId: string;
   titulo?: string;
@@ -14,6 +15,7 @@ export async function AssinarAgenda({
   const supabase = await criarClienteServidor();
   const { data } = await supabase.from("perfil").select("agenda_token").eq("id", perfilId).maybeSingle();
   if (!data?.agenda_token) return null;
+  const tx = (await obterDicionario()).agenda;
 
   const host = (await headers()).get("host") ?? "repasa.com.br";
   const webcal = `webcal://${host}/agenda/${data.agenda_token}.ics`;
@@ -22,8 +24,8 @@ export async function AssinarAgenda({
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-linha p-5">
       <span>
-        <span className="block font-bold">{titulo}</span>
-        <span className="mt-0.5 block text-sm text-tinta-suave">{descricao}</span>
+        <span className="block font-bold">{titulo ?? tx.assinarTituloPadrao}</span>
+        <span className="mt-0.5 block text-sm text-tinta-suave">{descricao ?? tx.assinarTextoPadrao}</span>
       </span>
       <span className="flex flex-wrap gap-4 text-sm font-bold">
         <a href={google} target="_blank" rel="noopener noreferrer" className="text-primaria hover:underline">

@@ -1,5 +1,6 @@
 "use client";
 
+import { useDicionario } from "@/i18n/cliente";
 import { CampoData } from "@/components/ui/CampoData";
 import { useActionState } from "react";
 import { Mensagem } from "@/components/ui/Mensagem";
@@ -8,13 +9,15 @@ import { pedirAula } from "./actions";
 
 export function FormularioPedido({ turmas, hoje }: { turmas: { id: string; nome: string }[]; hoje: string }) {
   const [estado, acao, enviando] = useActionState(pedirAula, null);
+  const d = useDicionario();
+  const tx = d.agenda;
 
   return (
     <form action={acao} className="space-y-4">
       {turmas.length > 1 ? (
         <div>
           <label htmlFor="pedido-turma" className={rotulo}>
-            Turma
+            {tx.turma}
           </label>
           <select id="pedido-turma" name="turma_id" required className={campo}>
             {turmas.map((t) => (
@@ -30,33 +33,33 @@ export function FormularioPedido({ turmas, hoje }: { turmas: { id: string; nome:
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="pedido-data" className={rotulo}>
-            Dia
+            {tx.dia}
           </label>
           <CampoData id="pedido-data" name="data" required min={hoje} />
         </div>
         <div>
           <label htmlFor="pedido-hora" className={rotulo}>
-            Horário <span className="font-normal text-tinta-suave">(opcional)</span>
+            {tx.horario} <span className="font-normal text-tinta-suave">{d.comum.opcional}</span>
           </label>
           <input id="pedido-hora" type="time" name="hora" className={campo} />
         </div>
       </div>
       <div>
         <label htmlFor="pedido-mensagem" className={rotulo}>
-          Recado para o professor <span className="font-normal text-tinta-suave">(opcional)</span>
+          {tx.recado} <span className="font-normal text-tinta-suave">{d.comum.opcional}</span>
         </label>
         <textarea
           id="pedido-mensagem"
           name="mensagem"
           rows={3}
           maxLength={1000}
-          placeholder="Ex.: queria revisar frações antes da prova."
+          placeholder={tx.recadoExemplo}
           className={campo}
         />
       </div>
       <Mensagem estado={estado} />
       <button type="submit" disabled={enviando} className={botaoPrimario}>
-        {enviando ? "Enviando..." : "Pedir aula"}
+        {enviando ? d.comum.enviando : tx.pedirAula}
       </button>
     </form>
   );

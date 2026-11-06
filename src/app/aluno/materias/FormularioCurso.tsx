@@ -1,5 +1,6 @@
 "use client";
 
+import { useDicionario } from "@/i18n/cliente";
 import { CampoData } from "@/components/ui/CampoData";
 import { useActionState, useEffect, useRef } from "react";
 import { Mensagem } from "@/components/ui/Mensagem";
@@ -28,6 +29,8 @@ function CamposCurso({
   prefixo: string;
   curso?: CursoCompleto;
 }) {
+  const d = useDicionario();
+  const tx = d.cursos;
   const duracao = curso?.duracao_meses
     ? descreverDuracao(curso.duracao_meses)
     : null;
@@ -35,7 +38,7 @@ function CamposCurso({
     <>
       <div>
         <label htmlFor={`${prefixo}-nome`} className={rotulo}>
-          Nome do curso
+          {tx.nomeCurso}
         </label>
         <input
           id={`${prefixo}-nome`}
@@ -43,22 +46,22 @@ function CamposCurso({
           required
           maxLength={80}
           defaultValue={curso?.nome}
-          placeholder="Ex.: Espanhol, Faculdade, Ensino médio"
+          placeholder={tx.nomeCursoExemplo}
           className={campo}
         />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor={`${prefixo}-inicio`} className={rotulo}>
-            Quando começou{" "}
-            <span className="font-normal text-tinta-suave">(opcional)</span>
+            {tx.quandoComecou}{" "}
+            <span className="font-normal text-tinta-suave">{d.comum.opcional}</span>
           </label>
           <CampoData id={`${prefixo}-inicio`} name="inicio" defaultValue={curso?.inicio ?? ""} />
         </div>
         <div>
           <label htmlFor={`${prefixo}-duracao`} className={rotulo}>
-            Duração{" "}
-            <span className="font-normal text-tinta-suave">(opcional)</span>
+            {tx.duracao}{" "}
+            <span className="font-normal text-tinta-suave">{d.comum.opcional}</span>
           </label>
           <div className="flex gap-2">
             <div className="w-20 shrink-0">
@@ -68,12 +71,12 @@ function CamposCurso({
                 inputMode="decimal"
                 maxLength={4}
                 defaultValue={duracao?.quantidade ?? ""}
-                placeholder="Ex.: 4"
+                placeholder={tx.duracaoExemplo}
                 className={campo}
               />
             </div>
             <label htmlFor={`${prefixo}-unidade`} className="sr-only">
-              Unidade da duração
+              {tx.unidadeDuracao}
             </label>
             <div className="min-w-0 grow">
               <select
@@ -82,9 +85,9 @@ function CamposCurso({
                 defaultValue={duracao?.unidade ?? "anos"}
                 className={campo}
               >
-                <option value="meses">meses</option>
-                <option value="semestres">semestres</option>
-                <option value="anos">anos</option>
+                <option value="meses">{tx.unidades.meses}</option>
+                <option value="semestres">{tx.unidades.semestres}</option>
+                <option value="anos">{tx.unidades.anos}</option>
               </select>
             </div>
           </div>
@@ -92,27 +95,27 @@ function CamposCurso({
       </div>
       <div>
         <label htmlFor={`${prefixo}-etapa`} className={rotulo}>
-          Onde você está agora{" "}
-          <span className="font-normal text-tinta-suave">(opcional)</span>
+          {tx.ondeEsta}{" "}
+          <span className="font-normal text-tinta-suave">{d.comum.opcional}</span>
         </label>
         <input
           id={`${prefixo}-etapa`}
           name="etapa"
           maxLength={60}
           defaultValue={curso?.etapa ?? ""}
-          placeholder="Ex.: 3º semestre, Módulo 2, Nível B1, 2º ano"
+          placeholder={tx.ondeEstaExemplo}
           className={campo}
         />
       </div>
       <p className="text-xs text-tinta-suave">
-        Com o início e a duração, a Repasa calcula quando o curso termina e
-        mostra quanto falta.
+        {tx.calculaFim}
       </p>
     </>
   );
 }
 
 export function FormularioCurso() {
+  const d = useDicionario();
   const [estado, acao, enviando] = useActionState(criarCurso, null);
   const form = useRef<HTMLFormElement>(null);
   useEffect(() => {
@@ -124,13 +127,14 @@ export function FormularioCurso() {
       <CamposCurso prefixo="novo-curso" />
       <Mensagem estado={estado} />
       <button type="submit" disabled={enviando} className={botaoPrimario}>
-        {enviando ? "Criando..." : "Criar curso"}
+        {enviando ? d.comum.criando : d.cursos.criarCurso}
       </button>
     </form>
   );
 }
 
 export function FormularioEditarCurso({ curso }: { curso: CursoCompleto }) {
+  const d = useDicionario();
   const [estado, acao, enviando] = useActionState(editarCurso, null);
   return (
     <form
@@ -141,7 +145,7 @@ export function FormularioEditarCurso({ curso }: { curso: CursoCompleto }) {
       <CamposCurso prefixo={`curso-${curso.id}`} curso={curso} />
       <Mensagem estado={estado} />
       <button type="submit" disabled={enviando} className={botaoSecundario}>
-        {enviando ? "Salvando..." : "Salvar curso"}
+        {enviando ? d.comum.salvando : d.cursos.salvarCurso}
       </button>
     </form>
   );

@@ -1,3 +1,5 @@
+import { fmt } from "@/i18n/config";
+import { obterDicionario } from "@/i18n/servidor";
 import { notFound } from "next/navigation";
 import { BotaoExcluir } from "@/components/BotaoExcluir";
 import { Icone } from "@/components/jogos/Icones";
@@ -17,6 +19,8 @@ export default async function PaginaCurso({ params }: { params: Promise<{ id: st
   const { id } = await params;
   const perfil = await exigirPapel("aluno");
   const supabase = await criarClienteServidor();
+  const d = await obterDicionario();
+  const tx = d.cursos;
   const [{ cursos, semCurso, totalMaterias }, { data: plano }] = await Promise.all([
     carregarCursos(),
     supabase.from("plano").select("max_materias").eq("id", perfil.plano_id).single(),
@@ -29,12 +33,12 @@ export default async function PaginaCurso({ params }: { params: Promise<{ id: st
 
   return (
     <LayoutConta
-      voltar={{ href: "/aluno/cursos", rotulo: "Meus cursos" }}
-      titulo={curso ? curso.nome : "Sem curso"}
+      voltar={{ href: "/aluno/cursos", rotulo: tx.titulo }}
+      titulo={curso ? curso.nome : tx.semCurso}
       descricao={
         curso
-          ? "As matérias deste curso. Toque numa matéria para ver os resumos e mapas mentais."
-          : "Matérias que ainda não estão em nenhum curso. Escolha um curso embaixo de cada uma."
+          ? tx.descricaoCurso
+          : tx.descricaoSemCurso
       }
     >
       {curso && <ProgressoCurso curso={curso} />}
@@ -52,8 +56,8 @@ export default async function PaginaCurso({ params }: { params: Promise<{ id: st
         </ul>
       ) : (
         <p className="mt-6 rounded-3xl border border-dashed border-linha p-5 text-sm text-tinta-suave">
-          Nenhuma matéria aqui ainda.
-          {curso && " Crie uma abaixo ou mude o curso de uma matéria que você já tem."}
+          {tx.nenhumaMateria}
+          {curso && tx.nenhumaMateriaCurso}
         </p>
       )}
 
@@ -62,7 +66,7 @@ export default async function PaginaCurso({ params }: { params: Promise<{ id: st
           <summary className="cursor-pointer font-bold text-primaria">
             <span className="inline-flex items-center gap-1.5">
               <Icone nome="mais" className="size-4" />
-              Nova matéria em {curso.nome}
+              {fmt(tx.novaMateriaEm, { curso: curso.nome })}
             </span>
           </summary>
           <div className="mt-4">
@@ -73,13 +77,13 @@ export default async function PaginaCurso({ params }: { params: Promise<{ id: st
 
       {curso && (
         <details className="mt-4 text-sm">
-          <summary className="cursor-pointer text-tinta-suave hover:text-tinta">Editar ou excluir curso</summary>
+          <summary className="cursor-pointer text-tinta-suave hover:text-tinta">{tx.editarExcluir}</summary>
           <FormularioEditarCurso curso={curso} />
           <BotaoExcluir
             acao={apagarCurso}
             campos={{ id: curso.id }}
-            rotulo="Excluir curso"
-            pergunta={`Excluir o curso "${curso.nome}"? As matérias e os resumos dele continuam, só ficam em "Sem curso".`}
+            rotulo={tx.excluirCurso}
+            pergunta={fmt(tx.perguntaExcluir, { curso: curso.nome })}
             discreto
             className="mt-3"
           />

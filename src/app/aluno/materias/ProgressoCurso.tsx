@@ -1,12 +1,16 @@
+import { LANG_HTML, fmt } from "@/i18n/config";
+import { obterDicionario, obterIdioma } from "@/i18n/servidor";
 import { descreverDuracao, progressoCurso } from "@/lib/cursos";
 import type { CursoCompleto } from "./FormularioCurso";
 
-const mesAno = new Intl.DateTimeFormat("pt-BR", { month: "short", year: "numeric" });
-const dataLonga = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short", year: "numeric" });
 
 /** Etapa atual, datas e a barra de quanto já foi do curso. Some se o curso não tiver início e duração. */
-export function ProgressoCurso({ curso, hoje }: { curso: CursoCompleto; hoje?: Date }) {
-  const p = progressoCurso(curso.inicio, curso.duracao_meses, hoje);
+export async function ProgressoCurso({ curso, hoje }: { curso: CursoCompleto; hoje?: Date }) {
+  const [d, idioma] = await Promise.all([obterDicionario(), obterIdioma()]);
+  const tx = d.cursos;
+  const mesAno = new Intl.DateTimeFormat(LANG_HTML[idioma], { month: "short", year: "numeric" });
+  const dataLonga = new Intl.DateTimeFormat(LANG_HTML[idioma], { day: "numeric", month: "short", year: "numeric" });
+  const p = progressoCurso(curso.inicio, curso.duracao_meses, hoje, d.datas);
   if (!p && !curso.etapa) return null;
 
   return (
@@ -21,7 +25,7 @@ export function ProgressoCurso({ curso, hoje }: { curso: CursoCompleto; hoje?: D
         <>
           <div
             role="progressbar"
-            aria-label={`Progresso do curso ${curso.nome}`}
+            aria-label={fmt(tx.progresso, { curso: curso.nome })}
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={p.porcentagem}
@@ -35,12 +39,12 @@ export function ProgressoCurso({ curso, hoje }: { curso: CursoCompleto; hoje?: D
           </div>
           <div className="mt-1.5 flex flex-wrap justify-between gap-x-4 text-xs text-tinta-suave">
             <span>
-              Início: <time dateTime={curso.inicio ?? undefined}>{mesAno.format(p.inicio)}</time>
-              {curso.duracao_meses ? ` · ${descreverDuracao(curso.duracao_meses).texto}` : ""}
+              {tx.inicio} <time dateTime={curso.inicio ?? undefined}>{mesAno.format(p.inicio)}</time>
+              {curso.duracao_meses ? ` · ${descreverDuracao(curso.duracao_meses, d.datas).texto}` : ""}
             </span>
             <span className="font-bold tabular-nums">{p.porcentagem}%</span>
             <span>
-              Termina em <time>{dataLonga.format(p.fim)}</time>
+              {tx.terminaEm} <time>{dataLonga.format(p.fim)}</time>
             </span>
           </div>
         </>

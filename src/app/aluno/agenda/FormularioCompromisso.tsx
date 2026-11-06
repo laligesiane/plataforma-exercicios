@@ -1,5 +1,6 @@
 "use client";
 
+import { useDicionario } from "@/i18n/cliente";
 import { CampoData } from "@/components/ui/CampoData";
 import { useActionState, useEffect, useRef } from "react";
 import { Mensagem } from "@/components/ui/Mensagem";
@@ -12,6 +13,8 @@ export function FormularioCompromisso({ compromisso, hoje }: { compromisso?: Com
   const [estado, acao, salvando] = useActionState(salvarCompromisso, null);
   const form = useRef<HTMLFormElement>(null);
   const p = compromisso?.id ?? "novo";
+  const d = useDicionario();
+  const tx = d.agenda;
 
   // Depois de adicionar, limpa o formulário para o próximo.
   useEffect(() => {
@@ -24,33 +27,33 @@ export function FormularioCompromisso({ compromisso, hoje }: { compromisso?: Com
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor={`${p}-tipo`} className={rotulo}>
-            O que é
+            {tx.oQueE}
           </label>
           <select id={`${p}-tipo`} name="tipo" defaultValue={compromisso?.tipo ?? "tarefa"} className={campo}>
             {tiposCompromisso.map((t) => (
               <option key={t.valor} value={t.valor}>
-                {t.rotulo}
+                {tx.tipos[t.valor]}
               </option>
             ))}
           </select>
         </div>
         <div>
           <label htmlFor={`${p}-materia`} className={rotulo}>
-            Matéria ou lugar <span className="font-normal text-tinta-suave">(opcional)</span>
+            {tx.materiaLugar} <span className="font-normal text-tinta-suave">{d.comum.opcional}</span>
           </label>
           <input
             id={`${p}-materia`}
             name="materia"
             maxLength={100}
             defaultValue={compromisso?.materia}
-            placeholder="Ex.: Cálculo, faculdade"
+            placeholder={tx.materiaLugarExemplo}
             className={campo}
           />
         </div>
       </div>
       <div>
         <label htmlFor={`${p}-titulo`} className={rotulo}>
-          Nome
+          {tx.nome}
         </label>
         <input
           id={`${p}-titulo`}
@@ -58,20 +61,20 @@ export function FormularioCompromisso({ compromisso, hoje }: { compromisso?: Com
           required
           maxLength={200}
           defaultValue={compromisso?.titulo}
-          placeholder="Ex.: Prova 1 no site da faculdade"
+          placeholder={tx.nomeExemplo}
           className={campo}
         />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor={`${p}-data`} className={rotulo}>
-            Dia ou prazo
+            {tx.diaPrazo}
           </label>
           <CampoData id={`${p}-data`} name="data" required defaultValue={compromisso?.data ?? hoje} />
         </div>
         <div>
           <label htmlFor={`${p}-hora`} className={rotulo}>
-            Horário <span className="font-normal text-tinta-suave">(opcional)</span>
+            {tx.horario} <span className="font-normal text-tinta-suave">{d.comum.opcional}</span>
           </label>
           <input id={`${p}-hora`} type="time" name="hora" defaultValue={compromisso?.hora?.slice(0, 5) ?? ""} className={campo} />
         </div>
@@ -81,25 +84,25 @@ export function FormularioCompromisso({ compromisso, hoje }: { compromisso?: Com
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="flex items-center gap-2.5 self-end pb-3 font-bold">
               <input type="checkbox" name="feito" defaultChecked={compromisso.feito} className={caixaMarcar} />
-              Já fiz
+              {tx.jaFiz}
             </label>
             <div>
               <label htmlFor={`${p}-nota`} className={rotulo}>
-                Nota <span className="font-normal text-tinta-suave">(opcional)</span>
+                {tx.notaCampo} <span className="font-normal text-tinta-suave">{d.comum.opcional}</span>
               </label>
               <input
                 id={`${p}-nota`}
                 name="nota"
                 maxLength={20}
                 defaultValue={compromisso.nota}
-                placeholder="Ex.: 8,5"
+                placeholder={tx.notaExemplo}
                 className={campo}
               />
             </div>
           </div>
           <div>
             <label htmlFor={`${p}-anotacao`} className={rotulo}>
-              Anotação <span className="font-normal text-tinta-suave">(opcional)</span>
+              {tx.anotacao} <span className="font-normal text-tinta-suave">{d.comum.opcional}</span>
             </label>
             <textarea
               id={`${p}-anotacao`}
@@ -107,7 +110,7 @@ export function FormularioCompromisso({ compromisso, hoje }: { compromisso?: Com
               rows={3}
               maxLength={2000}
               defaultValue={compromisso.anotacao}
-              placeholder="Ex.: caiu muito derivada, revisar a regra da cadeia."
+              placeholder={tx.anotacaoExemplo}
               className={campo}
             />
           </div>
@@ -115,7 +118,7 @@ export function FormularioCompromisso({ compromisso, hoje }: { compromisso?: Com
       )}
       <Mensagem estado={estado} />
       <button type="submit" disabled={salvando} className={botaoPrimario}>
-        {salvando ? "Salvando..." : compromisso ? "Salvar" : "Adicionar"}
+        {salvando ? d.comum.salvando : compromisso ? d.comum.salvar : d.comum.adicionar}
       </button>
     </form>
   );
