@@ -107,7 +107,8 @@ export const pt = {
     contaProfessor: "Conta de professor",
     textoAluno:
       "Organize seus estudos por matéria, com resumos e mapas mentais. Não precisa de professor: se um professor te convidar depois, as turmas dele aparecem aqui também.",
-    textoProfessor: "Crie turmas de qualquer matéria, registre as aulas, monte exercícios com explicação de cada erro e convide seus alunos.",
+    textoProfessor:
+      "Crie turmas de qualquer matéria, registre as aulas, monte exercícios com explicação de cada erro e convide seus alunos.",
     naoConfigurado: "O cadastro ainda não foi configurado.",
     jaTemConta: "Já tem conta?",
     entrar: "Entrar",
@@ -137,11 +138,128 @@ export const pt = {
     erroMuitos: "Muitos pedidos seguidos. Espere alguns minutos e tente de novo.",
     sucesso: "Se {email} tiver conta na Repasa, enviamos um link para criar uma nova senha. Confira também o spam.",
   },
+  landing: {
+    origem: "Repasa, do espanhol repasar",
+    tituloAntes: "Seu melhor amigo na hora de",
+    tituloDestaque: "aprender",
+    subtitulo:
+      "Organize suas matérias, escreva resumos, monte mapas mentais e pratique com exercícios que explicam cada erro. Sozinho ou com o seu professor.",
+    irTurmas: "Ir para minhas turmas",
+    irEstudos: "Ir para meus estudos",
+    comecar: "Começar a estudar",
+    entrar: "Entrar",
+    mesa: {
+      materias: ["Português", "Espanhol", "História"],
+      resumo: "Resumo",
+      resumoTitulo: "Pretérito imperfeito",
+      resumoTexto: "Usado para ==hábitos no passado== e para descrever cenas.",
+      mapa: ["Imperfeito", "Hábitos", "Descrições"],
+      balao: "Bora repassar?",
+    },
+    recursosTitulo: "Tudo o que ajuda você a aprender",
+    recursosTexto: "A Repasa junta num lugar só o que normalmente fica espalhado entre caderno, aplicativo de notas e folha de exercício.",
+    recursos: [
+      {
+        titulo: "Suas matérias, organizadas",
+        texto: "Português, espanhol, história, o que for. Cada matéria guarda os seus resumos, mapas e atividades num lugar só.",
+      },
+      {
+        titulo: "Resumos do seu jeito",
+        texto: "Escreva com títulos, negrito, marca-texto, listas e notas. O sumário fica do lado, e dá para exportar em PDF.",
+      },
+      {
+        titulo: "Mapas mentais",
+        texto: "Gere um mapa mental a partir do seu resumo, com um clique, e veja o assunto de cima. Ótimo para a véspera da prova.",
+      },
+      {
+        titulo: "Exercícios que explicam o erro",
+        texto: "Cada resposta é corrigida na hora. Errou? A explicação aparece logo abaixo, e você tenta de novo.",
+      },
+    ],
+    correcao: {
+      titulo: "Errou? A Repasa explica.",
+      texto:
+        "Nada de “sete de dez, tente de novo”. Cada item é corrigido na hora e, quando a resposta não está certa, a explicação aparece logo abaixo, como se alguém estivesse estudando do seu lado.",
+      botao: "Experimentar uma atividade",
+      legenda: "Como é a correção",
+      quase: "Quase! A resposta é “repaso”.",
+      explicacao: "Em espanhol não existe “ss”. O som é o mesmo, mas a grafia leva um “s” só.",
+      certo: "Isso! Agora está certo.",
+    },
+    nome: {
+      titulo: "De onde vem o nome",
+      p1: "Em espanhol, *repasar* é o que se faz na véspera da prova: abrir o caderno de novo, rever o que já foi visto, passar outra vez pelo mesmo caminho até ele ficar conhecido. E *¡repasa!* é o que todo professor diz no fim da aula.",
+      p2: "Em português, a palavra é quase a mesma e ganha mais um sentido: **repassar** é passar adiante. A Repasa está aqui para isso: estudar junto com você até a matéria ser sua.",
+      verbo: "verbo · espanhol",
+      acepcoes: [
+        "Voltar a estudar o que já se aprendeu, para que fique firme.",
+        "Passar de novo por um mesmo caminho.",
+        "Examinar com calma um trabalho já feito, procurando o que corrigir.",
+      ],
+    },
+    estuda: {
+      titulo: "Para quem estuda",
+      itens: [
+        "Crie suas matérias e estude por conta própria, sem precisar de professor.",
+        "Escreva resumos e monte mapas mentais para revisar.",
+        "Se um professor te convidar, as turmas e atividades dele aparecem junto.",
+        "Veja os horários das suas aulas na sua agenda.",
+      ],
+      botao: "Criar conta de aluno",
+    },
+    ensina: {
+      titulo: "Para quem ensina",
+      itens: [
+        "Crie turmas de qualquer matéria e convide seus alunos por e-mail.",
+        "Registre as aulas e compartilhe resumos com a turma.",
+        "Monte exercícios e escreva a explicação de cada erro uma vez só.",
+        "Veja o que cada aluno respondeu.",
+      ],
+      botao: "Criar conta de professor",
+    },
+    app: {
+      selo: "Em breve: app para iPhone e Android",
+      sobretitulo: "Em breve",
+      titulo: "A Repasa vai caber no seu bolso",
+      texto:
+        "Estamos preparando o aplicativo da Repasa para iPhone e Android, com tudo o que você já usa no site: matérias, resumos, mapas mentais e exercícios. E, claro, sem anúncios.",
+      emBreve: "Em breve",
+      enquantoIsso:
+        "Enquanto isso, a Repasa já funciona no navegador do celular, e dá para colocá-la na tela inicial como se fosse um app.",
+      saudacao: "Bom dia!",
+      hoje: "Para hoje",
+      tarefas: ["Revisar verbos", "Mapa de História", "10 exercícios"],
+      sequencia: "3 dias seguidos",
+    },
+    promessasTitulo: "O que a gente promete",
+    promessas: [
+      {
+        titulo: "Sem anúncios. Nunca.",
+        texto: "Lugar de estudo não é vitrine. Ninguém vai interromper sua atividade para vender nada.",
+      },
+      {
+        titulo: "Grátis e sem limites",
+        texto: "Crie quantas turmas, atividades e matérias quiser, com quantos alunos precisar. Sem pagar nada.",
+      },
+      {
+        titulo: "Seus estudos são seus",
+        texto: "Seus resumos e mapas ficam guardados com você, organizados por matéria, para voltar sempre que precisar.",
+      },
+    ],
+    fecho: "Crie sua conta, abra sua primeira matéria e comece a estudar. É grátis.",
+    rodape: {
+      semAnuncios: "Sem anúncios, nunca.",
+      privacidade: "Privacidade",
+      termos: "Termos de uso",
+      sugestoes: "Sugestões e contato",
+      beta: "A Repasa está em versão beta: nova, grátis e sem limites enquanto está em testes. Conte o que achou em Sugestões.",
+    },
+  },
   palavrao: {
     aviso: "Esse texto tem uma palavra que não é permitida na Repasa: “{palavra}”. Troque a palavra para salvar.",
   },
 };
 
-type Textos<T> = { [K in keyof T]: T[K] extends string ? string : Textos<T[K]> };
+type Textos<T> = T extends string ? string : T extends readonly (infer U)[] ? Textos<U>[] : { [K in keyof T]: Textos<T[K]> };
 /** Formato que todo dicionário precisa seguir. */
 export type Dicionario = Textos<typeof pt>;

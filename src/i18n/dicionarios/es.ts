@@ -106,7 +106,8 @@ export const es: Dicionario = {
     contaProfessor: "Cuenta de profesor",
     textoAluno:
       "Organiza tus estudios por materia, con resúmenes y mapas mentales. No necesitas profesor: si un profesor te invita más adelante, sus clases también aparecen aquí.",
-    textoProfessor: "Crea clases de cualquier materia, registra las lecciones, arma ejercicios con la explicación de cada error e invita a tus estudiantes.",
+    textoProfessor:
+      "Crea clases de cualquier materia, registra las lecciones, arma ejercicios con la explicación de cada error e invita a tus estudiantes.",
     naoConfigurado: "El registro todavía no está configurado.",
     jaTemConta: "¿Ya tienes cuenta?",
     entrar: "Entrar",
@@ -135,6 +136,124 @@ export const es: Dicionario = {
     erroDigiteEmail: "Escribe tu correo.",
     erroMuitos: "Demasiados intentos seguidos. Espera unos minutos y vuelve a intentarlo.",
     sucesso: "Si {email} tiene cuenta en Repasa, te enviamos un enlace para crear una nueva contraseña. Revisa también la carpeta de spam.",
+  },
+  landing: {
+    origem: "Repasa, del verbo español repasar",
+    tituloAntes: "Tu mejor amigo a la hora de",
+    tituloDestaque: "aprender",
+    subtitulo:
+      "Organiza tus materias, escribe resúmenes, arma mapas mentales y practica con ejercicios que explican cada error. Por tu cuenta o con tu profesor.",
+    irTurmas: "Ir a mis clases",
+    irEstudos: "Ir a mis estudios",
+    comecar: "Empezar a estudiar",
+    entrar: "Entrar",
+    mesa: {
+      materias: ["Portugués", "Español", "Historia"],
+      resumo: "Resumen",
+      resumoTitulo: "Pretérito imperfecto",
+      resumoTexto: "Se usa para ==hábitos en el pasado== y para describir escenas.",
+      mapa: ["Imperfecto", "Hábitos", "Descripciones"],
+      balao: "¿Repasamos?",
+    },
+    recursosTitulo: "Todo lo que te ayuda a aprender",
+    recursosTexto:
+      "Repasa reúne en un solo lugar lo que normalmente está repartido entre el cuaderno, la app de notas y la hoja de ejercicios.",
+    recursos: [
+      {
+        titulo: "Tus materias, organizadas",
+        texto: "Portugués, español, historia, lo que sea. Cada materia guarda tus resúmenes, mapas y actividades en un solo lugar.",
+      },
+      {
+        titulo: "Resúmenes a tu manera",
+        texto: "Escribe con títulos, negrita, resaltador, listas y notas. El índice queda al costado, y puedes exportar a PDF.",
+      },
+      {
+        titulo: "Mapas mentales",
+        texto: "Genera un mapa mental a partir de tu resumen con un clic y mira el tema desde arriba. Ideal para la víspera del examen.",
+      },
+      {
+        titulo: "Ejercicios que explican el error",
+        texto: "Cada respuesta se corrige al instante. ¿Te equivocaste? La explicación aparece justo debajo y vuelves a intentarlo.",
+      },
+    ],
+    correcao: {
+      titulo: "¿Te equivocaste? Repasa te explica.",
+      texto:
+        "Nada de “siete de diez, inténtalo de nuevo”. Cada ítem se corrige al instante y, cuando la respuesta no es correcta, la explicación aparece justo debajo, como si alguien estuviera estudiando a tu lado.",
+      botao: "Probar una actividad",
+      legenda: "Así es la corrección",
+      quase: "¡Casi! La respuesta es “repaso”.",
+      explicacao: "En español no existe la “ss”. El sonido es el mismo, pero se escribe con una sola “s”.",
+      certo: "¡Eso! Ahora está bien.",
+    },
+    nome: {
+      titulo: "De dónde viene el nombre",
+      p1: "En español, *repasar* es lo que se hace la víspera del examen: abrir el cuaderno otra vez, volver a ver lo que ya se estudió, pasar de nuevo por el mismo camino hasta conocerlo bien. Y *¡repasa!* es lo que todo profesor dice al final de la clase.",
+      p2: "En portugués la palabra es casi igual y gana un sentido más: **repassar** también es pasar algo a otra persona. Repasa está aquí para eso: estudiar contigo hasta que la materia sea tuya.",
+      verbo: "verbo · español",
+      acepcoes: [
+        "Volver a estudiar lo que ya se aprendió, para que quede firme.",
+        "Pasar de nuevo por un mismo camino.",
+        "Examinar con calma un trabajo ya hecho, buscando qué corregir.",
+      ],
+    },
+    estuda: {
+      titulo: "Para quien estudia",
+      itens: [
+        "Crea tus materias y estudia por tu cuenta, sin necesidad de profesor.",
+        "Escribe resúmenes y arma mapas mentales para repasar.",
+        "Si un profesor te invita, sus clases y actividades aparecen junto a lo tuyo.",
+        "Mira los horarios de tus clases en tu agenda.",
+      ],
+      botao: "Crear cuenta de estudiante",
+    },
+    ensina: {
+      titulo: "Para quien enseña",
+      itens: [
+        "Crea clases de cualquier materia e invita a tus estudiantes por correo.",
+        "Registra las clases y comparte resúmenes con el grupo.",
+        "Arma ejercicios y escribe la explicación de cada error una sola vez.",
+        "Mira lo que respondió cada estudiante.",
+      ],
+      botao: "Crear cuenta de profesor",
+    },
+    app: {
+      selo: "Muy pronto: app para iPhone y Android",
+      sobretitulo: "Muy pronto",
+      titulo: "Repasa va a caber en tu bolsillo",
+      texto:
+        "Estamos preparando la app de Repasa para iPhone y Android, con todo lo que ya usas en el sitio: materias, resúmenes, mapas mentales y ejercicios. Y, claro, sin anuncios.",
+      emBreve: "Muy pronto",
+      enquantoIsso:
+        "Mientras tanto, Repasa ya funciona en el navegador del celular, y puedes ponerla en la pantalla de inicio como si fuera una app.",
+      saudacao: "¡Buenos días!",
+      hoje: "Para hoy",
+      tarefas: ["Repasar verbos", "Mapa de Historia", "10 ejercicios"],
+      sequencia: "3 días seguidos",
+    },
+    promessasTitulo: "Lo que prometemos",
+    promessas: [
+      {
+        titulo: "Sin anuncios. Nunca.",
+        texto: "Un lugar de estudio no es una vitrina. Nadie va a interrumpir tu actividad para venderte nada.",
+      },
+      {
+        titulo: "Gratis y sin límites",
+        texto: "Crea todas las clases, actividades y materias que quieras, con todos los estudiantes que necesites. Sin pagar nada.",
+      },
+      {
+        titulo: "Tus estudios son tuyos",
+        texto: "Tus resúmenes y mapas quedan guardados contigo, organizados por materia, para volver cuando lo necesites.",
+      },
+    ],
+    fecho: "Crea tu cuenta, abre tu primera materia y empieza a estudiar. Es gratis.",
+    rodape: {
+      semAnuncios: "Sin anuncios, nunca.",
+      privacidade: "Privacidad",
+      termos: "Términos de uso",
+      sugestoes: "Sugerencias y contacto",
+      beta: "Repasa está en versión beta: nueva, gratis y sin límites mientras está en pruebas. Cuéntanos qué te pareció en Sugerencias.",
+    },
   },
   palavrao: {
     aviso: "Este texto tiene una palabra que no está permitida en Repasa: “{palavra}”. Cámbiala para guardar.",
