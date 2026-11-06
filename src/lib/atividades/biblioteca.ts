@@ -42,14 +42,19 @@ export function lerFiltros(p: ParametrosBiblioteca): FiltrosBiblioteca {
 }
 
 /** Monta o link da biblioteca com os filtros dados (os vazios ficam de fora). */
-export function linkBiblioteca(f: { busca?: string; materia?: string; nivel?: string; tema?: string }) {
+export function linkBiblioteca(f: { busca?: string; materia?: string; nivel?: string; tema?: string }, base = "/biblioteca") {
   const params = new URLSearchParams();
   if (f.busca) params.set("q", f.busca);
   if (f.materia) params.set("materia", f.materia);
   if (f.nivel) params.set("nivel", f.nivel);
   if (f.tema) params.set("tema", f.tema);
   const texto = params.toString();
-  return texto ? `/biblioteca?${texto}` : "/biblioteca";
+  return texto ? `${base}?${texto}` : base;
+}
+
+/** Mesmo link, na Biblioteca de resumos (sem filtro de nível). */
+export function linkBibliotecaResumos(f: { busca?: string; materia?: string; tema?: string }) {
+  return linkBiblioteca(f, "/biblioteca/resumos");
 }
 
 /** Opções do filtro "Matéria": as matérias e os idiomas que existem nas atividades públicas. */

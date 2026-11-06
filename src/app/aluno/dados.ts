@@ -12,7 +12,10 @@ export async function carregarResumosDoAluno(): Promise<ResumoComOrigem[]> {
     .select(`${camposResumo}, materia(nome, cor), turma(nome)`)
     .order("atualizado_em", { ascending: false });
 
-  return (data ?? []).map((linha) => {
+  // Resumos públicos de outras turmas também passam pelas regras do banco; a turma deles
+  // não vem (o aluno não é dela), então ficam de fora. Ficam as matérias e as turmas do aluno.
+  const doAluno = (data ?? []).filter((linha) => linha.materia || linha.turma);
+  return doAluno.map((linha) => {
     const materia = linha.materia as unknown as { nome: string; cor: string } | null;
     const turma = linha.turma as unknown as { nome: string } | null;
     const r = linha as unknown as Resumo;

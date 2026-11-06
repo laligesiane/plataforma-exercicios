@@ -26,7 +26,7 @@ export default async function NovoResumo({
           ← {turma.nome}
         </Link>
         <h1 className="mt-3 mb-6 text-3xl font-extrabold tracking-tight">Novo resumo</h1>
-        <EditorResumo salvar={salvarResumo} ocultos={{ turma_id: turma.id }} aulas={aulas} aulaInicial={aula} />
+        <EditorResumo salvar={salvarResumo} ocultos={{ turma_id: turma.id }} aulas={aulas} aulaInicial={aula} publicacao />
       </main>
     </>
   );

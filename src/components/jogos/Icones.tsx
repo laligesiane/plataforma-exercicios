@@ -76,6 +76,12 @@ const caminhos = {
     </>
   ),
   brilho: <path d="M12 3c.6 4.6 2.4 6.4 7 7-4.6.6-6.4 2.4-7 7-.6-4.6-2.4-6.4-7-7 4.6-.6 6.4-2.4 7-7z" />,
+  globo: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z" />
+    </>
+  ),
 } satisfies Record<ModoJogo | string, ReactNode>;
 
 export type NomeIcone = keyof typeof caminhos;

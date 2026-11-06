@@ -4,11 +4,20 @@ import { useActionState, useRef, useState } from "react";
 import { EditorDocumento } from "@/components/EditorDocumento";
 import { MapaMental } from "@/components/MapaMental";
 import { Mensagem, type EstadoFormulario } from "@/components/ui/Mensagem";
-import { botaoIcone, botaoPrimario, botaoTexto, campo, rotulo } from "@/components/ui/estilos";
+import { botaoIcone, botaoPrimario, botaoTexto, caixaMarcar, campo, rotulo } from "@/components/ui/estilos";
+import { LIMITE_TEMAS } from "@/lib/atividades/modelo";
 import { validarDocumento, type Documento } from "@/lib/documento";
 import { mapaDoDocumento } from "@/lib/documento/mapa";
 import { cores, LIMITES, novoId, ordemCores, type Cor, type Mapa, type No } from "@/lib/mapas";
-import { coresResumo, documentoDoResumo, type CorResumo, type Resumo } from "@/lib/resumos";
+import {
+  coresResumo,
+  documentoDoResumo,
+  visibilidadeDoResumo,
+  visibilidadesResumo,
+  type CorResumo,
+  type Resumo,
+  type VisibilidadeResumo,
+} from "@/lib/resumos";
 
 type AulaOpcao = { id: string; rotulo: string };
 
@@ -95,12 +104,15 @@ export function EditorResumo({
   aulas,
   resumo,
   aulaInicial,
+  publicacao,
 }: {
   salvar: (estado: EstadoFormulario, formData: FormData) => Promise<EstadoFormulario>;
   ocultos: Record<string, string>;
   aulas?: AulaOpcao[];
   resumo?: Resumo;
   aulaInicial?: string;
+  /** Só no resumo do professor: escolher quem vê (rascunho, turma ou público) e os temas. */
+  publicacao?: boolean;
 }) {
   const [estado, acao, enviando] = useActionState(salvar, null);
   const [mapa, setMapa] = useState<Mapa>(resumo?.mapa ?? { centro: "", ramos: [] });
@@ -110,6 +122,8 @@ export function EditorResumo({
   const [titulo, setTitulo] = useState(resumo?.titulo ?? "");
   const [aviso, setAviso] = useState("");
   const [cor, setCor] = useState<CorResumo>(resumo?.cor ?? "menta");
+  // Resumo novo do professor já nasce para a turma, como era antes; dá para guardar como rascunho.
+  const [visibilidade, setVisibilidade] = useState<VisibilidadeResumo>(resumo ? visibilidadeDoResumo(resumo) : "turma");
 
   const gerarMapa = () => {
     const doc = validarDocumento(docAtual.current);
@@ -146,6 +160,17 @@ export function EditorResumo({
       return l ? [{ ...l, cor: r.cor }] : [];
     }),
   };
+
+  const jaPublicado = !!resumo && resumo.publicado !== false;
+  const rotuloSalvar = !publicacao
+    ? resumo
+      ? "Salvar resumo"
+      : "Criar resumo"
+    : visibilidade === "rascunho"
+      ? "Salvar rascunho"
+      : jaPublicado
+        ? "Salvar resumo"
+        : "Publicar resumo";
 
   return (
     <form action={acao} className="space-y-6">
@@ -299,9 +324,60 @@ export function EditorResumo({
         )}
       </details>
 
+      {publicacao && (
+        <section className="space-y-4 rounded-2xl border border-linha p-5 sm:p-6">
+          <h2 className="text-lg font-bold">Quem vê</h2>
+          <fieldset className="space-y-2">
+            <legend className="sr-only">Quem vê este resumo</legend>
+            {(Object.entries(visibilidadesResumo) as [VisibilidadeResumo, (typeof visibilidadesResumo)[VisibilidadeResumo]][]).map(
+              ([valor, info]) => (
+                <label key={valor} className="flex cursor-pointer items-start gap-2.5 rounded-xl bg-suave px-3.5 py-3 text-sm">
+                  <input
+                    type="radio"
+                    name="visibilidade"
+                    value={valor}
+                    checked={visibilidade === valor}
+                    onChange={() => setVisibilidade(valor)}
+                    className={`${caixaMarcar} mt-0.5`}
+                  />
+                  <span>
+                    <strong className="font-bold">{info.nome}.</strong> <span className="text-tinta-suave">{info.explicacao}</span>
+                  </span>
+                </label>
+              ),
+            )}
+          </fieldset>
+          <div>
+            <label htmlFor="temas" className={rotulo}>
+              Temas <span className="font-normal text-tinta-suave">(opcional)</span>
+            </label>
+            <input
+              id="temas"
+              name="temas"
+              defaultValue={(resumo?.temas ?? []).join(", ")}
+              maxLength={300}
+              placeholder="Ex.: revolução francesa, iluminismo"
+              aria-describedby="temas-ajuda"
+              className={campo}
+            />
+            <p id="temas-ajuda" className="mt-1 text-xs text-tinta-suave">
+              Separe por vírgula, até {LIMITE_TEMAS}. A matéria vem da turma. Os dois servem de filtro na Biblioteca de resumos.
+            </p>
+          </div>
+          {jaPublicado && resumo?.publico && visibilidade === "publico" && (
+            <p className="text-sm">
+              Link:{" "}
+              <a href={`/resumos/${resumo.id}`} className="font-bold break-all text-primaria hover:underline">
+                repasa.com.br/resumos/{resumo.id}
+              </a>
+            </p>
+          )}
+        </section>
+      )}
+
       <Mensagem estado={estado} />
       <button type="submit" disabled={enviando} className={botaoPrimario}>
-        {enviando ? "Salvando..." : resumo ? "Salvar resumo" : "Criar resumo"}
+        {enviando ? "Salvando..." : rotuloSalvar}
       </button>
     </form>
   );

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { duplicarAtividade } from "@/app/professor/atividades/actions";
+import { AbasBiblioteca } from "@/components/AbasBiblioteca";
 import { Cabecalho } from "@/components/Cabecalho";
 import { botaoSecundario, campo } from "@/components/ui/estilos";
 import { Icone } from "@/components/jogos/Icones";
@@ -57,6 +58,7 @@ export default async function Biblioteca({ searchParams }: { searchParams: Promi
     <>
       <Cabecalho />
       <main className="mx-auto w-full max-w-7xl px-4 pt-8 pb-16 sm:px-6 lg:px-8">
+        <AbasBiblioteca atual="atividades" />
         <h1 className="text-3xl font-extrabold tracking-tight">Biblioteca de atividades</h1>
         <p className="mt-2 text-tinta-suave">
           Atividades que professores deixaram públicas. Qualquer pessoa pode fazer, com a correção na hora e a explicação de cada erro.

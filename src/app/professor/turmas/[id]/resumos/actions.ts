@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { EstadoFormulario } from "@/components/ui/Mensagem";
 import { validarMapa } from "@/lib/mapas";
-import { lerConteudo, lerCorResumo } from "@/lib/resumos";
+import { normalizarTemas } from "@/lib/atividades/modelo";
+import { lerConteudo, lerCorResumo, lerVisibilidadeResumo } from "@/lib/resumos";
 import { exigirPapel } from "@/lib/perfil";
 import { marcarEvento } from "@/lib/analytics/servidor";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
@@ -31,7 +32,16 @@ export async function salvarResumo(_estado: EstadoFormulario, formData: FormData
   }
 
   const supabase = await criarClienteServidor();
-  const valores = { aula_id: aulaId, titulo, texto, conteudo, mapa, cor: lerCorResumo(formData.get("cor")) };
+  const valores = {
+    aula_id: aulaId,
+    titulo,
+    texto,
+    conteudo,
+    mapa,
+    cor: lerCorResumo(formData.get("cor")),
+    ...lerVisibilidadeResumo(formData.get("visibilidade")),
+    temas: normalizarTemas(String(formData.get("temas") ?? "")),
+  };
   const { error } = id
     ? await supabase
         .from("resumo")
@@ -43,6 +53,8 @@ export async function salvarResumo(_estado: EstadoFormulario, formData: FormData
 
   revalidatePath(`/professor/turmas/${turmaId}`);
   revalidatePath("/aluno");
+  revalidatePath("/biblioteca/resumos");
+  if (id) revalidatePath(`/resumos/${id}`);
   redirect(`/professor/turmas/${turmaId}?resumo=salvo`);
 }
 

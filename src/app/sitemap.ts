@@ -13,6 +13,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${URL_SITE}/experimente`, changeFrequency: "monthly", priority: 0.8 },
     ...aulasDemo.map((a) => ({ url: `${URL_SITE}/experimente/${a.slug}`, changeFrequency: "monthly" as const, priority: 0.7 })),
     { url: `${URL_SITE}/biblioteca`, changeFrequency: "daily", priority: 0.8 },
+    { url: `${URL_SITE}/biblioteca/resumos`, changeFrequency: "daily", priority: 0.7 },
     { url: `${URL_SITE}/cadastro`, changeFrequency: "yearly", priority: 0.6 },
     { url: `${URL_SITE}/entrar`, changeFrequency: "yearly", priority: 0.3 },
     { url: `${URL_SITE}/privacidade`, changeFrequency: "yearly", priority: 0.2 },
@@ -23,7 +24,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Sem cookie de sessão: só o que qualquer visitante vê (o RLS garante).
   const supabase = createClient(supabaseUrl, supabaseAnonKey, { auth: { persistSession: false } });
-  const [{ data: atividades }, { data: paginas }] = await Promise.all([
+  const [{ data: atividades }, { data: paginas }, { data: resumos }] = await Promise.all([
     supabase
       .from("atividade")
       .select("id, atualizada_em")
@@ -32,6 +33,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .order("atualizada_em", { ascending: false })
       .limit(5000),
     supabase.from("pagina_professor").select("apelido, atualizada_em").eq("publicada", true).limit(5000),
+    supabase
+      .from("resumo")
+      .select("id, atualizado_em")
+      .eq("publicado", true)
+      .eq("publico", true)
+      .order("atualizado_em", { ascending: false })
+      .limit(5000),
   ]);
 
   return [
@@ -45,6 +53,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...(atividades ?? []).map((a) => ({
       url: `${URL_SITE}/atividades/${a.id}`,
       lastModified: a.atualizada_em ?? undefined,
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    })),
+    ...(resumos ?? []).map((r) => ({
+      url: `${URL_SITE}/resumos/${r.id}`,
+      lastModified: r.atualizado_em ?? undefined,
       changeFrequency: "monthly" as const,
       priority: 0.5,
     })),

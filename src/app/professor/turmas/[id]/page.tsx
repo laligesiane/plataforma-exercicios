@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Icone } from "@/components/jogos/Icones";
 import { notFound } from "next/navigation";
 import { Cabecalho } from "@/components/Cabecalho";
 import { etiquetasDaAtividade } from "@/lib/atividades/modelo";
@@ -254,12 +255,27 @@ export default async function PaginaTurma({ params }: { params: Promise<{ id: st
                 const aula = aulas.find((a) => a.id === r.aula_id);
                 return (
                   <li key={r.id} className="flex flex-wrap items-baseline justify-between gap-x-4 py-3">
-                    <Link
-                      href={`/professor/turmas/${turma.id}/resumos/${r.id}`}
-                      className="font-semibold hover:text-primaria"
-                    >
-                      {tituloResumo(r)}
-                    </Link>
+                    <span className="flex flex-wrap items-center gap-2">
+                      <Link
+                        href={`/professor/turmas/${turma.id}/resumos/${r.id}`}
+                        className="font-semibold hover:text-primaria"
+                      >
+                        {tituloResumo(r)}
+                      </Link>
+                      {r.publicado === false && (
+                        <span className="rounded-full bg-suave px-2.5 py-0.5 text-xs font-bold text-tinta-suave">Rascunho</span>
+                      )}
+                      {r.publicado !== false && r.publico && (
+                        <Link
+                          href={`/resumos/${r.id}`}
+                          title="Público: qualquer pessoa vê"
+                          className="inline-flex items-center gap-1 rounded-full bg-primaria-suave px-2.5 py-0.5 text-xs font-bold text-primaria hover:underline"
+                        >
+                          <Icone nome="globo" className="size-3.5" />
+                          Público
+                        </Link>
+                      )}
+                    </span>
                     <span className="flex items-baseline gap-4 text-sm text-tinta-suave">
                       {aula ? tituloAula(aula) : "Sem aula específica"}
                       <BotaoExcluir
