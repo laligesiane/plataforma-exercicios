@@ -1,10 +1,12 @@
 "use client";
 
+import { useDicionario } from "@/i18n/cliente";
 import { useEffect, useState } from "react";
 import { EVENTO_SONS, ligarSons, somDeAcerto, sonsLigados } from "@/lib/som";
 
 /** Liga e desliga os sons de acerto e erro. Vale para todas as atividades neste aparelho. */
 export function BotaoSom() {
+  const tx = useDicionario().exercicio;
   const [ligado, setLigado] = useState(true);
   useEffect(() => {
     setLigado(sonsLigados());
@@ -21,8 +23,8 @@ export function BotaoSom() {
         if (!ligado) somDeAcerto();
       }}
       aria-pressed={ligado}
-      title={ligado ? "Silenciar sons" : "Ligar sons"}
-      aria-label={ligado ? "Silenciar sons de acerto e erro" : "Ligar sons de acerto e erro"}
+      title={ligado ? tx.silenciar : tx.ligar}
+      aria-label={ligado ? tx.silenciarLongo : tx.ligarLongo}
       className="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-tinta-suave transition-colors hover:bg-suave hover:text-tinta"
     >
       <svg aria-hidden viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

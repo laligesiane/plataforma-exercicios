@@ -1,5 +1,7 @@
 "use client";
 
+import { fmt } from "../../i18n/config";
+import { useDicionario } from "../../i18n/cliente";
 import { createContext, useContext, useEffect, useState } from "react";
 import { melhorVoz } from "../../lib/fala";
 
@@ -15,6 +17,7 @@ export function textoParaFala(enunciado: string, resposta?: string) {
 
 /** Lê o texto com a voz do próprio navegador, no idioma da atividade. Não grava nem envia nada. */
 export function Ouvir({ texto }: { texto: string }) {
+  const tx = useDicionario().exercicio;
   const idioma = useContext(IdiomaFala);
   const [disponivel, setDisponivel] = useState(false);
   useEffect(() => setDisponivel(typeof window !== "undefined" && "speechSynthesis" in window), []);
@@ -38,8 +41,8 @@ export function Ouvir({ texto }: { texto: string }) {
     <button
       type="button"
       onClick={falar}
-      title="Ouvir"
-      aria-label={`Ouvir: ${texto}`}
+      title={tx.ouvir}
+      aria-label={fmt(tx.ouvirX, { texto })}
       className="ml-1 inline-flex size-7 shrink-0 items-center justify-center rounded-full align-middle text-base text-tinta-suave transition-colors hover:bg-suave hover:text-primaria"
     >
       <svg aria-hidden viewBox="0 0 24 24" className="size-4.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

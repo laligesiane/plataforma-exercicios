@@ -70,7 +70,8 @@ export type ItemRelacionar = {
 
 export type Item = ItemLacuna | ItemMultiplaEscolha | ItemArrastar | ItemClassificar | ItemRelacionar;
 
+/** grafia: a forma certa quando só a grafia errou; a tela usa para escrever o aviso no idioma de quem estuda. */
 export type Resultado =
   | { status: "certo"; explicacao?: string }
-  | { status: "certo_com_aviso"; aviso: string }
-  | { status: "errado"; explicacao: string; aviso?: string };
+  | { status: "certo_com_aviso"; aviso: string; grafia?: string }
+  | { status: "errado"; explicacao: string; aviso?: string; grafia?: string };

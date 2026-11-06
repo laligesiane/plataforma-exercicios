@@ -1,5 +1,7 @@
 "use client";
 
+import { fmt } from "@/i18n/config";
+import { useDicionario } from "@/i18n/cliente";
 import { useState } from "react";
 import { corrigirLacuna, podeVerResposta, respostaCorreta, type ItemLacuna, type Resultado } from "@/lib/correcao";
 import { Dica } from "./Dica";
@@ -20,6 +22,7 @@ type Props = {
 };
 
 export function Lacuna({ item, valorInicial, onResultado }: Props) {
+  const tx = useDicionario().exercicio;
   const [valor, setValor] = useState(valorInicial ?? "");
   const [resultado, setResultado] = useState<Resultado | null>(() =>
     valorInicial ? corrigirLacuna(item, valorInicial) : null,
@@ -52,7 +55,7 @@ export function Lacuna({ item, valorInicial, onResultado }: Props) {
           }}
           onBlur={conferir}
           onKeyDown={(e) => e.key === "Enter" && conferir()}
-          aria-label="Resposta"
+          aria-label={tx.resposta}
           autoComplete="off"
           spellCheck={false}
           className={`mx-1 w-32 rounded-[10px] border-2 px-2 py-0.5 text-center font-bold outline-none transition-colors ${estilo}`}
@@ -67,7 +70,7 @@ export function Lacuna({ item, valorInicial, onResultado }: Props) {
           onClick={() => setMostrarResposta(true)}
           className="mt-2 text-sm font-bold text-primaria underline-offset-4 hover:underline"
         >
-          {mostrarResposta ? `Resposta: ${respostaCorreta(item)}` : "Ver resposta"}
+          {mostrarResposta ? fmt(tx.respostaX, { resposta: respostaCorreta(item) }) : tx.verResposta}
         </button>
       )}
     </div>

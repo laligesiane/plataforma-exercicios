@@ -11,6 +11,7 @@ import type { DuvidaSalva } from "@/components/exercicios/NaoEntendi";
 import { nomeIdioma } from "@/lib/idiomas";
 import { obterPerfil } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
+import { obterDicionario } from "@/i18n/servidor";
 import { ResolverAtividade } from "./ResolverAtividade";
 
 type Params = { params: Promise<{ id: string }> };
@@ -42,6 +43,7 @@ export default async function PaginaAtividade({ params }: Params) {
   }
 
   const { atividade, exercicios } = carregada;
+  const tx = (await obterDicionario()).exercicio;
   const ehDono = perfil?.id === atividade.professor_id;
 
   // Só salva respostas de quem é aluno de uma turma que recebeu a atividade.
@@ -80,18 +82,18 @@ export default async function PaginaAtividade({ params }: Params) {
       <main className="mx-auto w-full max-w-7xl px-4 pt-8 pb-16 sm:px-6 lg:px-8">
         {ehDono && (
           <p className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-suave px-3.5 py-2.5 text-sm">
-            <span>{atividade.publicada ? "Você está vendo sua atividade como o aluno vê." : "Rascunho: só você vê esta página."}</span>
+            <span>{atividade.publicada ? tx.comoAluno : tx.rascunho}</span>
             <Link href={`/professor/atividades/${id}`} className="font-bold text-primaria hover:underline">
-              Editar
+              {tx.editar}
             </Link>
           </p>
         )}
         <CabecalhoAtividade atividade={atividade} />
         {!perfil && (
           <p className="mt-4 text-sm text-tinta-suave">
-            Você está fazendo sem login, então as respostas não ficam salvas.{" "}
+            {tx.semLogin}{" "}
             <Link href={`/entrar?proximo=/atividades/${id}`} className="font-bold text-primaria hover:underline">
-              Entrar
+              {tx.entrar}
             </Link>
           </p>
         )}
