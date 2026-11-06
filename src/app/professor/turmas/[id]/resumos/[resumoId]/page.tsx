@@ -38,7 +38,7 @@ export default async function EditarResumo({ params }: { params: Promise<{ id: s
           />
         </div>
         <h1 className="mt-3 mb-6 text-3xl font-extrabold tracking-tight">Editar resumo</h1>
-        <EditorResumo salvar={salvarResumo} ocultos={{ turma_id: turma.id }} aulas={aulas} resumo={resumo} />
+        <EditorResumo salvar={salvarResumo} ocultos={{ turma_id: turma.id }} aulas={aulas} resumo={resumo} publicacao />
         <BotaoExcluir
           acao={apagarResumo}
           campos={{ id: resumo.id, turma_id: turma.id }}

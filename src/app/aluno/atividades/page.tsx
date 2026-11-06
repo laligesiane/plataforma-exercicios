@@ -47,7 +47,8 @@ export default async function AtividadesDoAluno({ searchParams }: { searchParams
       supabase.from("resposta").select("atividade_id, item_id").eq("aluno_id", perfil.id),
       supabase.from("turma_horario").select("id, turma_id, dia_semana, hora_inicio, duracao_min, fuso"),
       supabase.from("aula").select(camposAula).order("data", { ascending: false }),
-      supabase.from("resumo").select(camposResumo).not("turma_id", "is", null).order("atualizado_em", { ascending: false }),
+      // turma!inner: só os resumos das turmas do aluno (os públicos de outras turmas ficam de fora).
+      supabase.from("resumo").select(`${camposResumo}, turma!inner(id)`).order("atualizado_em", { ascending: false }),
       supabase.from("envio").select("atividade_id").eq("aluno_id", perfil.id),
       carregarResumosDoAluno(),
       supabase.from("materia").select("id, nome, resumo(count)").order("nome"),
