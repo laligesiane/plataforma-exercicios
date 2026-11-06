@@ -1,5 +1,7 @@
 "use client";
 
+import { fmt } from "@/i18n/config";
+import { useDicionario } from "@/i18n/cliente";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Cartao } from "@/lib/documento/cartoes";
 import { montarMemoria } from "@/lib/documento/jogos";
@@ -24,6 +26,7 @@ export function JogoMemoria({ cartoes, semente, acoes }: { cartoes: Cartao[]; se
   useEffect(() => () => void (timer.current && clearTimeout(timer.current)), []);
 
   const totalPares = pecas.length / 2;
+  const t = useDicionario().jogos;
   // Com explicações compridas, duas colunas no celular para a frase caber inteira sem ficar miúda.
   const longas = pecas.some((p) => p.texto.length > 70);
 
@@ -61,8 +64,8 @@ export function JogoMemoria({ cartoes, semente, acoes }: { cartoes: Cartao[]; se
   if (achados.size === totalPares) {
     return (
       <FimDeJogo
-        titulo="Achou todos os pares!"
-        texto={`Foram ${jogadas} jogadas para ${totalPares} pares.${jogadas <= totalPares + 2 ? " Que memória!" : ""}`}
+        titulo={t.achouTodos}
+        texto={`${fmt(t.jogadasTexto, { jogadas, pares: totalPares })}${jogadas <= totalPares + 2 ? t.queMemoria : ""}`}
         acoes={acoes}
       />
     );
@@ -70,8 +73,8 @@ export function JogoMemoria({ cartoes, semente, acoes }: { cartoes: Cartao[]; se
 
   return (
     <div>
-      <Progresso feitos={achados.size} total={totalPares} extra={<span className="tabular-nums">{jogadas} jogadas</span>} />
-      <p className="mt-3 text-sm text-tinta-suave">Vire duas peças. Ache cada termo e a explicação dele.</p>
+      <Progresso feitos={achados.size} total={totalPares} extra={<span className="tabular-nums">{fmt(t.jogadas, { n: jogadas })}</span>} />
+      <p className="mt-3 text-sm text-tinta-suave">{t.vireDuas}</p>
       <ul className={`mt-4 grid gap-2 sm:grid-cols-3 sm:gap-3 ${longas ? "grid-cols-2" : "grid-cols-3"}`}>
         {pecas.map((p) => {
           const achado = achados.has(p.par);
@@ -82,7 +85,7 @@ export function JogoMemoria({ cartoes, semente, acoes }: { cartoes: Cartao[]; se
                 type="button"
                 onClick={() => virar(p.id)}
                 disabled={achado}
-                aria-label={aberta ? `${p.lado === "termo" ? "Termo" : "Explicação"}: ${p.texto}` : "Peça virada para baixo"}
+                aria-label={aberta ? `${p.lado === "termo" ? t.termo : t.explicacao}: ${p.texto}` : t.pecaVirada}
                 className={`flex h-full min-h-28 w-full items-center justify-center rounded-2xl border-2 p-2 text-center transition-[transform,colors] duration-200 motion-reduce:transition-none sm:min-h-32 sm:p-3 ${
                   achado
                     ? "border-certo bg-certo-fundo"

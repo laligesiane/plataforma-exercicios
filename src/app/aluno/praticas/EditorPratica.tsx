@@ -1,5 +1,7 @@
 "use client";
 
+import { fmt } from "@/i18n/config";
+import { useDicionario } from "@/i18n/cliente";
 import { useState, useTransition } from "react";
 import { AulaAtividade } from "@/components/exercicios/AulaAtividade";
 import { botaoPrimario, botaoSecundario, caixaMarcar, campo, rotulo } from "@/components/ui/estilos";
@@ -27,6 +29,8 @@ export function EditorPratica({ resumo, pratica }: Props) {
   const [problemas, setProblemas] = useState<string[]>([]);
   const [gerando, iniciarGeracao] = useTransition();
   const [salvando, iniciarSalvar] = useTransition();
+  const dic = useDicionario();
+  const tx = dic.praticas;
 
   function alternarTipo(tipo: TipoGeravel) {
     setTipos((atual) => (atual.includes(tipo) ? atual.filter((t) => t !== tipo) : [...atual, tipo]));
@@ -55,7 +59,7 @@ export function EditorPratica({ resumo, pratica }: Props) {
     const lista = problemasDaAtividade(titulo, limpos);
     setProblemas(lista);
     if (lista.length > 0) {
-      setErro("Falta ajustar algumas coisas antes de salvar.");
+      setErro(tx.ajustar);
       return;
     }
     setErro("");
@@ -86,12 +90,12 @@ export function EditorPratica({ resumo, pratica }: Props) {
     <div>
       {resumo && (
         <section className="rounded-2xl border border-linha p-5 sm:p-6">
-          <h2 className="font-bold">{exercicios ? "Gerar de novo" : "O que você quer treinar?"}</h2>
+          <h2 className="font-bold">{exercicios ? tx.gerarDeNovo : tx.oQueTreinar}</h2>
           <p className="mt-1 text-sm text-tinta-suave">
-            A IA lê o resumo &quot;{resumo.titulo}&quot; e monta os exercícios. Depois você revisa, ajusta o que quiser e salva.
+            {fmt(tx.iaLe, { titulo: resumo.titulo })}
           </p>
           <fieldset className="mt-4">
-            <legend className={rotulo}>Tipos de exercício</legend>
+            <legend className={rotulo}>{tx.tipos}</legend>
             <div className="flex flex-wrap gap-x-5 gap-y-2">
               {(Object.entries(tiposGeraveis) as [TipoGeravel, string][]).map(([tipo, nome]) => (
                 <label key={tipo} className="flex items-center gap-2 text-sm">
@@ -102,7 +106,7 @@ export function EditorPratica({ resumo, pratica }: Props) {
             </div>
           </fieldset>
           <fieldset className="mt-4">
-            <legend className={rotulo}>Itens por exercício</legend>
+            <legend className={rotulo}>{tx.itensPor}</legend>
             <div className="flex gap-2">
               {QUANTIDADES.map((q) => (
                 <button
@@ -120,10 +124,10 @@ export function EditorPratica({ resumo, pratica }: Props) {
             </div>
           </fieldset>
           <button type="button" onClick={gerar} disabled={gerando || tipos.length === 0} className={`${botaoPrimario} mt-5`}>
-            {gerando ? "Gerando… (leva uns segundos)" : exercicios ? "Gerar outra versão" : "Gerar exercícios"}
+            {gerando ? tx.gerando : exercicios ? tx.outraVersao : tx.gerarExercicios}
           </button>
           {exercicios && !gerando && (
-            <p className="mt-2 text-xs text-tinta-suave">Gerar outra versão troca os exercícios abaixo.</p>
+            <p className="mt-2 text-xs text-tinta-suave">{tx.trocaAbaixo}</p>
           )}
         </section>
       )}
@@ -133,7 +137,7 @@ export function EditorPratica({ resumo, pratica }: Props) {
       {exercicios && (
         <section className="mt-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-xl font-extrabold">{pratica ? "Editar prática" : "Revise antes de salvar"}</h2>
+            <h2 className="text-xl font-extrabold">{pratica ? tx.editarPratica : tx.revise}</h2>
             <div className="flex gap-2" role="tablist">
               {(["editar", "testar"] as const).map((a) => (
                 <button
@@ -146,7 +150,7 @@ export function EditorPratica({ resumo, pratica }: Props) {
                     aba === a ? "bg-tinta text-fundo" : "border border-linha text-tinta-suave hover:border-tinta"
                   }`}
                 >
-                  {a === "editar" ? "Editar" : "Experimentar"}
+                  {a === "editar" ? tx.editar : tx.experimentar}
                 </button>
               ))}
             </div>
@@ -156,7 +160,7 @@ export function EditorPratica({ resumo, pratica }: Props) {
             <div className="mt-4 space-y-5">
               <div>
                 <label htmlFor="titulo-pratica" className={rotulo}>
-                  Título da prática
+                  {tx.tituloPratica}
                 </label>
                 <input id="titulo-pratica" value={titulo} onChange={(e) => setTitulo(e.target.value)} maxLength={200} className={campo} />
               </div>
@@ -173,12 +177,12 @@ export function EditorPratica({ resumo, pratica }: Props) {
                   onRemover={() => setExercicios(exercicios.filter((_, j) => j !== i))}
                 />
               ))}
-              {exercicios.length === 0 && <p className="text-sm text-tinta-suave">Você apagou todos os exercícios.</p>}
+              {exercicios.length === 0 && <p className="text-sm text-tinta-suave">{tx.apagouTodos}</p>}
             </div>
           ) : (
             <div className="mt-4">
               <p className="mb-4 rounded-xl bg-aviso-fundo px-3.5 py-2.5 text-sm">
-                Experimente como fica. Nada do que você responder aqui é salvo.
+                {tx.experimenteAviso}
               </p>
               <AulaAtividade key={JSON.stringify(exercicios).length} exercicios={exercicios.map(limparExercicio)} comBarra={false} />
             </div>
@@ -188,11 +192,11 @@ export function EditorPratica({ resumo, pratica }: Props) {
 
           <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-linha pt-5">
             <button type="button" onClick={salvar} disabled={salvando || exercicios.length === 0} className={botaoPrimario}>
-              {salvando ? "Salvando…" : "Salvar prática"}
+              {salvando ? dic.comum.salvando : tx.salvar}
             </button>
             {!pratica && (
               <button type="button" onClick={() => setExercicios(null)} disabled={salvando} className={botaoSecundario}>
-                Descartar
+                {tx.descartar}
               </button>
             )}
           </div>

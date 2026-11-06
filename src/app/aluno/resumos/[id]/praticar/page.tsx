@@ -1,3 +1,4 @@
+import { obterDicionario } from "@/i18n/servidor";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Cabecalho } from "@/components/Cabecalho";
@@ -19,23 +20,24 @@ export default async function GerarPratica({ params }: { params: Promise<{ id: s
   const { data } = await supabase.from("resumo").select("id, titulo, mapa").eq("id", id).maybeSingle();
   if (!data) notFound();
   const titulo = tituloResumo(data as unknown as Resumo);
+  const d = await obterDicionario();
 
   return (
     <>
       <Cabecalho />
       <main className="mx-auto w-full max-w-7xl px-4 pt-8 pb-16 sm:px-6 lg:px-8">
         <Link href={`/aluno/resumos/${id}`} className="text-sm font-bold text-primaria hover:underline">
-          ← Voltar ao resumo
+          ← {d.resumo.voltarResumo}
         </Link>
-        <h1 className="mt-3 text-3xl font-extrabold tracking-tight">Gerar atividade</h1>
+        <h1 className="mt-3 text-3xl font-extrabold tracking-tight">{d.resumo.gerarAtividade}</h1>
         <p className="mt-2 mb-6 text-tinta-suave">
-          Exercícios para treinar sozinho, feitos a partir do seu resumo. Sem nota: errou, você vê a explicação e tenta de novo.
+          {d.praticas.gerarTexto}
         </p>
         {iaConfigurada() ? (
           <EditorPratica resumo={{ id, titulo }} />
         ) : (
           <p className="rounded-2xl border border-dashed border-linha p-6 text-center text-tinta-suave">
-            A geração com IA ainda não está ligada no Repasa. Volte em breve!
+            {d.praticas.semIa}
           </p>
         )}
       </main>

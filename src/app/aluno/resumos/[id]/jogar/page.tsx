@@ -1,3 +1,5 @@
+import { fmt } from "@/i18n/config";
+import { obterDicionario } from "@/i18n/servidor";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Icone } from "@/components/jogos/Icones";
@@ -6,27 +8,32 @@ import { CARTOES_POR_RODADA } from "@/lib/documento/cartoes";
 import { cartoesUteis, jogos } from "@/lib/documento/jogos";
 import { carregarCartoes } from "./dados";
 
-export const metadata: Metadata = { title: "Jogos do resumo · Repasa" };
+export async function generateMetadata(): Promise<Metadata> {
+  const d = await obterDicionario();
+  return { title: `${d.jogos.tituloPagina} · Repasa` };
+}
 
 export default async function JogosDoResumo({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { titulo, cartoes } = await carregarCartoes(id);
+  const d = await obterDicionario();
+  const t = d.jogos;
 
   return (
     <>
       <Cabecalho />
       <main className="mx-auto w-full max-w-7xl px-4 pt-8 pb-16 sm:px-6 lg:px-8">
         <Link href={`/aluno/resumos/${id}`} className="text-sm font-bold text-primaria hover:underline">
-          ← Voltar ao resumo
+          ← {d.resumo.voltarResumo}
         </Link>
-        <h1 className="mt-3 text-3xl font-extrabold tracking-tight">Estudar brincando: {titulo}</h1>
+        <h1 className="mt-3 text-3xl font-extrabold tracking-tight">{fmt(t.titulo, { titulo })}</h1>
         <p className="mt-2 mb-6 text-tinta-suave">
-          Feitos dos títulos e dos trechos em negrito do resumo. Cada rodada usa no máximo {CARTOES_POR_RODADA} cartões
-          {cartoes.length > CARTOES_POR_RODADA ? `, e este resumo tem ${cartoes.length}: no fim dá para jogar com outros.` : "."}
+          {fmt(t.explica, { n: CARTOES_POR_RODADA })}
+          {cartoes.length > CARTOES_POR_RODADA ? fmt(t.explicaMais, { total: cartoes.length }) : "."}
         </p>
         {cartoes.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-linha p-6 text-center text-sm text-tinta-suave">
-            Este resumo ainda não tem títulos com texto embaixo nem trechos em negrito. Use Título e Negrito no editor para gerar os jogos.
+            {t.semCartoes}
           </p>
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2">
@@ -44,8 +51,8 @@ export default async function JogosDoResumo({ params }: { params: Promise<{ id: 
                         <Icone nome={j.modo} className="size-6" />
                       </span>
                       <span>
-                        <span className="block font-extrabold">{j.nome}</span>
-                        <span className="mt-0.5 block text-sm text-tinta-suave">{j.descricao}</span>
+                        <span className="block font-extrabold">{t.lista[j.modo].nome}</span>
+                        <span className="mt-0.5 block text-sm text-tinta-suave">{t.lista[j.modo].descricao}</span>
                       </span>
                     </Link>
                   ) : (
@@ -54,11 +61,11 @@ export default async function JogosDoResumo({ params }: { params: Promise<{ id: 
                         <Icone nome={j.modo} className="size-6" />
                       </span>
                       <span>
-                        <span className="block font-extrabold">{j.nome}</span>
+                        <span className="block font-extrabold">{t.lista[j.modo].nome}</span>
                         <span className="mt-0.5 block text-sm text-tinta-suave">
                           {j.modo === "complete"
-                            ? "Precisa de pelo menos 2 palavras em negrito dentro de frases."
-                            : `Precisa de pelo menos ${j.minimo} termos com explicação: títulos com texto embaixo, ou um negrito no começo de uma definição ("**Indução** é...").`}
+                            ? t.precisaComplete
+                            : fmt(t.precisaTermos, { n: j.minimo })}
                         </span>
                       </span>
                     </div>

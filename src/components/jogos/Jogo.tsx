@@ -1,5 +1,7 @@
 "use client";
 
+import { fmt } from "@/i18n/config";
+import { useDicionario } from "@/i18n/cliente";
 import { useMemo, useState } from "react";
 import { BotaoSom } from "@/components/exercicios/BotaoSom";
 import { registrarEvento } from "@/lib/analytics/cliente";
@@ -24,6 +26,7 @@ export function Jogo({ modo, cartoes, resumoId }: { modo: ModoJogo; cartoes: Car
   const daRodada = useMemo(() => rodadaDeCartoes(usaveis, rodada), [usaveis, rodada]);
   const semente = `${resumoId}:${modo}:${rodada}:${vez}`;
   const rodadas = totalDeRodadas(usaveis);
+  const t = useDicionario().jogos;
 
   const acoes: AcoesFim = {
     deNovo: () => setVez((v) => v + 1),
@@ -45,9 +48,9 @@ export function Jogo({ modo, cartoes, resumoId }: { modo: ModoJogo; cartoes: Car
       case "memoria":
         return <JogoMemoria cartoes={daRodada} semente={semente} acoes={acoes} />;
       case "quiz":
-        return <JogoPerguntas perguntas={montarQuiz(daRodada, semente)} instrucao="Qual termo combina com a pista?" acoes={acoes} />;
+        return <JogoPerguntas perguntas={montarQuiz(daRodada, semente)} instrucao={t.instrucaoQuiz} acoes={acoes} />;
       case "complete":
-        return <JogoPerguntas perguntas={montarComplete(daRodada, semente)} instrucao="Qual palavra completa a frase?" acoes={acoes} />;
+        return <JogoPerguntas perguntas={montarComplete(daRodada, semente)} instrucao={t.instrucaoComplete} acoes={acoes} />;
       case "verdadeiro-falso":
         return <JogoVerdadeiroFalso afirmacoes={montarVerdadeiroFalso(daRodada, semente)} acoes={acoes} />;
       case "ligar":
@@ -59,8 +62,8 @@ export function Jogo({ modo, cartoes, resumoId }: { modo: ModoJogo; cartoes: Car
     <div>
       <div className="mb-3 flex items-center justify-between gap-3 text-xs text-tinta-suave">
         <span>
-          {rodadas > 1 ? `Rodada ${(rodada % rodadas) + 1} de ${rodadas} · ` : ""}
-          {daRodada.length} {daRodada.length === 1 ? "cartão" : "cartões"}
+          {rodadas > 1 ? fmt(t.rodada, { n: (rodada % rodadas) + 1, total: rodadas }) : ""}
+          {daRodada.length === 1 ? t.cartao1 : fmt(t.cartoesN, { n: daRodada.length })}
         </span>
         <BotaoSom />
       </div>
