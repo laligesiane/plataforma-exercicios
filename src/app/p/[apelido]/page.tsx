@@ -170,7 +170,7 @@ export default async function PaginaDoProfessor({ params }: Params) {
             <h2 className="text-lg font-extrabold tracking-tight">Experiência</h2>
             <ul className="mt-3 grid gap-3 sm:grid-cols-3">
               {experiencia.map((e) => (
-                <li key={e.titulo} className="flex items-start gap-3 rounded-2xl border border-linha p-4">
+                <li key={e.titulo} className="flex items-center gap-3 rounded-2xl border border-linha p-4">
                   <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primaria-suave text-primaria [&_svg]:size-5">{e.icone}</span>
                   <span>
                     <span className="block font-bold">{e.titulo}</span>
@@ -193,7 +193,7 @@ export default async function PaginaDoProfessor({ params }: Params) {
               <Bloco titulo="Formação">
                 <ul className="space-y-2.5">
                   {formacao.map((f) => (
-                    <li key={f} className="flex gap-2 text-sm [&_svg]:mt-0.5 [&_svg]:text-primaria">
+                    <li key={f} className="flex items-center gap-2 text-sm [&_svg]:text-primaria">
                       {icones.formacao}
                       {f}
                     </li>
