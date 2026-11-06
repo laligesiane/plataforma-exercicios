@@ -10,7 +10,8 @@ import { continuarDeOndeParou } from "@/lib/continuar";
 import { agendaDeHoje } from "@/lib/hoje";
 import { camposDataTurma, somarDias, type DataTurma } from "@/lib/importar-calendario";
 import { AgendaHoje } from "./AgendaHoje";
-import { CartaoMateria } from "./CartaoMateria";
+import { CartaoCurso } from "./cursos/CartaoCurso";
+import { carregarCursos, SEM_CURSO } from "./cursos/dados";
 import { SequenciaBrotinho } from "./SequenciaBrotinho";
 import { carregarResumosDoAluno } from "./dados";
 import { LayoutConta } from "./LayoutConta";
@@ -22,7 +23,7 @@ export default async function MinhaConta() {
   const supabase = await criarClienteServidor();
   const hoje = hojeNoFuso();
 
-  const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }, { data: aulasDb }, { data: materias }, { count: pendentes }, { count: paraRepassar }, { data: envios }, { data: compromissosDb }, { data: momentosResposta }, { data: momentosRevisao }, { data: datasDb }, resumos] =
+  const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }, { data: aulasDb }, { data: materias }, { count: pendentes }, { count: paraRepassar }, { data: envios }, { data: compromissosDb }, { data: momentosResposta }, { data: momentosRevisao }, { data: datasDb }, resumos, meusCursos] =
     await Promise.all([
       supabase.from("turma").select("id, nome"),
       supabase.from("atividade_turma").select("turma(nome), atividade(id, titulo, prazo, publicada)"),
@@ -54,6 +55,7 @@ export default async function MinhaConta() {
       // Períodos (férias, recesso) que começaram antes ainda contam hoje.
       supabase.from("data_turma").select(camposDataTurma).gte("data", somarDias(hoje, -120)).lte("data", hoje),
       carregarResumosDoAluno(),
+      carregarCursos(),
     ]);
 
   const nomeTurma = new Map((turmas ?? []).map((t) => [t.id, t.nome]));
@@ -123,8 +125,8 @@ export default async function MinhaConta() {
       detalhe: atividades.size === 0 ? "Nenhuma ainda" : novas > 0 ? `${novas} ${novas === 1 ? "nova" : "novas"}` : "Todas começadas",
     },
     {
-      href: "/aluno/materias",
-      titulo: "Matérias",
+      href: "/aluno/cursos",
+      titulo: "Cursos",
       numero: (materias ?? []).length,
       detalhe: `${resumos.length} ${resumos.length === 1 ? "resumo" : "resumos"} · ${mapas.length} ${mapas.length === 1 ? "mapa" : "mapas"}`,
     },
@@ -228,17 +230,38 @@ export default async function MinhaConta() {
       {(materias ?? []).length > 0 && (
         <section className="mt-8">
           <div className="flex items-baseline justify-between">
-            <h2 className="text-lg font-bold">Minhas matérias</h2>
-            <Link href="/aluno/materias" className="text-sm font-bold text-primaria hover:underline">
-              Ver todas
+            <h2 className="text-lg font-bold">Meus cursos</h2>
+            <Link href="/aluno/cursos" className="text-sm font-bold text-primaria hover:underline">
+              Ver todos
             </Link>
           </div>
-          <ul className="mt-3 grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {(materias ?? []).map((m) => (
-              <li key={m.id}>
-                <CartaoMateria id={m.id} nome={m.nome} cor={m.cor} total={(m.resumo as unknown as { count: number }[])[0]?.count ?? 0} />
+          <ul className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {meusCursos.cursos.map((c) => (
+              <li key={c.id}>
+                <CartaoCurso
+                  href={`/aluno/cursos/${c.id}`}
+                  nome={c.nome}
+                  materias={c.materias.length}
+                  resumos={c.resumos}
+                  coresMaterias={c.materias.map((m) => m.cor)}
+                  inicio={c.inicio}
+                  duracaoMeses={c.duracao_meses}
+                  etapa={c.etapa}
+                />
               </li>
             ))}
+            {meusCursos.semCurso.length > 0 && (
+              <li>
+                <CartaoCurso
+                  href={`/aluno/cursos/${SEM_CURSO}`}
+                  nome="Sem curso"
+                  materias={meusCursos.semCurso.length}
+                  resumos={meusCursos.resumosSemCurso}
+                  coresMaterias={meusCursos.semCurso.map((m) => m.cor)}
+                  discreto
+                />
+              </li>
+            )}
           </ul>
         </section>
       )}
@@ -247,7 +270,7 @@ export default async function MinhaConta() {
         <section className="mt-8">
           <div className="flex items-baseline justify-between">
             <h2 className="text-lg font-bold">Resumos recentes</h2>
-            <Link href="/aluno/materias" className="text-sm font-bold text-primaria hover:underline">
+            <Link href="/aluno/cursos" className="text-sm font-bold text-primaria hover:underline">
               Ver todos
             </Link>
           </div>
@@ -268,11 +291,11 @@ export default async function MinhaConta() {
 
       {(materias ?? []).length === 0 && (turmas ?? []).length === 0 && (
         <div className="mt-8 rounded-2xl border border-dashed border-linha p-6 text-center">
-          <p className="font-semibold">Comece criando uma matéria.</p>
-          <p className="mt-1 text-sm text-tinta-suave">Nela você guarda resumos e mapas mentais. Se tiver professor, peça o convite da turma.</p>
+          <p className="font-semibold">Comece criando um curso.</p>
+          <p className="mt-1 text-sm text-tinta-suave">Dentro dele ficam as matérias, com seus resumos e mapas mentais. Se tiver professor, peça o convite da turma.</p>
           <div className="mt-3 flex flex-wrap justify-center gap-4">
-            <Link href="/aluno/materias" className="text-sm font-bold text-primaria hover:underline">
-              Criar matéria
+            <Link href="/aluno/cursos" className="text-sm font-bold text-primaria hover:underline">
+              Criar curso
             </Link>
             <Link href="/experimente" className="text-sm font-bold text-primaria hover:underline">
               Experimentar a aula de demonstração
