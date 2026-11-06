@@ -18,6 +18,8 @@ export type Perfil = {
   tema?: string;
   /** Caminho da foto no bucket "avatar" (0038); null sem foto. */
   foto?: string | null;
+  /** Idioma da interface escolhido no seletor (0039); null segue o navegador. */
+  idioma?: string | null;
 };
 
 /** Perfil de quem está logado, ou null. */

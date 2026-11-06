@@ -2,11 +2,12 @@
 
 import { useActionState, useRef, useState } from "react";
 import { EditorDocumento } from "@/components/EditorDocumento";
+import { GerarResumoDeMaterial } from "@/components/GerarResumoDeMaterial";
 import { MapaMental } from "@/components/MapaMental";
 import { Mensagem, type EstadoFormulario } from "@/components/ui/Mensagem";
 import { botaoIcone, botaoPrimario, botaoTexto, caixaMarcar, campo, rotulo } from "@/components/ui/estilos";
 import { LIMITE_TEMAS } from "@/lib/atividades/modelo";
-import { validarDocumento, type Documento } from "@/lib/documento";
+import { documentoTemConteudo, validarDocumento, type Documento } from "@/lib/documento";
 import { mapaDoDocumento } from "@/lib/documento/mapa";
 import { cores, LIMITES, novoId, ordemCores, type Cor, type Mapa, type No } from "@/lib/mapas";
 import {
@@ -105,6 +106,7 @@ export function EditorResumo({
   resumo,
   aulaInicial,
   publicacao,
+  comIa = false,
 }: {
   salvar: (estado: EstadoFormulario, formData: FormData) => Promise<EstadoFormulario>;
   ocultos: Record<string, string>;
@@ -113,11 +115,15 @@ export function EditorResumo({
   aulaInicial?: string;
   /** Só no resumo do professor: escolher quem vê (rascunho, turma ou público) e os temas. */
   publicacao?: boolean;
+  /** Mostra "Gerar resumo de um PDF, slides ou texto" (só quando a IA está ligada). */
+  comIa?: boolean;
 }) {
   const [estado, acao, enviando] = useActionState(salvar, null);
   const [mapa, setMapa] = useState<Mapa>(resumo?.mapa ?? { centro: "", ramos: [] });
   const [mapaAberto, setMapaAberto] = useState(!!(resumo?.mapa?.centro || resumo?.mapa?.ramos?.length));
-  const docInicial = documentoDoResumo(resumo ?? { conteudo: null, texto: "" });
+  const [docInicial, setDocInicial] = useState(() => documentoDoResumo(resumo ?? { conteudo: null, texto: "" }));
+  // Trocar a chave recria o editor com o documento novo (o gerado pela IA).
+  const [versaoDoc, setVersaoDoc] = useState(0);
   const docAtual = useRef<Documento>(docInicial);
   const [titulo, setTitulo] = useState(resumo?.titulo ?? "");
   const [aviso, setAviso] = useState("");
@@ -137,6 +143,21 @@ export function EditorResumo({
     setMapa(novo);
     setMapaAberto(true);
     setAviso("Mapa gerado. Ajuste o que quiser e salve.");
+  };
+
+  const usarGerado = (novoTitulo: string, conteudo: Documento) => {
+    if (
+      documentoTemConteudo(validarDocumento(docAtual.current)) &&
+      !window.confirm("Trocar o texto que já está no editor pelo resumo gerado?")
+    ) {
+      return false;
+    }
+    docAtual.current = conteudo;
+    setDocInicial(conteudo);
+    setVersaoDoc((v) => v + 1);
+    if (novoTitulo && !titulo.trim()) setTitulo(novoTitulo);
+    setAviso("");
+    return true;
   };
 
   const aoMudar = (caminho: number[], mudar: (n: No) => No | null) => setMapa((m) => atualizarNo(m, caminho, mudar));
@@ -180,6 +201,8 @@ export function EditorResumo({
       {resumo && <input type="hidden" name="id" value={resumo.id} />}
       <input type="hidden" name="mapa" value={JSON.stringify(mapa)} />
       <input type="hidden" name="cor" value={cor} />
+
+      {comIa && <GerarResumoDeMaterial aoGerar={usarGerado} aberto={!resumo} />}
 
       <div className={`grid gap-4 ${aulas ? "sm:grid-cols-2" : ""}`}>
         <div>
@@ -233,7 +256,7 @@ export function EditorResumo({
             ))}
           </fieldset>
         </div>
-        <EditorDocumento nome="conteudo" inicial={docInicial} aoMudar={(d) => (docAtual.current = d)} />
+        <EditorDocumento key={versaoDoc} nome="conteudo" inicial={docInicial} aoMudar={(d) => (docAtual.current = d)} />
         <div className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
           <button type="button" onClick={gerarMapa} className={botaoTexto}>
             ✦ Gerar mapa mental a partir do resumo

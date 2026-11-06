@@ -2,24 +2,26 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { abaAtiva } from "@/components/navegacao";
+import { abaAtiva, type ChaveMenu } from "@/components/navegacao";
+import { useDicionario } from "@/i18n/cliente";
 
-const abas = [
-  { href: "/aluno", rotulo: "Visão geral" },
-  { href: "/aluno/atividades", rotulo: "Atividades" },
-  { href: "/aluno/cursos", rotulo: "Cursos" },
-  { href: "/aluno/praticas", rotulo: "Práticas" },
-  { href: "/aluno/agenda", rotulo: "Agenda" },
-  { href: "/aluno/foco", rotulo: "Modo foco" },
+const abas: { href: string; chave: ChaveMenu }[] = [
+  { href: "/aluno", chave: "visaoGeral" },
+  { href: "/aluno/atividades", chave: "atividades" },
+  { href: "/aluno/cursos", chave: "cursos" },
+  { href: "/aluno/praticas", chave: "praticas" },
+  { href: "/aluno/agenda", chave: "agenda" },
+  { href: "/aluno/foco", chave: "modoFoco" },
 ];
 
 /** Abas do aluno no modo foco do celular (fora do foco, o menu fica na barra de baixo). "Práticas" só aparece com a geração por IA ligada. */
 export function NavConta({ comPraticas = false, className = "mt-6" }: { comPraticas?: boolean; className?: string }) {
   const caminho = usePathname();
+  const d = useDicionario();
   const ativa = (href: string) => abaAtiva(caminho, href);
 
   return (
-    <nav aria-label="Minha conta" className={`sem-rolagem -mx-4 overflow-x-auto px-4 ${className}`}>
+    <nav aria-label={d.menu.minhaConta} className={`sem-rolagem -mx-4 overflow-x-auto px-4 ${className}`}>
       <ul className="flex w-max gap-2">
         {abas.filter((a) => comPraticas || a.href !== "/aluno/praticas").map((a) => (
           <li key={a.href}>
@@ -30,7 +32,7 @@ export function NavConta({ comPraticas = false, className = "mt-6" }: { comPrati
                 ativa(a.href) ? "bg-tinta text-fundo" : "border border-linha text-tinta-suave hover:border-tinta hover:text-tinta"
               }`}
             >
-              {a.rotulo}
+              {d.menu[a.chave]}
             </Link>
           </li>
         ))}

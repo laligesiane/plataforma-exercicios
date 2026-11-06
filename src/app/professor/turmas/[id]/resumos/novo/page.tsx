@@ -2,9 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Cabecalho } from "@/components/Cabecalho";
 import { exigirPapel } from "@/lib/perfil";
+import { iaConfigurada } from "@/lib/pratica/gerar";
 import { salvarResumo } from "../actions";
 import { turmaComAulas } from "../dados";
 import { EditorResumo } from "@/components/EditorResumo";
+
+/** Gerar o resumo com IA pode levar até um minuto. */
+export const maxDuration = 120;
 
 export default async function NovoResumo({
   params,
@@ -26,7 +30,7 @@ export default async function NovoResumo({
           ← {turma.nome}
         </Link>
         <h1 className="mt-3 mb-6 text-3xl font-extrabold tracking-tight">Novo resumo</h1>
-        <EditorResumo salvar={salvarResumo} ocultos={{ turma_id: turma.id }} aulas={aulas} aulaInicial={aula} publicacao />
+        <EditorResumo salvar={salvarResumo} ocultos={{ turma_id: turma.id }} aulas={aulas} aulaInicial={aula} comIa={iaConfigurada()} publicacao />
       </main>
     </>
   );

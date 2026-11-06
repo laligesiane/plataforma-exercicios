@@ -1,5 +1,7 @@
 "use server";
 
+import { textosDoObjeto } from "@/lib/palavroes";
+import { avisoPalavrao } from "@/lib/palavroes/servidor";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { EstadoFormulario } from "@/components/ui/Mensagem";
@@ -30,6 +32,8 @@ export async function salvarResumo(_estado: EstadoFormulario, formData: FormData
   if (!titulo && !texto && !mapa.centro && mapa.ramos.length === 0) {
     return { erro: "Escreva um título, o resumo ou monte o mapa." };
   }
+  const palavrao = await avisoPalavrao(titulo, texto, textosDoObjeto(mapa));
+  if (palavrao) return { erro: palavrao };
 
   const supabase = await criarClienteServidor();
   const valores = {

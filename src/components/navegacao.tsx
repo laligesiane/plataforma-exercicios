@@ -1,7 +1,10 @@
 import type { ReactNode } from "react";
+import type { Dicionario } from "@/i18n/dicionarios/pt";
 
 /** Itens do menu, compartilhados pela barra de baixo (celular) e pelo menu do topo (computador). */
-export type Item = { href: string; rotulo: string; icone: ReactNode };
+export type ChaveMenu = keyof Dicionario["menu"];
+/** chave: o texto do item no dicionário (d.menu[chave]), para o menu seguir o idioma escolhido. */
+export type Item = { href: string; chave: ChaveMenu; icone: ReactNode };
 
 const traco = { fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" } as const;
 const Icone = ({ children }: { children: ReactNode }) => (
@@ -103,17 +106,17 @@ export const icones = {
 };
 
 export const abasAluno: Item[] = [
-  { href: "/aluno", rotulo: "Início", icone: icones.inicio },
-  { href: "/aluno/atividades", rotulo: "Atividades", icone: icones.atividades },
-  { href: "/aluno/cursos", rotulo: "Cursos", icone: icones.materias },
-  { href: "/aluno/agenda", rotulo: "Agenda", icone: icones.agenda },
+  { href: "/aluno", chave: "inicio", icone: icones.inicio },
+  { href: "/aluno/atividades", chave: "atividades", icone: icones.atividades },
+  { href: "/aluno/cursos", chave: "cursos", icone: icones.materias },
+  { href: "/aluno/agenda", chave: "agenda", icone: icones.agenda },
 ];
 
 export const abasProfessor: Item[] = [
-  { href: "/professor", rotulo: "Turmas", icone: icones.turmas },
-  { href: "/professor/atividades", rotulo: "Atividades", icone: icones.atividades },
-  { href: "/biblioteca", rotulo: "Biblioteca", icone: icones.resumos },
-  { href: "/perfil", rotulo: "Perfil", icone: icones.perfil },
+  { href: "/professor", chave: "turmas", icone: icones.turmas },
+  { href: "/professor/atividades", chave: "atividades", icone: icones.atividades },
+  { href: "/biblioteca", chave: "biblioteca", icone: icones.resumos },
+  { href: "/perfil", chave: "perfil", icone: icones.perfil },
 ];
 
 /**
@@ -121,8 +124,8 @@ export const abasProfessor: Item[] = [
  * matéria (dentro dos cursos), e o Repasar fica dentro de Atividades, por isso não aparecem aqui.
  */
 export const maisAluno = (comPraticas: boolean): Item[] => [
-  ...(comPraticas ? [{ href: "/aluno/praticas", rotulo: "Práticas", icone: icones.praticas }] : []),
-  { href: "/aluno/foco", rotulo: "Modo foco", icone: icones.foco },
+  ...(comPraticas ? ([{ href: "/aluno/praticas", chave: "praticas", icone: icones.praticas }] as Item[]) : []),
+  { href: "/aluno/foco", chave: "modoFoco", icone: icones.foco },
 ];
 
 /** Páginas que moram dentro de outra aba e devem acendê-la no menu. */

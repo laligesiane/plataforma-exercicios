@@ -90,7 +90,7 @@ export default function Privacidade() {
           <li><strong className="text-tinta">Vercel:</strong> hospedagem do site.</li>
           <li><strong className="text-tinta">Resend:</strong> envio dos e-mails da conta.</li>
           <li><strong className="text-tinta">Microsoft Azure:</strong> quando você usa a voz natural para ouvir um resumo, o trecho do texto é enviado para virar áudio.</li>
-          <li><strong className="text-tinta">Anthropic:</strong> quando você pede para gerar exercícios de um resumo com IA, o texto do resumo é enviado para criar as perguntas. Esse recurso só funciona quando você clica para usá-lo.</li>
+          <li><strong className="text-tinta">Anthropic:</strong> quando você pede para gerar exercícios de um resumo com IA, o texto do resumo é enviado para criar as perguntas. Quando você pede para gerar um resumo de um PDF, slides ou texto, o texto desse material é enviado para escrever o resumo (se o PDF for uma digitalização sem texto, o próprio PDF é enviado). Esses recursos só funcionam quando você clica para usá-los.</li>
           <li><strong className="text-tinta">Google Analytics:</strong> estatísticas de uso, só com a sua permissão.</li>
         </Lista>
         <p>

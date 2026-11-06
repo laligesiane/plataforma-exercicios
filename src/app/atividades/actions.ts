@@ -1,5 +1,6 @@
 "use server";
 
+import { avisoPalavrao } from "@/lib/palavroes/servidor";
 import { ehUuid } from "@/lib/atividades/modelo";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import type { ProducaoSalva } from "@/components/exercicios/Producao";
@@ -76,6 +77,8 @@ export async function enviarProducao(p: NovaProducao): Promise<{ ok: true; salva
   const pasta = `${usuario.user.id}/${p.atividadeId}/`;
   const audio = typeof p.audio === "string" && p.audio.startsWith(pasta) && /^[\w./-]+$/.test(p.audio) ? p.audio : null;
   if (!texto && !audio) return { ok: false, erro: "Escreva ou grave sua resposta antes de enviar." };
+  const palavrao = await avisoPalavrao(texto);
+  if (palavrao) return { ok: false, erro: palavrao };
 
   const { data, error } = await supabase
     .from("producao")
@@ -107,6 +110,8 @@ export async function enviarDuvida(
   if (!ehUuid(atividadeId) || !ehUuid(exercicioId) || typeof texto !== "string") return { ok: false, erro: "Recarregue a página e tente de novo." };
   const limpo = texto.trim().slice(0, 1000);
   if (!limpo) return { ok: false, erro: "Escreva o que você não entendeu." };
+  const palavrao = await avisoPalavrao(limpo);
+  if (palavrao) return { ok: false, erro: palavrao };
 
   const supabase = await criarClienteServidor();
   const { data, error } = await supabase

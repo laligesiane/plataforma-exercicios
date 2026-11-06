@@ -6,6 +6,8 @@ import type { EstadoFormulario } from "@/components/ui/Mensagem";
 import { marcarEvento } from "@/lib/analytics/servidor";
 import { destinoDepoisDoLogin } from "@/lib/auth/depois-do-login";
 import { caminhoInterno } from "@/lib/auth/destino";
+import { fmt } from "@/i18n/config";
+import { obterDicionario } from "@/i18n/servidor";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
 export type EstadoCodigo = (EstadoFormulario & { enviadoPara?: string }) | null;
@@ -13,11 +15,12 @@ export type EstadoCodigo = (EstadoFormulario & { enviadoPara?: string }) | null;
 export async function entrar(_estado: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
   const email = String(formData.get("email") ?? "").trim();
   const senha = String(formData.get("senha") ?? "");
-  if (!email || !senha) return { erro: "Preencha e-mail e senha." };
+  const d = await obterDicionario();
+  if (!email || !senha) return { erro: d.entrar.erroPreencha };
 
   const supabase = await criarClienteServidor();
   const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
-  if (error) return { erro: "E-mail ou senha incorretos. Se você entra pelo Google ou nunca criou senha, use “Receber código por e-mail”." };
+  if (error) return { erro: d.entrar.erroSenha };
 
   await marcarEvento("login", { method: "senha" });
   redirect(await destinoDepoisDoLogin(String(formData.get("proximo") ?? "")));
@@ -26,31 +29,33 @@ export async function entrar(_estado: EstadoFormulario, formData: FormData): Pro
 /** Passo 1 do login sem senha: manda um código de 6 dígitos para o e-mail. */
 export async function enviarCodigo(_estado: EstadoCodigo, formData: FormData): Promise<EstadoCodigo> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  if (!email) return { erro: "Digite seu e-mail." };
+  const d = await obterDicionario();
+  if (!email) return { erro: d.entrar.erroDigiteEmail };
 
   const supabase = await criarClienteServidor();
   const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
   if (error) {
     if (error.code === "over_email_send_rate_limit" || error.status === 429) {
-      return { erro: "Espere um minuto antes de pedir outro código." };
+      return { erro: d.entrar.erroEspere };
     }
     if (error.code === "otp_disabled" || error.message.toLowerCase().includes("signups not allowed")) {
-      return { erro: "Não achamos uma conta com esse e-mail. Confira o endereço ou crie sua conta grátis." };
+      return { erro: d.entrar.erroSemConta };
     }
-    return { erro: `Não foi possível enviar o código: ${error.message}` };
+    return { erro: fmt(d.entrar.erroEnviar, { erro: error.message }) };
   }
-  return { enviadoPara: email, sucesso: `Enviamos um código para ${email}. Ele vale por 1 hora.` };
+  return { enviadoPara: email, sucesso: fmt(d.entrar.codigoEnviado, { email }) };
 }
 
 /** Passo 2 do login sem senha: confere o código digitado. */
 export async function verificarCodigo(_estado: EstadoCodigo, formData: FormData): Promise<EstadoCodigo> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const codigo = String(formData.get("codigo") ?? "").replace(/\D/g, "");
-  if (codigo.length < 6) return { enviadoPara: email, erro: "Digite o código que chegou no e-mail." };
+  const d = await obterDicionario();
+  if (codigo.length < 6) return { enviadoPara: email, erro: d.entrar.erroDigiteCodigo };
 
   const supabase = await criarClienteServidor();
   const { error } = await supabase.auth.verifyOtp({ email, token: codigo, type: "email" });
-  if (error) return { enviadoPara: email, erro: "Código errado ou vencido. Confira o último e-mail ou peça outro código." };
+  if (error) return { enviadoPara: email, erro: d.entrar.erroCodigo };
 
   await marcarEvento("login", { method: "codigo" });
   redirect(await destinoDepoisDoLogin(String(formData.get("proximo") ?? "")));

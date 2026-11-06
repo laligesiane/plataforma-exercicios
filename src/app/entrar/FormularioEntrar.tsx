@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 import { Mensagem } from "@/components/ui/Mensagem";
 import { botaoPrimario, botaoTexto, campo, rotulo } from "@/components/ui/estilos";
+import { useDicionario } from "@/i18n/cliente";
 import { entrar, enviarCodigo, verificarCodigo, type EstadoCodigo } from "./actions";
 
 type Modo = "senha" | "codigo";
@@ -11,14 +12,15 @@ type Modo = "senha" | "codigo";
 export function FormularioEntrar({ proximo }: { proximo?: string }) {
   const [modo, setModo] = useState<Modo>("senha");
   const [email, setEmail] = useState("");
+  const d = useDicionario();
 
   return (
     <div>
-      <div role="tablist" aria-label="Como entrar" className="mb-5 grid grid-cols-2 gap-1 rounded-full bg-suave p-1">
+      <div role="tablist" aria-label={d.entrar.comoEntrar} className="mb-5 grid grid-cols-2 gap-1 rounded-full bg-suave p-1">
         {(
           [
-            ["senha", "Com senha"],
-            ["codigo", "Código por e-mail"],
+            ["senha", d.entrar.comSenha],
+            ["codigo", d.entrar.codigoEmail],
           ] as const
         ).map(([valor, texto]) => (
           <button
@@ -45,10 +47,11 @@ export function FormularioEntrar({ proximo }: { proximo?: string }) {
 type Props = { proximo?: string; email: string; setEmail: (v: string) => void };
 
 function CampoEmail({ email, setEmail }: Pick<Props, "email" | "setEmail">) {
+  const d = useDicionario();
   return (
     <div>
       <label htmlFor="email" className={rotulo}>
-        E-mail
+        {d.auth.email}
       </label>
       <input
         id="email"
@@ -66,6 +69,7 @@ function CampoEmail({ email, setEmail }: Pick<Props, "email" | "setEmail">) {
 
 function EntrarComSenha({ proximo, email, setEmail }: Props) {
   const [estado, acao, enviando] = useActionState(entrar, null);
+  const d = useDicionario();
 
   return (
     <form action={acao} className="space-y-4">
@@ -74,17 +78,17 @@ function EntrarComSenha({ proximo, email, setEmail }: Props) {
       <div>
         <div className="flex items-baseline justify-between">
           <label htmlFor="senha" className={rotulo}>
-            Senha
+            {d.auth.senha}
           </label>
           <Link href="/esqueci-senha" className="text-sm font-bold text-primaria hover:underline">
-            Esqueci minha senha
+            {d.entrar.esqueci}
           </Link>
         </div>
         <input id="senha" name="senha" type="password" autoComplete="current-password" required className={campo} />
       </div>
       <Mensagem estado={estado} />
       <button type="submit" disabled={enviando} className={`${botaoPrimario} w-full`}>
-        {enviando ? "Entrando..." : "Entrar"}
+        {enviando ? d.entrar.entrando : d.entrar.botao}
       </button>
     </form>
   );
@@ -94,16 +98,17 @@ function EntrarComCodigo({ proximo, email, setEmail }: Props) {
   const [envio, pedir, pedindo] = useActionState<EstadoCodigo, FormData>(enviarCodigo, null);
   const [conferencia, conferir, conferindo] = useActionState<EstadoCodigo, FormData>(verificarCodigo, null);
   const [trocouEmail, setTrocouEmail] = useState(false);
+  const d = useDicionario();
   const enviadoPara = trocouEmail ? null : envio?.enviadoPara;
 
   if (!enviadoPara) {
     return (
       <form action={(f) => { setTrocouEmail(false); pedir(f); }} className="space-y-4">
-        <p className="text-sm text-tinta-suave">Sem senha: mandamos um código para o seu e-mail e você digita aqui.</p>
+        <p className="text-sm text-tinta-suave">{d.entrar.semSenha}</p>
         <CampoEmail email={email} setEmail={setEmail} />
         <Mensagem estado={envio} />
         <button type="submit" disabled={pedindo} className={`${botaoPrimario} w-full`}>
-          {pedindo ? "Enviando..." : "Receber código"}
+          {pedindo ? d.entrar.enviando : d.entrar.receberCodigo}
         </button>
       </form>
     );
@@ -117,7 +122,7 @@ function EntrarComCodigo({ proximo, email, setEmail }: Props) {
         <Mensagem estado={conferencia?.erro ? conferencia : envio} />
         <div>
           <label htmlFor="codigo" className={rotulo}>
-            Código
+            {d.entrar.codigo}
           </label>
           <input
             id="codigo"
@@ -133,17 +138,17 @@ function EntrarComCodigo({ proximo, email, setEmail }: Props) {
           />
         </div>
         <button type="submit" disabled={conferindo} className={`${botaoPrimario} w-full`}>
-          {conferindo ? "Conferindo..." : "Entrar"}
+          {conferindo ? d.entrar.conferindo : d.entrar.botao}
         </button>
       </form>
       <div className="flex justify-between gap-4">
         <button type="button" className={botaoTexto} onClick={() => setTrocouEmail(true)}>
-          Usar outro e-mail
+          {d.entrar.outroEmail}
         </button>
         <form action={pedir}>
           <input type="hidden" name="email" value={enviadoPara} />
           <button type="submit" disabled={pedindo} className={botaoTexto}>
-            {pedindo ? "Enviando..." : "Mandar de novo"}
+            {pedindo ? d.entrar.enviando : d.entrar.mandarDeNovo}
           </button>
         </form>
       </div>

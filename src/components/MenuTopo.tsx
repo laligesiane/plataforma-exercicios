@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { sair } from "@/app/entrar/actions";
 import { Avatar } from "@/components/Avatar";
+import { useDicionario } from "@/i18n/cliente";
 import { abaAtiva, abasAluno, abasProfessor, icones, maisAluno, type Item } from "@/components/navegacao";
 
 /** Fecha um menu suspenso ao clicar fora, apertar Esc ou trocar de página. */
@@ -51,6 +52,7 @@ function Suspenso({ rotulo, botao, ativo, largura = "w-60", children }: { rotulo
 }
 
 function ItemMenu({ item, caminho }: { item: Item; caminho: string }) {
+  const d = useDicionario();
   const ativo = abaAtiva(caminho, item.href);
   return (
     <Link
@@ -60,7 +62,7 @@ function ItemMenu({ item, caminho }: { item: Item; caminho: string }) {
       className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-bold text-tinta hover:bg-suave aria-[current]:bg-primaria-suave aria-[current]:text-primaria [&_svg]:size-5 [&_svg]:text-primaria"
     >
       {item.icone}
-      {item.rotulo}
+      {d.menu[item.chave]}
     </Link>
   );
 }
@@ -71,19 +73,20 @@ function ItemMenu({ item, caminho }: { item: Item; caminho: string }) {
  */
 export function MenuPrincipal({ papel, comPraticas = false }: { papel: "aluno" | "professor"; comPraticas?: boolean }) {
   const caminho = usePathname();
+  const d = useDicionario();
   const abas = papel === "aluno" ? abasAluno : abasProfessor.filter((a) => a.href !== "/perfil");
   const mais = papel === "aluno" ? maisAluno(comPraticas) : [];
 
   return (
-    <nav aria-label="Menu principal">
+    <nav aria-label={d.menu.principal}>
       <ul className="flex items-center gap-0.5 lg:gap-2">
         {abas.map((a) => {
           const ativa = abaAtiva(caminho, a.href);
           return (
             <li key={a.href}>
-              <Link href={a.href} aria-current={ativa ? "page" : undefined} title={a.rotulo} className={estiloAba(ativa)}>
+              <Link href={a.href} aria-current={ativa ? "page" : undefined} title={d.menu[a.chave]} className={estiloAba(ativa)}>
                 {a.icone}
-                <span className="sr-only md:not-sr-only">{a.rotulo}</span>
+                <span className="sr-only md:not-sr-only">{d.menu[a.chave]}</span>
               </Link>
             </li>
             );
@@ -91,12 +94,12 @@ export function MenuPrincipal({ papel, comPraticas = false }: { papel: "aluno" |
           {mais.length > 0 && (
             <li>
               <Suspenso
-                rotulo="Mais páginas"
+                rotulo={d.menu.maisPaginas}
                 ativo={mais.some((m) => abaAtiva(caminho, m.href))}
                 botao={
                   <>
                     {icones.mais}
-                    <span className="hidden md:inline">Mais</span>
+                    <span className="hidden md:inline">{d.menu.mais}</span>
                     {icones.seta}
                   </>
                 }
@@ -115,11 +118,12 @@ export function MenuPrincipal({ papel, comPraticas = false }: { papel: "aluno" |
 /** Foto (ou bolinha com a inicial), no canto direito: Perfil e Sair. */
 export function MenuConta({ nome, foto, professor = false }: { nome: string | null; foto?: string | null; professor?: boolean }) {
   const caminho = usePathname();
+  const d = useDicionario();
 
   return (
     <div className="esconder-no-foco">
       <Suspenso
-        rotulo="Minha conta"
+        rotulo={d.menu.minhaConta}
         ativo={caminho.startsWith("/perfil") || caminho.startsWith("/professor/site")}
         largura="w-52"
         botao={
@@ -127,8 +131,8 @@ export function MenuConta({ nome, foto, professor = false }: { nome: string | nu
         }
       >
         {nome && <p className="truncate px-3 pt-1 pb-2 text-xs font-bold text-tinta-suave">{nome}</p>}
-        <ItemMenu item={{ href: "/perfil", rotulo: "Perfil", icone: icones.perfil }} caminho={caminho} />
-        {professor && <ItemMenu item={{ href: "/professor/site", rotulo: "Site do professor", icone: icones.site }} caminho={caminho} />}
+        <ItemMenu item={{ href: "/perfil", chave: "perfil", icone: icones.perfil }} caminho={caminho} />
+        {professor && <ItemMenu item={{ href: "/professor/site", chave: "siteProfessor", icone: icones.site }} caminho={caminho} />}
         <form action={sair}>
           <button
             type="submit"
@@ -136,7 +140,7 @@ export function MenuConta({ nome, foto, professor = false }: { nome: string | nu
             className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-bold text-tinta hover:bg-suave [&_svg]:size-5 [&_svg]:text-tinta-suave"
           >
             {icones.sair}
-            Sair
+            {d.menu.sair}
           </button>
         </form>
       </Suspenso>

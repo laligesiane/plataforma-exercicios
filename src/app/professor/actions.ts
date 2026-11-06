@@ -1,5 +1,6 @@
 "use server";
 
+import { avisoPalavrao } from "@/lib/palavroes/servidor";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -19,6 +20,8 @@ export async function criarTurma(_estado: EstadoFormulario, formData: FormData):
   const idiomaInstrucao = String(formData.get("idioma_instrucao") ?? "");
   const materia = String(formData.get("materia") ?? "").trim().slice(0, 80);
   if (!nome) return { erro: "Dê um nome para a turma." };
+  const palavrao = await avisoPalavrao(nome, materia);
+  if (palavrao) return { erro: palavrao };
   if (tipo === "materia") {
     if (!materia) return { erro: "Escreva a matéria da turma." };
   } else if (!ehIdioma(idiomaEnsinado) || !ehIdioma(idiomaInstrucao)) {
@@ -52,6 +55,8 @@ export async function convidarAluno(_estado: EstadoFormulario, formData: FormDat
   const nome = String(formData.get("nome") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   if (!nome || !email) return { erro: "Preencha nome e e-mail do aluno." };
+  const palavrao = await avisoPalavrao(nome);
+  if (palavrao) return { erro: palavrao };
   if (formData.get("autorizacao") !== "on") {
     return { erro: "Confirme que o aluno quer participar e, se for menor de idade, que a escola ou a família autorizou." };
   }

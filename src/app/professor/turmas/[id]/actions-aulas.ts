@@ -1,5 +1,6 @@
 "use server";
 
+import { avisoPalavrao } from "@/lib/palavroes/servidor";
 import { revalidatePath } from "next/cache";
 import type { EstadoFormulario } from "@/components/ui/Mensagem";
 import { dataValida } from "@/lib/aulas";
@@ -29,6 +30,8 @@ export async function salvarAula(_estado: EstadoFormulario, formData: FormData):
   if (!valores.titulo && !valores.resumo && !valores.proximos_passos && !valores.tarefa) {
     return { erro: "Escreva ao menos o que foi visto na aula." };
   }
+  const palavrao = await avisoPalavrao(valores.titulo, valores.resumo, valores.proximos_passos, valores.tarefa);
+  if (palavrao) return { erro: palavrao };
 
   const supabase = await criarClienteServidor();
   const { error } = id
