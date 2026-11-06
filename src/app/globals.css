@@ -434,3 +434,157 @@ html[data-dislexia] li {
 .sem-rolagem::-webkit-scrollbar {
   display: none;
 }
+
+/* Landing: animações leves. Tudo fica parado para quem pede menos movimento no sistema. */
+@keyframes landing-sobe {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes landing-desenha {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes landing-flutua {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-9px) rotate(8deg); }
+}
+@keyframes landing-boia {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-10px) rotate(1deg); }
+}
+@keyframes landing-marca {
+  from { background-size: 0% 100%; }
+  to { background-size: 100% 100%; }
+}
+@keyframes landing-estica {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes landing-balao {
+  0% { opacity: 0; transform: scale(0.6) translateY(8px); }
+  70% { opacity: 1; transform: scale(1.06); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes landing-chega {
+  0% { opacity: 0; transform: translateY(40px) scale(0.8); }
+  60% { opacity: 1; transform: translateY(-10px) scale(1.04); }
+  80% { transform: translateY(2px) scale(0.98, 1.02); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes landing-pulinho {
+  0%, 70%, 100% { transform: translateY(0) scale(1, 1); }
+  76% { transform: translateY(0) scale(1.06, 0.92); }
+  84% { transform: translateY(-14px) scale(0.97, 1.04); }
+  92% { transform: translateY(0) scale(1.04, 0.96); }
+}
+@keyframes landing-treme {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+@keyframes landing-estala {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+@keyframes landing-mexe {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-10deg); }
+  75% { transform: rotate(10deg); }
+}
+@keyframes landing-balanca-selo {
+  0%, 100% { transform: rotate(8deg); }
+  50% { transform: rotate(-4deg); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Abertura: cada parte entra um pouquinho depois da outra. */
+  .landing .entrada {
+    animation: landing-sobe 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--atraso, 0ms);
+  }
+  .landing .rabisco path {
+    stroke-dasharray: 1;
+    animation: landing-desenha 0.8s 0.7s ease-out both;
+  }
+  .landing .marca-texto {
+    animation: landing-marca 0.7s 1.2s ease-out both;
+  }
+  .landing .linha-mapa {
+    transform-origin: left;
+    animation: landing-estica 0.3s ease-out both;
+    animation-delay: var(--atraso, 0ms);
+  }
+  .landing .balao {
+    transform-origin: bottom right;
+    animation: landing-balao 0.5s 1.6s ease-out both;
+  }
+  .landing .brotinho-chega {
+    display: block;
+    animation: landing-chega 0.8s 0.9s cubic-bezier(0.3, 0.8, 0.3, 1) both;
+  }
+  .landing .brotinho-pulinho {
+    transform-origin: 50% 100%;
+    animation: landing-pulinho 4s 2.4s ease-in-out infinite;
+  }
+  .landing .flutua {
+    animation: landing-flutua 5s ease-in-out infinite;
+    animation-delay: var(--atraso, 0ms);
+  }
+  .landing .celular-flutua {
+    animation: landing-boia 6s ease-in-out infinite;
+  }
+  .landing .selo-em-breve {
+    animation: landing-balanca-selo 3s ease-in-out infinite;
+  }
+
+  /* Cartões que sobem de leve ao passar o mouse, com o ícone mexendo. */
+  .landing .cartao-recurso {
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+  .landing .cartao-recurso:hover {
+    transform: translateY(-4px);
+    border-color: var(--primaria);
+    box-shadow: 0 16px 30px -22px rgb(15 157 107 / 0.55);
+  }
+  .landing .cartao-recurso:hover .icone-recurso {
+    animation: landing-mexe 0.5s ease-in-out;
+  }
+  .landing .botao-pula {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+  .landing .botao-pula:hover {
+    transform: translateY(-2px) scale(1.03);
+  }
+
+  /* Blocos que aparecem ao rolar (a classe landing-anima só entra com JavaScript). */
+  .landing [data-surgir] {
+    transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transition-delay: var(--atraso, 0ms);
+  }
+  .landing-anima .landing [data-surgir]:not(.surgiu) {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  .landing-anima .landing .cartao-recurso.surgiu:hover {
+    transition-delay: 0ms;
+  }
+
+  /* Correção: a palavra errada treme, a dica aparece e depois vem a resposta certa. */
+  .landing-anima .landing .correcao.surgiu .palavra-errada {
+    animation: landing-treme 0.45s 0.6s ease-in-out both;
+  }
+  .landing-anima .landing .correcao.surgiu .correcao-dica {
+    animation: landing-sobe 0.5s 0.9s ease-out both;
+  }
+  .landing-anima .landing .correcao.surgiu .correcao-certa {
+    animation: landing-sobe 0.5s 1.6s ease-out both;
+  }
+  .landing-anima .landing .correcao.surgiu .palavra-certa {
+    animation: landing-estala 0.45s 2.1s ease-out both;
+  }
+}
+
+.landing .marca-texto {
+  background: linear-gradient(var(--aviso-fundo), var(--aviso-fundo)) no-repeat left center / 100% 100%;
+}
