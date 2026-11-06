@@ -1,5 +1,6 @@
 "use server";
 
+import { obterDicionario } from "@/i18n/servidor";
 import { revalidatePath } from "next/cache";
 import { diaValido, escolherEspecie, proximaMeta, selosNovos, type ArvoreColhida } from "@/lib/foco/colecao";
 import { obterPerfil } from "@/lib/perfil";
@@ -21,6 +22,7 @@ export type Colheita = {
  */
 export async function colherArvore(minutos: number, dia: string): Promise<Colheita | null> {
   const perfil = await obterPerfil();
+  const t = (await obterDicionario()).foco;
   if (!perfil || perfil.papel !== "aluno") return null;
   if (!Number.isInteger(minutos) || minutos < 1 || minutos > 240 || !diaValido(dia)) return null;
 
@@ -47,7 +49,7 @@ export async function colherArvore(minutos: number, dia: string): Promise<Colhei
     minutos,
     especieNova: !antes.some((a) => a.especie === especie),
     selos: selosNovos(antes, depois).map((s) => s.id),
-    proxima: proximaMeta(depois, dia),
+    proxima: proximaMeta(depois, dia, t),
     salva: true,
   };
 }

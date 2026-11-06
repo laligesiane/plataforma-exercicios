@@ -1,4 +1,5 @@
 import { datasPt } from "./datasPt";
+import { focoPt } from "./focoPt";
 
 /**
  * Dicionário em português: a fonte dos textos da interface. Os outros idiomas seguem o mesmo
@@ -897,6 +898,7 @@ export const pt = {
     salvar: "Salvar prática",
     descartar: "Descartar",
   },
+  foco: focoPt,
   palavrao: {
     aviso: "Esse texto tem uma palavra que não é permitida na Repasa: “{palavra}”. Troque a palavra para salvar.",
   },

@@ -1,4 +1,6 @@
-import { FASES, ULTIMA_FASE } from "@/lib/foco";
+import { fmt } from "@/i18n/config";
+import { especieTx, focoPt, type TextosFoco } from "@/i18n/dicionarios/focoPt";
+import { ULTIMA_FASE } from "@/lib/foco";
 import { especiePorId, type Especie } from "@/lib/foco/colecao";
 
 const TINTA = "#10233a";
@@ -171,6 +173,7 @@ export function PlantaFoco({
   animado = true,
   especie,
   className = "",
+  textos = focoPt,
 }: {
   fase: number;
   /** Espécie da árvore pronta (última fase); sem ela, a Árvore do Brotinho. */
@@ -179,6 +182,8 @@ export function PlantaFoco({
   tamanho?: number;
   animado?: boolean;
   className?: string;
+  /** Textos do modo foco no idioma do usuário (para o rótulo de leitores de tela). */
+  textos?: TextosFoco;
 }) {
   const f = Math.max(0, Math.min(ULTIMA_FASE, Math.round(fase)));
   return (
@@ -188,7 +193,7 @@ export function PlantaFoco({
       viewBox="0 0 200 240"
       className={`${animado && !pausado ? "foco-vivo" : ""} ${className}`}
       role="img"
-      aria-label={f === ULTIMA_FASE && especie ? especiePorId(especie).nome : `Brotinho na fase ${FASES[f].nome.toLowerCase()}`}
+      aria-label={f === ULTIMA_FASE && especie ? especieTx(textos, especie).nome : fmt(textos.faseAria, { fase: textos.fases[f].nome.toLowerCase() })}
     >
       {f === 0 && (
         <>

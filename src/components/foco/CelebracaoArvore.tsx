@@ -1,5 +1,8 @@
 "use client";
 
+import { especieTx, seloTx, type TextosFoco } from "@/i18n/dicionarios/focoPt";
+import { fmt } from "@/i18n/config";
+import { useDicionario } from "@/i18n/cliente";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { PlantaFoco } from "@/components/PlantaFoco";
@@ -19,13 +22,13 @@ const CONFETES = Array.from({ length: 22 }, (_, i) => ({
 }));
 
 /** "1 minuto", "25 minutos", "1 hora", "1 hora e 30 minutos". */
-function tempoEstudado(min: number) {
+function tempoEstudado(min: number, t: TextosFoco) {
   const h = Math.floor(min / 60);
   const m = min % 60;
-  const minutos = `${m} ${m === 1 ? "minuto" : "minutos"}`;
+  const minutos = m === 1 ? t.minuto1 : fmt(t.minutosN, { n: m });
   if (h === 0) return minutos;
-  const horas = `${h} ${h === 1 ? "hora" : "horas"}`;
-  return m === 0 ? horas : `${horas} e ${minutos}`;
+  const horas = h === 1 ? t.hora1 : fmt(t.horasN, { n: h });
+  return m === 0 ? horas : fmt(t.horasEMinutos, { horas, minutos });
 }
 
 /**
@@ -35,6 +38,7 @@ function tempoEstudado(min: number) {
 export function CelebracaoArvore() {
   const { celebrando, colheita, concluida, fecharCelebracao } = useFoco();
   const fechar = useRef<HTMLButtonElement>(null);
+  const t = useDicionario().foco;
 
   useEffect(() => {
     if (!celebrando) return;
@@ -82,7 +86,7 @@ export function CelebracaoArvore() {
           ref={fechar}
           type="button"
           onClick={fecharCelebracao}
-          aria-label="Fechar"
+          aria-label={t.fechar}
           className="absolute top-3 right-3 z-10 flex size-8 items-center justify-center rounded-full text-xl text-tinta-suave hover:bg-suave hover:text-tinta"
         >
           ×
@@ -92,34 +96,34 @@ export function CelebracaoArvore() {
           <div className="foco-raios absolute inset-0 -z-0 m-auto size-52 rounded-full" aria-hidden />
           <div className={esp ? "foco-revela relative" : "relative"}>
             {esp ? (
-              <PlantaFoco fase={ULTIMA_FASE} especie={esp.id} tamanho={180} />
+              <PlantaFoco fase={ULTIMA_FASE} especie={esp.id} tamanho={180} textos={t} />
             ) : (
-              <PlantaFoco fase={ULTIMA_FASE - 1} tamanho={180} />
+              <PlantaFoco fase={ULTIMA_FASE - 1} tamanho={180} textos={t} />
             )}
           </div>
         </div>
 
         <h2 id="celebracao-titulo" className="mt-1 text-2xl font-extrabold">
-          Parabéns, você conseguiu!
+          {t.parabens}
         </h2>
         <p className="mt-1 font-semibold text-tinta-suave">
-          Você estudou <strong className="text-tinta">{tempoEstudado(minutos)}</strong> com foco.
+          {t.estudou1} <strong className="text-tinta">{tempoEstudado(minutos, t)}</strong> {t.estudou2}
         </p>
 
         <div role="status" aria-live="polite" className="mt-4 rounded-2xl bg-primaria-suave px-4 py-3">
-          {!esp && <p className="font-bold text-primaria">Regando sua árvore…</p>}
+          {!esp && <p className="font-bold text-primaria">{t.regando}</p>}
           {esp && (
             <>
               {colheita?.especieNova && (
                 <span className="mb-1 inline-block rounded-full bg-primaria px-2.5 py-0.5 text-xs font-extrabold text-white">
-                  Espécie nova!
+                  {t.especieNova}
                 </span>
               )}
-              <p className="text-sm font-bold text-primaria">{colheita?.salva ? "Nova árvore na sua coleção" : "Você ganhou uma árvore"}</p>
-              <p className="text-lg font-extrabold">{esp.nome}</p>
-              <p className="mt-0.5 text-sm text-tinta-suave">{esp.frase}</p>
+              <p className="text-sm font-bold text-primaria">{colheita?.salva ? t.novaNaColecao : t.ganhou}</p>
+              <p className="text-lg font-extrabold">{especieTx(t, esp.id).nome}</p>
+              <p className="mt-0.5 text-sm text-tinta-suave">{especieTx(t, esp.id).frase}</p>
               {colheita && !colheita.salva && (
-                <p className="mt-1 text-xs text-tinta-suave">Não deu para guardar na coleção agora. Ela fica salva no seu jardim de hoje.</p>
+                <p className="mt-1 text-xs text-tinta-suave">{t.naoGuardou}</p>
               )}
             </>
           )}
@@ -127,12 +131,12 @@ export function CelebracaoArvore() {
 
         {selos.length > 0 && (
           <div className="mt-4">
-            <p className="text-sm font-extrabold">{selos.length === 1 ? "Novo selo!" : "Novos selos!"}</p>
+            <p className="text-sm font-extrabold">{selos.length === 1 ? t.novoSelo : t.novosSelos}</p>
             <ul className="mt-2 flex flex-wrap justify-center gap-3">
               {selos.map((s) => (
                 <li key={s.id} className="foco-revela flex w-24 flex-col items-center">
                   <MedalhaSelo selo={s} tamanho={52} />
-                  <span className="mt-1 text-xs font-bold">{s.nome}</span>
+                  <span className="mt-1 text-xs font-bold">{seloTx(t, s.id).nome}</span>
                 </li>
               ))}
             </ul>
@@ -144,16 +148,16 @@ export function CelebracaoArvore() {
         <div className="mt-5 flex flex-wrap justify-center gap-3">
           {colheita?.salva ? (
             <Link href="/aluno/foco/colecao" onClick={fecharCelebracao} className={botaoPrimario}>
-              Ver minha coleção
+              {t.verColecao}
             </Link>
           ) : (
             <button type="button" onClick={fecharCelebracao} className={botaoPrimario}>
-              Oba!
+              {t.oba}
             </button>
           )}
           {colheita?.salva && (
             <button type="button" onClick={fecharCelebracao} className={botaoSecundario}>
-              Fechar
+              {t.fechar}
             </button>
           )}
         </div>
