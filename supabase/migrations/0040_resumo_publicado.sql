@@ -1,7 +1,7 @@
 -- Resumos do professor publicados como as atividades: rascunho (só o professor vê),
 -- para os alunos da turma, ou público (qualquer pessoa, também na Biblioteca de resumos).
 -- O resumo também ganha a matéria da turma e temas (etiquetas) para filtrar na Biblioteca.
--- Rodar uma vez no SQL Editor do Supabase ANTES do merge, depois da 0038. Pode rodar de novo sem erro.
+-- Rodar uma vez no SQL Editor do Supabase ANTES do merge, depois da 0039 (perfil_idioma). Pode rodar de novo sem erro.
 -- Resumos que já existem continuam iguais: publicados para a turma e não públicos.
 
 alter table public.resumo
