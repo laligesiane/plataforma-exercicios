@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useDicionario } from "@/i18n/cliente";
 
 type Preferencias = { tamanho: "normal" | "grande" | "maior"; dislexia: boolean };
 const CHAVE = "repasa-leitura";
@@ -20,6 +21,7 @@ function aplicar(p: Preferencias) {
 /** Opções de leitura: tamanho do texto e leitura com mais espaço (ajuda quem tem dislexia). Fica salvo só neste aparelho. */
 export function PainelLeitura() {
   const [prefs, setPrefs] = useState<Preferencias>(padrao);
+  const d = useDicionario();
 
   useEffect(() => {
     try {
@@ -45,13 +47,13 @@ export function PainelLeitura() {
 
   return (
     <div className="text-sm">
-      <p className="font-bold text-tinta">Tamanho do texto</p>
-      <div className="mt-2 flex gap-1" role="group" aria-label="Tamanho do texto">
+      <p className="font-bold text-tinta">{d.leitura.tamanho}</p>
+      <div className="mt-2 flex gap-1" role="group" aria-label={d.leitura.tamanho}>
         {(
           [
-            ["normal", "Normal"],
-            ["grande", "Grande"],
-            ["maior", "Maior"],
+            ["normal", d.leitura.normal],
+            ["grande", d.leitura.grande],
+            ["maior", d.leitura.maior],
           ] as const
         ).map(([valor, rotulo]) => (
           <button key={valor} type="button" aria-pressed={prefs.tamanho === valor} onClick={() => mudar({ tamanho: valor })} className={opcao(prefs.tamanho === valor)}>
@@ -62,23 +64,24 @@ export function PainelLeitura() {
       <label className="mt-4 flex items-start gap-2.5 text-tinta">
         <input type="checkbox" checked={prefs.dislexia} onChange={(e) => mudar({ dislexia: e.target.checked })} className="mt-0.5 size-4.5 accent-primaria" />
         <span>
-          <strong className="font-bold">Leitura com mais espaço</strong>
-          <span className="block text-xs text-tinta-suave">Letras mais legíveis e mais espaço entre letras e linhas. Ajuda quem tem dislexia.</span>
+          <strong className="font-bold">{d.leitura.espaco}</strong>
+          <span className="block text-xs text-tinta-suave">{d.leitura.espacoAjuda}</span>
         </span>
       </label>
-      <p className="mt-3 text-xs text-tinta-suave">Fica salvo neste aparelho.</p>
+      <p className="mt-3 text-xs text-tinta-suave">{d.leitura.salvoAparelho}</p>
     </div>
   );
 }
 
 /** Botão "Aa" do cabeçalho, que abre as opções de leitura. */
 export function PreferenciasLeitura() {
+  const d = useDicionario();
   return (
     <details className="relative">
       <summary
         className="flex size-8 cursor-pointer list-none items-center justify-center rounded-full font-extrabold text-tinta-suave hover:bg-suave hover:text-tinta [&::-webkit-details-marker]:hidden"
-        title="Leitura: tamanho do texto e espaçamento"
-        aria-label="Preferências de leitura"
+        title={d.leitura.dica}
+        aria-label={d.leitura.preferencias}
       >
         Aa
       </summary>

@@ -7,35 +7,37 @@ import { destinoDepoisDoLogin } from "@/lib/auth/depois-do-login";
 import { caminhoInterno } from "@/lib/auth/destino";
 import { obterPerfil } from "@/lib/perfil";
 import { loginGoogleLigado, supabaseConfigurado } from "@/lib/supabase/config";
+import { ComLinks } from "@/components/ui/ComLinks";
+import { obterDicionario } from "@/i18n/servidor";
 import { FormularioEntrar } from "./FormularioEntrar";
 
-export const metadata: Metadata = {
-  title: "Entrar · Repasa",
-  description: "Entre na sua conta da Repasa.",
-  alternates: { canonical: "/entrar" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const d = await obterDicionario();
+  return { title: d.entrar.tituloPagina, description: d.entrar.descricaoPagina, alternates: { canonical: "/entrar" } };
+}
 
 export default async function PaginaEntrar({ searchParams }: { searchParams: Promise<{ erro?: string; proximo?: string }> }) {
   const { erro, proximo: proximoBruto } = await searchParams;
   const proximo = caminhoInterno(proximoBruto) ?? undefined;
   if (await obterPerfil()) redirect(await destinoDepoisDoLogin(proximo));
+  const d = await obterDicionario();
 
   return (
     <>
       <Cabecalho />
       <main className="mx-auto w-full max-w-sm px-4 pt-12 pb-16">
-        <h1 className="text-3xl font-extrabold tracking-tight">Entrar</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight">{d.entrar.titulo}</h1>
         <p className="mt-2 mb-6 text-tinta-suave">
-          Para alunos e professores. Depois de entrar, a Repasa abre a sua área.
+          {d.entrar.subtitulo}
         </p>
         {erro === "link" && (
           <p role="alert" className="mb-4 rounded-xl bg-erro-fundo px-3.5 py-2.5 text-sm text-erro">
-            Esse link expirou ou já foi usado. Se era a confirmação do cadastro, tente entrar: a conta pode já estar confirmada. Se não der, faça o cadastro de novo com o mesmo e-mail para receber outro link. Se era um convite, peça um novo ao professor. Se era para trocar a senha, use “Esqueci minha senha”.
+            {d.entrar.erroLink}
           </p>
         )}
         {erro === "google" && (
           <p role="alert" className="mb-4 rounded-xl bg-erro-fundo px-3.5 py-2.5 text-sm text-erro">
-            Não deu para entrar com o Google. Tente de novo, ou entre com e-mail.
+            {d.entrar.erroGoogle}
           </p>
         )}
         {supabaseConfigurado ? (
@@ -44,9 +46,10 @@ export default async function PaginaEntrar({ searchParams }: { searchParams: Pro
               <>
                 <BotaoGoogle proximo={proximo} />
                 <p className="mt-2 text-center text-xs text-tinta-suave">
-                  Ao continuar com o Google, você aceita os{" "}
-                  <Link href="/termos" className="font-bold text-primaria hover:underline">termos</Link> e a{" "}
-                  <Link href="/privacidade" className="font-bold text-primaria hover:underline">política de privacidade</Link>.
+                  <ComLinks
+                    texto={d.auth.aceiteGoogle}
+                    links={{ termos: ["/termos", d.auth.termos], privacidade: ["/privacidade", d.auth.privacidade] }}
+                  />
                 </p>
                 <Divisor />
               </>
@@ -54,12 +57,12 @@ export default async function PaginaEntrar({ searchParams }: { searchParams: Pro
             <FormularioEntrar proximo={proximo} />
           </>
         ) : (
-          <p className="rounded-xl bg-aviso-fundo px-3.5 py-2.5 text-sm text-aviso">O login ainda não foi configurado.</p>
+          <p className="rounded-xl bg-aviso-fundo px-3.5 py-2.5 text-sm text-aviso">{d.auth.loginNaoConfigurado}</p>
         )}
         <p className="mt-6 text-center text-sm text-tinta-suave">
-          Ainda não tem conta?{" "}
+          {d.entrar.semConta}{" "}
           <Link href="/cadastro" className="font-bold text-primaria hover:underline">
-            Crie sua conta grátis
+            {d.entrar.criarGratis}
           </Link>
         </p>
       </main>

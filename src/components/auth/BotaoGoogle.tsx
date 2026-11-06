@@ -1,7 +1,9 @@
 import { entrarComGoogle } from "@/app/entrar/actions";
+import { obterDicionario } from "@/i18n/servidor";
 
 /** Botão "Continuar com Google". Serve para entrar e para criar conta. */
-export function BotaoGoogle({ proximo }: { proximo?: string }) {
+export async function BotaoGoogle({ proximo }: { proximo?: string }) {
+  const d = await obterDicionario();
   return (
     <form action={entrarComGoogle}>
       {proximo && <input type="hidden" name="proximo" value={proximo} />}
@@ -15,17 +17,18 @@ export function BotaoGoogle({ proximo }: { proximo?: string }) {
           <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z" />
           <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z" />
         </svg>
-        Continuar com Google
+        {d.auth.google}
       </button>
     </form>
   );
 }
 
-export function Divisor() {
+export async function Divisor() {
+  const d = await obterDicionario();
   return (
     <div className="my-5 flex items-center gap-3 text-xs font-bold tracking-wide text-tinta-suave uppercase">
       <span className="h-px flex-1 bg-linha" />
-      ou
+      {d.auth.ou}
       <span className="h-px flex-1 bg-linha" />
     </div>
   );

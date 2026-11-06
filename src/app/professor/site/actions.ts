@@ -1,5 +1,6 @@
 "use server";
 
+import { avisoPalavrao } from "@/lib/palavroes/servidor";
 import { revalidatePath } from "next/cache";
 import type { EstadoFormulario } from "@/components/ui/Mensagem";
 import { MODALIDADES, normalizarApelido, normalizarRede, problemaDaRede, problemaDoApelido, REDES, type Rede } from "@/lib/paginaProfessor";
@@ -32,6 +33,8 @@ export async function salvarPaginaProfessor(_estado: EstadoFormulario, formData:
     return { erro: `Digite o ano em que começou a ensinar, entre 1950 e ${anoAtual}.` };
   }
   const modalidade = texto("modalidade", 20);
+  const palavrao = await avisoPalavrao(apelido, nome, ...["destaque", "bio", "materias", "formacao", "cidade", "contato"].map((c) => texto(c, 1500)));
+  if (palavrao) return { erro: palavrao };
 
   const supabase = await criarClienteServidor();
   const { error } = await supabase.from("pagina_professor").upsert(

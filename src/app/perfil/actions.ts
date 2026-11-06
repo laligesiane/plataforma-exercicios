@@ -1,5 +1,6 @@
 "use server";
 
+import { avisoPalavrao } from "@/lib/palavroes/servidor";
 import { revalidatePath } from "next/cache";
 import type { EstadoFormulario } from "@/components/ui/Mensagem";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
@@ -8,6 +9,8 @@ export async function salvarNome(_estado: EstadoFormulario, formData: FormData):
   const nome = String(formData.get("nome") ?? "").trim();
   if (!nome) return { erro: "Digite seu nome." };
   if (nome.length > 80) return { erro: "Use no máximo 80 letras." };
+  const palavrao = await avisoPalavrao(nome);
+  if (palavrao) return { erro: palavrao };
 
   const supabase = await criarClienteServidor();
   const {

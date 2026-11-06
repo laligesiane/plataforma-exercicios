@@ -1,5 +1,7 @@
 "use server";
 
+import { textosDoObjeto } from "@/lib/palavroes";
+import { avisoPalavrao } from "@/lib/palavroes/servidor";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { EstadoFormulario } from "@/components/ui/Mensagem";
@@ -19,6 +21,8 @@ export async function criarMateria(_estado: EstadoFormulario, formData: FormData
   const cor = String(formData.get("cor") ?? "menta");
   const cursoId = String(formData.get("curso_id") ?? "") || null;
   if (!nome) return { erro: "Dê um nome para a matéria." };
+  const palavrao = await avisoPalavrao(nome);
+  if (palavrao) return { erro: palavrao };
 
   const supabase = await criarClienteServidor();
   const { data, error } = await supabase
@@ -48,6 +52,8 @@ export async function criarCurso(_estado: EstadoFormulario, formData: FormData):
   await exigirPapel("aluno");
   const { duracaoInvalida, ...curso } = lerCurso(formData);
   if (!curso.nome) return { erro: "Dê um nome para o curso." };
+  const palavrao = await avisoPalavrao(curso.nome, curso.etapa);
+  if (palavrao) return { erro: palavrao };
   if (duracaoInvalida) return { erro: "A duração precisa ser um número entre 1 mês e 20 anos." };
 
   const supabase = await criarClienteServidor();
@@ -63,6 +69,8 @@ export async function editarCurso(_estado: EstadoFormulario, formData: FormData)
   const id = String(formData.get("id") ?? "");
   const { duracaoInvalida, ...curso } = lerCurso(formData);
   if (!curso.nome) return { erro: "Dê um nome para o curso." };
+  const palavrao = await avisoPalavrao(curso.nome, curso.etapa);
+  if (palavrao) return { erro: palavrao };
   if (duracaoInvalida) return { erro: "A duração precisa ser um número entre 1 mês e 20 anos." };
 
   const supabase = await criarClienteServidor();
@@ -122,6 +130,8 @@ export async function salvarResumoAluno(_estado: EstadoFormulario, formData: For
   if (!titulo && !texto && !mapa.centro && mapa.ramos.length === 0) {
     return { erro: "Escreva um título, o resumo ou monte o mapa." };
   }
+  const palavrao = await avisoPalavrao(titulo, texto, textosDoObjeto(mapa));
+  if (palavrao) return { erro: palavrao };
 
   const supabase = await criarClienteServidor();
   const valores = { titulo, texto, conteudo, mapa, cor: lerCorResumo(formData.get("cor")) };
