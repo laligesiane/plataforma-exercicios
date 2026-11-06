@@ -6,19 +6,22 @@ import * as React from "react";
 const { abaAtiva, abasAluno, maisAluno } = await import("./navegacao");
 
 describe("menu do aluno", () => {
-  it("tem Matérias no topo e não tem Resumos, Mapas nem Repasar", () => {
+  it("tem Cursos no topo e não tem Matérias, Resumos, Mapas nem Repasar", () => {
     const hrefs = [...abasAluno, ...maisAluno(true)].map((a) => a.href);
-    expect(hrefs).toContain("/aluno/materias");
+    expect(hrefs).toContain("/aluno/cursos");
+    expect(hrefs).not.toContain("/aluno/materias");
     expect(hrefs).not.toContain("/aluno/resumos");
     expect(hrefs).not.toContain("/aluno/mapas");
     expect(hrefs).not.toContain("/aluno/revisar");
   });
 
-  it("acende Atividades no Repasar e Matérias nos resumos e mapas", () => {
+  it("acende Atividades no Repasar e Cursos nas matérias, resumos e mapas", () => {
     expect(abaAtiva("/aluno/revisar", "/aluno/atividades")).toBe(true);
-    expect(abaAtiva("/aluno/resumos/abc", "/aluno/materias")).toBe(true);
-    expect(abaAtiva("/aluno/mapas", "/aluno/materias")).toBe(true);
-    expect(abaAtiva("/aluno/revisar", "/aluno/materias")).toBe(false);
-    expect(abaAtiva("/aluno/materias", "/aluno")).toBe(false);
+    expect(abaAtiva("/aluno/cursos/abc", "/aluno/cursos")).toBe(true);
+    expect(abaAtiva("/aluno/materias/abc", "/aluno/cursos")).toBe(true);
+    expect(abaAtiva("/aluno/resumos/abc", "/aluno/cursos")).toBe(true);
+    expect(abaAtiva("/aluno/mapas", "/aluno/cursos")).toBe(true);
+    expect(abaAtiva("/aluno/revisar", "/aluno/cursos")).toBe(false);
+    expect(abaAtiva("/aluno/cursos", "/aluno")).toBe(false);
   });
 });

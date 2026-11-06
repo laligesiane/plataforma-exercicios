@@ -504,8 +504,8 @@ export function EditorProducao({ item, onChange }: { item: ItemProducao; onChang
       <div className="flex flex-wrap gap-2" role="group" aria-label="Como o aluno responde">
         {(
           [
-            ["escrita", "✎ Escrita"],
-            ["oral", "🎙 Oral (gravação)"],
+            ["escrita", "Escrita"],
+            ["oral", "Oral (gravação)"],
           ] as const
         ).map(([modo, texto]) => (
           <button
@@ -513,8 +513,18 @@ export function EditorProducao({ item, onChange }: { item: ItemProducao; onChang
             type="button"
             aria-pressed={item.modo === modo}
             onClick={() => onChange({ ...item, modo })}
-            className={`rounded-full border-2 px-3.5 py-1 text-sm font-bold transition-colors ${item.modo === modo ? "border-primaria bg-primaria-suave text-primaria" : "border-linha text-tinta-suave hover:border-tinta"}`}
+            className={`inline-flex items-center gap-1.5 rounded-full border-2 px-3.5 py-1 text-sm font-bold transition-colors ${item.modo === modo ? "border-primaria bg-primaria-suave text-primaria" : "border-linha text-tinta-suave hover:border-tinta"}`}
           >
+            <svg aria-hidden viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              {modo === "escrita" ? (
+                <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+              ) : (
+                <>
+                  <rect x="9" y="2" width="6" height="12" rx="3" />
+                  <path d="M5 10a7 7 0 0 0 14 0M12 17v5" />
+                </>
+              )}
+            </svg>
             {texto}
           </button>
         ))}

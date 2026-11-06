@@ -3,8 +3,12 @@ import { notFound } from "next/navigation";
 import { Cabecalho } from "@/components/Cabecalho";
 import { EditorResumo } from "@/components/EditorResumo";
 import { exigirPapel } from "@/lib/perfil";
+import { iaConfigurada } from "@/lib/pratica/gerar";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { salvarResumoAluno } from "../../../actions";
+
+/** Gerar o resumo com IA pode levar até um minuto. */
+export const maxDuration = 120;
 
 export default async function NovoResumoAluno({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -21,7 +25,7 @@ export default async function NovoResumoAluno({ params }: { params: Promise<{ id
           ← {materia.nome}
         </Link>
         <h1 className="mt-3 mb-6 text-3xl font-extrabold tracking-tight">Novo resumo</h1>
-        <EditorResumo salvar={salvarResumoAluno} ocultos={{ materia_id: materia.id }} />
+        <EditorResumo salvar={salvarResumoAluno} ocultos={{ materia_id: materia.id }} comIa={iaConfigurada()} />
       </main>
     </>
   );

@@ -57,7 +57,7 @@ export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {})
             {perfil ? (
               perfil.papel_escolhido ? (
                 <div className="hidden sm:block">
-                  <MenuConta nome={perfil.nome} foto={urlDaFoto(perfil.foto)} />
+                  <MenuConta nome={perfil.nome} foto={urlDaFoto(perfil.foto)} professor={perfil.papel === "professor"} />
                 </div>
               ) : (
                 <form action={sair}>

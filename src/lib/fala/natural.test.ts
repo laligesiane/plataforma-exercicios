@@ -8,11 +8,17 @@ describe("voz natural", () => {
     const ssml = montarSsml('Água < fogo & "ar"', "pt-BR-FranciscaNeural");
     expect(ssml).toContain("Água &lt; fogo &amp; &quot;ar&quot;");
     expect(ssml).toContain('<voice name="pt-BR-FranciscaNeural">');
+    expect(ssml).toContain('xml:lang="pt-BR"');
+  });
+
+  it("usa o idioma da voz no SSML", () => {
+    expect(montarSsml("Hola", "es-ES-ElviraNeural")).toContain('xml:lang="es-ES"');
   });
 
   it("só aceita vozes da lista", () => {
     expect(ehVozNatural("pt-BR-AntonioNeural")).toBe(true);
-    expect(ehVozNatural("en-US-JennyNeural")).toBe(false);
+    expect(ehVozNatural("en-US-JennyNeural")).toBe(true);
+    expect(ehVozNatural("en-US-QualquerNeural")).toBe(false);
   });
 
   it("assina cada parte e recusa texto trocado", () => {

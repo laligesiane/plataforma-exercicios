@@ -11,7 +11,7 @@ import { validarMapa } from "@/lib/mapas";
 import { documentoDoResumo, tituloResumo, type Resumo } from "@/lib/resumos";
 
 /** Resumo como página: sumário fixo ao lado (no celular, numa faixa presa no topo), o texto formatado e, se houver, o mapa mental. */
-export function VerResumo({ resumo, subtitulo }: { resumo: Resumo; subtitulo?: string }) {
+export function VerResumo({ resumo, subtitulo, idiomaDoCurso }: { resumo: Resumo; subtitulo?: string; idiomaDoCurso?: string | null }) {
   const mapa = validarMapa(resumo.mapa);
   const temMapa = mapa && (mapa.centro || mapa.ramos.length > 0);
   const doc = documentoDoResumo(resumo);
@@ -30,6 +30,7 @@ export function VerResumo({ resumo, subtitulo }: { resumo: Resumo; subtitulo?: s
             titulo={tituloResumo(resumo)}
             trechos={trechos}
             alvo="resumo-texto"
+            idiomaDoCurso={idiomaDoCurso}
             assinaturas={vozNaturalConfigurada() ? assinaturasDaLeitura([tituloResumo(resumo), ...trechos, AMOSTRA]) : undefined}
           />
         </div>

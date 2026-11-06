@@ -31,7 +31,10 @@ export function BarraInferior({ papel, comPraticas = false, foto = null }: { pap
   const iconePerfil = foto ? <Avatar foto={foto} className="size-6" /> : icones.perfil;
   const comFoto = (itens: Item[]) => itens.map((i) => (i.href === "/perfil" ? { ...i, icone: iconePerfil } : i));
   const abas = papel === "aluno" ? abasAluno : comFoto(abasProfessor);
-  const mais = papel === "aluno" ? [...maisAluno(comPraticas), { href: "/perfil", chave: "perfil" as const, icone: iconePerfil }] : [];
+  const mais: Item[] =
+    papel === "aluno"
+      ? [...maisAluno(comPraticas), { href: "/perfil", chave: "perfil", icone: iconePerfil }]
+      : [{ href: "/professor/site", chave: "siteProfessor", icone: icones.site }];
   const maisAtivo = mais.some((m) => abaAtiva(caminho, m.href));
 
   const estiloAba = (ativa: boolean) =>

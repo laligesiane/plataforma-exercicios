@@ -81,6 +81,13 @@ export const icones = {
       <path d="M4 21a8 8 0 0 1 16 0" />
     </Icone>
   ),
+  site: (
+    <Icone>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M3 9h18M7 6.5h.01M10 6.5h.01" />
+      <path d="M7 13h6M7 16h4" />
+    </Icone>
+  ),
   sair: (
     <Icone>
       <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4" />
@@ -101,7 +108,7 @@ export const icones = {
 export const abasAluno: Item[] = [
   { href: "/aluno", chave: "inicio", icone: icones.inicio },
   { href: "/aluno/atividades", chave: "atividades", icone: icones.atividades },
-  { href: "/aluno/materias", chave: "materias", icone: icones.materias },
+  { href: "/aluno/cursos", chave: "cursos", icone: icones.materias },
   { href: "/aluno/agenda", chave: "agenda", icone: icones.agenda },
 ];
 
@@ -114,7 +121,7 @@ export const abasProfessor: Item[] = [
 
 /**
  * O resto do menu do aluno, dentro do "Mais". Resumos e mapas mentais ficam dentro de cada
- * matéria, e o Repasar fica dentro de Atividades, por isso não aparecem aqui.
+ * matéria (dentro dos cursos), e o Repasar fica dentro de Atividades, por isso não aparecem aqui.
  */
 export const maisAluno = (comPraticas: boolean): Item[] => [
   ...(comPraticas ? ([{ href: "/aluno/praticas", chave: "praticas", icone: icones.praticas }] as Item[]) : []),
@@ -124,7 +131,7 @@ export const maisAluno = (comPraticas: boolean): Item[] => [
 /** Páginas que moram dentro de outra aba e devem acendê-la no menu. */
 const dentroDe: Record<string, string[]> = {
   "/aluno/atividades": ["/aluno/revisar", "/aluno/turmas"],
-  "/aluno/materias": ["/aluno/resumos", "/aluno/mapas"],
+  "/aluno/cursos": ["/aluno/materias", "/aluno/resumos", "/aluno/mapas"],
 };
 
 /**

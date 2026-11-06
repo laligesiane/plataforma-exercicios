@@ -7,7 +7,7 @@ import { Mensagem } from "@/components/ui/Mensagem";
 import { botaoPrimario, caixaMarcar, campo, rotulo } from "@/components/ui/estilos";
 import { formatarTelefone, infoRedes, MODALIDADES, normalizarApelido, REDES, type Rede } from "@/lib/paginaProfessor";
 import { coresResumo, lerCorResumo } from "@/lib/resumos";
-import { salvarPaginaProfessor } from "./actions-pagina";
+import { salvarPaginaProfessor } from "./actions";
 
 export type PaginaSalva = {
   apelido: string;
@@ -77,7 +77,7 @@ export function FormularioPagina({ pagina, nomePadrao }: { pagina: PaginaSalva |
           Nome na página
         </label>
         <input id="pagina-nome" name="nome" defaultValue={pagina?.nome ?? nomePadrao} required maxLength={80} className={campo} />
-        <p className="mt-1 text-xs text-tinta-suave">A foto da página é a mesma do seu perfil, lá em cima.</p>
+        <p className="mt-1 text-xs text-tinta-suave">A foto da página é a mesma do seu <Link href="/perfil" className="font-bold text-primaria hover:underline">Perfil</Link>.</p>
       </div>
       <div>
         <label htmlFor="destaque" className={rotulo}>

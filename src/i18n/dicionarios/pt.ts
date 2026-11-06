@@ -20,6 +20,8 @@ export const pt = {
     visaoGeral: "Visão geral",
     atividades: "Atividades",
     materias: "Matérias",
+    cursos: "Cursos",
+    siteProfessor: "Site do professor",
     agenda: "Agenda",
     turmas: "Turmas",
     biblioteca: "Biblioteca",

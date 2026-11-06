@@ -19,6 +19,8 @@ export const es: Dicionario = {
     visaoGeral: "Resumen general",
     atividades: "Actividades",
     materias: "Materias",
+    cursos: "Cursos",
+    siteProfessor: "Sitio del profesor",
     agenda: "Agenda",
     turmas: "Clases",
     biblioteca: "Biblioteca",

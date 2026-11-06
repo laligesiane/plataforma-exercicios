@@ -15,7 +15,6 @@ import Link from "next/link";
 import { EMAIL_CONTATO } from "@/lib/contato";
 import { ExcluirConta } from "./ExcluirConta";
 import { FotoPerfil } from "./FotoPerfil";
-import { FormularioPagina, type PaginaSalva } from "./FormularioPagina";
 import { AtivarMfa, BotaoDesligarMfa, FormularioNome, FormularioSenhaPerfil } from "./Formularios";
 
 export const metadata: Metadata = { title: "Meu perfil · Repasa" };
@@ -45,7 +44,7 @@ export default async function PaginaPerfil() {
   const supabase = await criarClienteServidor();
   const professor = perfil.papel === "professor";
 
-  const [{ data: usuario }, { data: plano }, { data: fatores }, { count: turmas }, { count: materias }, { data: pagina }] = await Promise.all([
+  const [{ data: usuario }, { data: plano }, { data: fatores }, { count: turmas }, { count: materias }] = await Promise.all([
     supabase.auth.getUser(),
     supabase.from("plano").select("*").eq("id", perfil.plano_id).single<Plano>(),
     supabase.auth.mfa.listFactors(),
@@ -55,9 +54,6 @@ export default async function PaginaPerfil() {
     professor
       ? Promise.resolve({ count: null })
       : supabase.from("materia").select("id", { count: "exact", head: true }).eq("aluno_id", perfil.id),
-    professor
-      ? supabase.from("pagina_professor").select("*").eq("professor_id", perfil.id).maybeSingle<PaginaSalva>()
-      : Promise.resolve({ data: null }),
   ]);
   const user = usuario.user;
   const provedores = [...new Set((user?.identities ?? []).map((i) => i.provider))];
@@ -126,11 +122,13 @@ export default async function PaginaPerfil() {
         )}
 
         {professor && (
-          <Secao titulo="Sua página pública">
-            <p className="mb-4 text-sm text-tinta-suave">
-              Uma página para divulgar suas aulas, com quem você é, o que ensina, como falar com você e suas atividades públicas.
+          <Secao titulo="Site do professor">
+            <p className="text-sm text-tinta-suave">
+              Sua página pública para divulgar as aulas agora tem um lugar só dela.{" "}
+              <Link href="/professor/site" className="font-bold text-primaria hover:underline">
+                Editar o site do professor
+              </Link>
             </p>
-            <FormularioPagina pagina={pagina} nomePadrao={perfil.nome ?? ""} />
           </Secao>
         )}
 

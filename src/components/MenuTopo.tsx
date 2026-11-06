@@ -116,7 +116,7 @@ export function MenuPrincipal({ papel, comPraticas = false }: { papel: "aluno" |
 }
 
 /** Foto (ou bolinha com a inicial), no canto direito: Perfil e Sair. */
-export function MenuConta({ nome, foto }: { nome: string | null; foto?: string | null }) {
+export function MenuConta({ nome, foto, professor = false }: { nome: string | null; foto?: string | null; professor?: boolean }) {
   const caminho = usePathname();
   const d = useDicionario();
 
@@ -124,7 +124,7 @@ export function MenuConta({ nome, foto }: { nome: string | null; foto?: string |
     <div className="esconder-no-foco">
       <Suspenso
         rotulo={d.menu.minhaConta}
-        ativo={caminho.startsWith("/perfil")}
+        ativo={caminho.startsWith("/perfil") || caminho.startsWith("/professor/site")}
         largura="w-52"
         botao={
           <Avatar nome={nome} foto={foto} />
@@ -132,6 +132,7 @@ export function MenuConta({ nome, foto }: { nome: string | null; foto?: string |
       >
         {nome && <p className="truncate px-3 pt-1 pb-2 text-xs font-bold text-tinta-suave">{nome}</p>}
         <ItemMenu item={{ href: "/perfil", chave: "perfil", icone: icones.perfil }} caminho={caminho} />
+        {professor && <ItemMenu item={{ href: "/professor/site", chave: "siteProfessor", icone: icones.site }} caminho={caminho} />}
         <form action={sair}>
           <button
             type="submit"

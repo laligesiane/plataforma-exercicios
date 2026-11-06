@@ -104,7 +104,8 @@ export default async function PaginaAtividade({ params }: Params) {
             salvar={salvar}
             producoes={producoes}
             duvidas={duvidas}
-            idioma={atividade.materia?.trim() ? null : atividade.idioma_ensinado}
+            // Matéria (História, Matemática...) é escrita em português: o botão de ouvir lê em português.
+            idioma={atividade.materia?.trim() ? "pt" : atividade.idioma_ensinado}
           />
         </div>
       </main>

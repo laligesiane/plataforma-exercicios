@@ -8,7 +8,7 @@ import { useDicionario } from "@/i18n/cliente";
 const abas: { href: string; chave: ChaveMenu }[] = [
   { href: "/aluno", chave: "visaoGeral" },
   { href: "/aluno/atividades", chave: "atividades" },
-  { href: "/aluno/materias", chave: "materias" },
+  { href: "/aluno/cursos", chave: "cursos" },
   { href: "/aluno/praticas", chave: "praticas" },
   { href: "/aluno/agenda", chave: "agenda" },
   { href: "/aluno/foco", chave: "modoFoco" },
