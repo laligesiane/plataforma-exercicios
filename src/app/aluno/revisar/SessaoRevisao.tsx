@@ -1,5 +1,7 @@
 "use client";
 
+import { fmt } from "@/i18n/config";
+import { useDicionario } from "@/i18n/cliente";
 import { useRef, useState } from "react";
 import { BotaoSom } from "@/components/exercicios/BotaoSom";
 import { tocarResultado } from "@/lib/som";
@@ -22,6 +24,7 @@ export type GrupoRevisao = {
 /** Sessão do dia: conta só a primeira resposta de cada item. */
 export function SessaoRevisao({ grupos }: { grupos: GrupoRevisao[] }) {
   const total = grupos.reduce((soma, g) => soma + g.exercicio.itens.length, 0);
+  const tx = useDicionario().repasar;
   const respondidos = useRef(new Set<string>());
   const [resultados, setResultados] = useState<Record<string, Andamento & { acertou: boolean }>>({});
   const [falhou, setFalhou] = useState(false);
@@ -47,7 +50,7 @@ export function SessaoRevisao({ grupos }: { grupos: GrupoRevisao[] }) {
     <div className="space-y-5">
       <div className="flex items-center gap-3 text-sm font-semibold text-tinta-suave">
         <span className="tabular-nums">
-          {feitos.length} de {total} repassados
+          {fmt(tx.repassados, { n: feitos.length, total })}
         </span>
         <div className="h-2 flex-1 overflow-hidden rounded-full bg-suave">
           <div
@@ -60,7 +63,7 @@ export function SessaoRevisao({ grupos }: { grupos: GrupoRevisao[] }) {
 
       {falhou && (
         <p role="alert" className="rounded-xl bg-erro-fundo px-3.5 py-2.5 text-sm text-erro">
-          Não conseguimos salvar uma resposta. Confira sua conexão e recarregue a página.
+          {tx.falhou}
         </p>
       )}
 
@@ -80,10 +83,9 @@ export function SessaoRevisao({ grupos }: { grupos: GrupoRevisao[] }) {
 
       {feitos.length === total && (
         <div role="status" className="rounded-2xl bg-primaria-suave p-5 text-center">
-          <p className="text-lg font-extrabold">Revisão de hoje concluída!</p>
+          <p className="text-lg font-extrabold">{tx.concluida}</p>
           <p className="mt-1 text-sm text-tinta-suave">
-            Você acertou {acertos} de {total} de primeira
-            {dominados > 0 ? ` e dominou ${dominados} ${dominados === 1 ? "item" : "itens"}` : ""}. Os que errou voltam amanhã.
+            {fmt(dominados === 0 ? tx.acertou : dominados === 1 ? tx.acertouDominou1 : tx.acertouDominouN, { acertos, total, n: dominados })}
           </p>
         </div>
       )}

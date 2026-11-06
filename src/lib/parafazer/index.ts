@@ -1,5 +1,8 @@
 /** Lista "Para fazer" do aluno: atividades das turmas ainda não enviadas e compromissos não feitos. */
 
+import { fmt } from "../../i18n/config";
+import { datasPt, type TextosDatas } from "../../i18n/dicionarios/datasPt";
+
 export type Pendencia = {
   chave: string;
   origem: "atividade" | "compromisso";
@@ -14,7 +17,7 @@ export type AtividadeAluno = { id: string; titulo: string; prazo: string | null;
 export type CompromissoAluno = { id: string; titulo: string; data: string; feito: boolean; tipo: string; materia: string };
 
 /** Com prazo primeiro (do mais próximo), depois as sem prazo. Atividades já enviadas e compromissos feitos ficam de fora. */
-export function montarParaFazer(atividades: AtividadeAluno[], enviadas: Set<string>, compromissos: CompromissoAluno[]): Pendencia[] {
+export function montarParaFazer(atividades: AtividadeAluno[], enviadas: Set<string>, compromissos: CompromissoAluno[], t: TextosDatas = datasPt): Pendencia[] {
   const lista: Pendencia[] = [
     ...atividades
       .filter((a) => !enviadas.has(a.id))
@@ -32,7 +35,7 @@ export function montarParaFazer(atividades: AtividadeAluno[], enviadas: Set<stri
         chave: `c-${c.id}`,
         origem: "compromisso" as const,
         titulo: c.titulo,
-        detalhe: c.materia || "Minha agenda",
+        detalhe: c.materia || t.minhaAgenda,
         data: c.data,
         href: "/aluno/agenda",
       })),
@@ -46,13 +49,13 @@ export function montarParaFazer(atividades: AtividadeAluno[], enviadas: Set<stri
 }
 
 /** "Atrasada", "Hoje", "Amanhã" ou "Até 12/11", conforme a data e hoje. */
-export function rotuloPrazo(data: string | null, hoje: string): { texto: string; atrasado: boolean } | null {
+export function rotuloPrazo(data: string | null, hoje: string, t: TextosDatas = datasPt): { texto: string; atrasado: boolean } | null {
   if (!data) return null;
-  if (data < hoje) return { texto: "Atrasada", atrasado: true };
-  if (data === hoje) return { texto: "Hoje", atrasado: false };
+  if (data < hoje) return { texto: t.atrasada, atrasado: true };
+  if (data === hoje) return { texto: t.hoje, atrasado: false };
   const [a, m, d] = hoje.split("-").map(Number);
   const amanha = new Date(Date.UTC(a, m - 1, d + 1)).toISOString().slice(0, 10);
-  if (data === amanha) return { texto: "Amanhã", atrasado: false };
+  if (data === amanha) return { texto: t.amanha, atrasado: false };
   const [, mm, dd] = data.split("-");
-  return { texto: `Até ${dd}/${mm}`, atrasado: false };
+  return { texto: fmt(t.ateData, { data: `${dd}/${mm}` }), atrasado: false };
 }

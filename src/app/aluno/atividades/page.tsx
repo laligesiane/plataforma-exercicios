@@ -1,3 +1,5 @@
+import { LANG_HTML, fmt } from "@/i18n/config";
+import { obterDicionario, obterIdioma } from "@/i18n/servidor";
 import Link from "next/link";
 import { CartaoAula } from "@/components/CartaoAula";
 import { HorariosTurma } from "@/components/HorariosTurma";
@@ -22,12 +24,14 @@ const CRIADAS_NA_PAGINA = 6;
 
 type AtividadeResumo = { id: string; titulo: string; nivel: string; categoria: string; atualizada_em: string };
 
-const formatoData = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short" });
 
 export default async function AtividadesDoAluno({ searchParams }: { searchParams: Promise<{ codigo?: string }> }) {
   const { codigo } = await searchParams;
   const perfil = await exigirPapel("aluno");
   const supabase = await criarClienteServidor();
+  const [d, idioma] = await Promise.all([obterDicionario(), obterIdioma()]);
+  const tx = d.minhasAtividades;
+  const formatoData = new Intl.DateTimeFormat(LANG_HTML[idioma], { day: "numeric", month: "short" });
 
   const [
     { data: turmas },
@@ -88,7 +92,7 @@ export default async function AtividadesDoAluno({ searchParams }: { searchParams
   }
 
   return (
-    <LayoutConta titulo="Minhas atividades" descricao="As atividades das suas turmas e as que você cria com seus resumos.">
+    <LayoutConta titulo={tx.titulo} descricao={tx.descricao}>
       <CartaoRepasar alunoId={perfil.id} />
       <CampoCodigoTurma invalido={codigo === "invalido"} />
       <GerarAtividade
@@ -100,10 +104,10 @@ export default async function AtividadesDoAluno({ searchParams }: { searchParams
       {praticas.length > 0 && (
         <section className="mt-8">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-lg font-bold">Criadas por você</h2>
+            <h2 className="text-lg font-bold">{tx.criadasPorVoce}</h2>
             {praticas.length > CRIADAS_NA_PAGINA && (
               <Link href="/aluno/praticas" className="text-sm font-bold text-primaria hover:underline">
-                Ver todas
+                {tx.verTodas}
               </Link>
             )}
           </div>
@@ -118,7 +122,7 @@ export default async function AtividadesDoAluno({ searchParams }: { searchParams
                   >
                     <span className="block font-bold">{p.titulo}</span>
                     <span className="mt-1 block text-sm text-tinta-suave">
-                      {itens} {itens === 1 ? "pergunta" : "perguntas"} · {formatoData.format(new Date(p.criada_em))}
+                      {itens === 1 ? tx.pergunta1 : fmt(tx.perguntasN, { n: itens })} · {formatoData.format(new Date(p.criada_em))}
                     </span>
                   </Link>
                 </li>
@@ -148,12 +152,12 @@ export default async function AtividadesDoAluno({ searchParams }: { searchParams
               <div className="mt-3">
                 <CartaoAula
                   aula={ultima}
-                  destaque="Última aula"
+                  destaque={tx.ultimaAula}
                   resumos={resumos.filter((r) => r.aula_id === ultima.id).map(linkResumo)}
                 />
                 {aulas.length > 1 && (
                   <Link href={`/aluno/turmas/${turma.id}`} className="mt-2 inline-block text-sm font-bold text-primaria hover:underline">
-                    Ver todas as aulas ({aulas.length})
+                    {fmt(tx.verTodasAulas, { n: aulas.length })}
                   </Link>
                 )}
               </div>
@@ -165,13 +169,13 @@ export default async function AtividadesDoAluno({ searchParams }: { searchParams
                   if (!a.liberada) {
                     return (
                       <li key={a.id}>
-                        <div className="h-full rounded-2xl border border-dashed border-linha p-5 text-tinta-suave" aria-label={`${a.titulo}: bloqueada`}>
+                        <div className="h-full rounded-2xl border border-dashed border-linha p-5 text-tinta-suave" aria-label={fmt(tx.bloqueada, { titulo: a.titulo })}>
                           <span className="block font-bold">
                             {i + 1}. {a.titulo}
                           </span>
                           <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-suave px-3 py-1 text-xs font-bold">
                             <Icone nome="cadeado" className="size-3.5" />
-                            Abre depois da anterior
+                            {tx.abreDepois}
                           </span>
                         </div>
                       </li>
@@ -194,12 +198,12 @@ export default async function AtividadesDoAluno({ searchParams }: { searchParams
                           {a.enviada ? (
                             <>
                               <Icone nome="certo" className="size-3.5" />
-                              Enviada
+                              {tx.enviada}
                             </>
                           ) : feitos > 0 ? (
-                            `Começada · ${feitos} ${feitos === 1 ? "item respondido" : "itens respondidos"}`
+                            feitos === 1 ? tx.comecada1 : fmt(tx.comecadaN, { n: feitos })
                           ) : (
-                            "Nova"
+                            tx.nova
                           )}
                         </span>
                       </Link>
@@ -209,7 +213,7 @@ export default async function AtividadesDoAluno({ searchParams }: { searchParams
               </ul>
             ) : (
               <p className="mt-3 rounded-2xl border border-dashed border-linha p-5 text-sm text-tinta-suave">
-                Nenhuma atividade publicada nesta turma ainda.
+                {tx.nenhumaPublicada}
               </p>
             )}
           </section>
@@ -218,10 +222,10 @@ export default async function AtividadesDoAluno({ searchParams }: { searchParams
 
       {(turmas ?? []).length === 0 && (
         <div className="mt-8 rounded-2xl border border-dashed border-linha p-6 text-center">
-          <p className="font-semibold">Você ainda não está em nenhuma turma.</p>
-          <p className="mt-1 text-sm text-tinta-suave">Quando um professor te convidar, as atividades aparecem aqui.</p>
+          <p className="font-semibold">{tx.semTurma}</p>
+          <p className="mt-1 text-sm text-tinta-suave">{tx.semTurmaTexto}</p>
           <Link href="/experimente" className="mt-3 inline-block text-sm font-bold text-primaria hover:underline">
-            Experimentar a aula de demonstração
+            {d.aluno.experimentarDemo}
           </Link>
         </div>
       )}

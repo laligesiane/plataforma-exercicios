@@ -1,5 +1,8 @@
 // Aulas da turma: tipos e formatação (funções puras).
 
+import { fmt } from "../../i18n/config";
+import { datasPt, type TextosDatas } from "../../i18n/dicionarios/datasPt";
+
 export type Aula = {
   id: string;
   turma_id: string;
@@ -12,12 +15,17 @@ export type Aula = {
 
 export const camposAula = "id, turma_id, data, titulo, resumo, proximos_passos, tarefa";
 
-const formato = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+const formatos = new Map<string, Intl.DateTimeFormat>();
+function formato(locale: string) {
+  let f = formatos.get(locale);
+  if (!f) formatos.set(locale, (f = new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" })));
+  return f;
+}
 
 /** "terça-feira, 10 de novembro" a partir de "2026-11-10", sem depender do fuso do servidor. */
-export function formatarData(data: string) {
+export function formatarData(data: string, locale = "pt-BR") {
   const [a, m, d] = data.split("-").map(Number);
-  return formato.format(new Date(Date.UTC(a, m - 1, d)));
+  return formato(locale).format(new Date(Date.UTC(a, m - 1, d)));
 }
 
 /** Data de hoje (AAAA-MM-DD) no fuso indicado. */
@@ -33,8 +41,8 @@ export function ultimaAula<T extends Pick<Aula, "data">>(aulas: T[], hoje: strin
 }
 
 /** Título para mostrar: o dado pelo professor ou "Aula de <data>". */
-export function tituloAula(aula: Pick<Aula, "titulo" | "data">) {
-  return aula.titulo.trim() || `Aula de ${formatarData(aula.data)}`;
+export function tituloAula(aula: Pick<Aula, "titulo" | "data">, t: TextosDatas = datasPt, locale = "pt-BR") {
+  return aula.titulo.trim() || fmt(t.aulaDe, { data: formatarData(aula.data, locale) });
 }
 
 export function dataValida(data: string) {

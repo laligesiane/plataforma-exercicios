@@ -1,11 +1,13 @@
+import { fmt } from "@/i18n/config";
+import { obterDicionario } from "@/i18n/servidor";
 import { Mascote } from "@/components/Mascote";
 import { META_SEMANA, fraseDoBrotinho, semanaAtual, sequenciaAtual } from "@/lib/sequencia";
 
-const iniciais = ["S", "T", "Q", "Q", "S", "S", "D"];
-const nomes = ["segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo"];
 
 /** Meta leve da semana com o Brotinho: sem ranking, sem cobrança de todo dia. */
-export function SequenciaBrotinho({ dias, hoje }: { dias: Set<string>; hoje: string }) {
+export async function SequenciaBrotinho({ dias, hoje }: { dias: Set<string>; hoje: string }) {
+  const d0 = await obterDicionario();
+  const tx = d0.semana;
   const semana = semanaAtual(dias, hoje);
   const naSemana = semana.filter((d) => d.estudou).length;
   const sequencia = sequenciaAtual(dias, hoje);
@@ -20,21 +22,21 @@ export function SequenciaBrotinho({ dias, hoje }: { dias: Set<string>; hoje: str
       </div>
       <div className="min-w-0 flex-1">
         <p className="font-bold">
-          {naSemana} de {META_SEMANA} dias nesta semana
-          {sequencia > 1 && <span className="font-semibold text-tinta-suave"> · {sequencia} dias seguidos</span>}
+          {fmt(tx.dias, { n: naSemana, meta: META_SEMANA })}
+          {sequencia > 1 && <span className="font-semibold text-tinta-suave"> · {fmt(tx.seguidos, { n: sequencia })}</span>}
         </p>
-        <p className="mt-0.5 text-sm text-tinta-suave">{fraseDoBrotinho(naSemana, sequencia, dias.has(hoje))}</p>
-        <ol className="mt-2.5 flex gap-1.5" aria-label="Dias estudados nesta semana">
+        <p className="mt-0.5 text-sm text-tinta-suave">{fraseDoBrotinho(naSemana, sequencia, dias.has(hoje), d0.datas.brotinho)}</p>
+        <ol className="mt-2.5 flex gap-1.5" aria-label={tx.rotulo}>
           {semana.map((d, i) => (
             <li
               key={d.data}
-              title={`${nomes[i]}: ${d.estudou ? "estudou" : d.futuro ? "ainda não chegou" : "não estudou"}`}
-              aria-label={`${nomes[i]}: ${d.estudou ? "estudou" : d.futuro ? "ainda não chegou" : "não estudou"}`}
+              title={`${tx.nomes[i]}: ${d.estudou ? tx.estudou : d.futuro ? tx.futuro : tx.naoEstudou}`}
+              aria-label={`${tx.nomes[i]}: ${d.estudou ? tx.estudou : d.futuro ? tx.futuro : tx.naoEstudou}`}
               className={`flex size-7 items-center justify-center rounded-full text-xs font-bold ${
                 d.estudou ? "bg-primaria text-white" : d.futuro ? "border border-dashed border-linha text-tinta-suave" : "bg-suave text-tinta-suave"
               } ${d.hoje ? "outline-2 outline-offset-2 outline-primaria" : ""}`}
             >
-              {iniciais[i]}
+              {tx.iniciais[i]}
             </li>
           ))}
         </ol>

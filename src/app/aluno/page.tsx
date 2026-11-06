@@ -1,3 +1,5 @@
+import { LANG_HTML, fmt } from "@/i18n/config";
+import { obterDicionario, obterIdioma } from "@/i18n/servidor";
 import Link from "next/link";
 import { proximaAula, type Horario } from "@/lib/agenda";
 import { formatarData, hojeNoFuso, tituloAula } from "@/lib/aulas";
@@ -16,12 +18,15 @@ import { SequenciaBrotinho } from "./SequenciaBrotinho";
 import { carregarResumosDoAluno } from "./dados";
 import { LayoutConta } from "./LayoutConta";
 
-const formatoDia = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
 
 export default async function MinhaConta() {
   const perfil = await exigirPapel("aluno");
   const supabase = await criarClienteServidor();
   const hoje = hojeNoFuso();
+  const [d, idioma] = await Promise.all([obterDicionario(), obterIdioma()]);
+  const tx = d.aluno;
+  const locale = LANG_HTML[idioma];
+  const formatoDia = new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
 
   const [{ data: turmas }, { data: atribuicoes }, { data: respostas }, { data: horarios }, { data: aulasDb }, { data: materias }, { count: pendentes }, { count: paraRepassar }, { data: envios }, { data: compromissosDb }, { data: momentosResposta }, { data: momentosRevisao }, { data: datasDb }, resumos, meusCursos] =
     await Promise.all([
@@ -71,6 +76,7 @@ export default async function MinhaConta() {
     [...porAtividade.values()],
     new Set((envios ?? []).map((e) => e.atividade_id as string)),
     (compromissosDb ?? []) as CompromissoAluno[],
+    d.datas,
   );
   const comecadas = new Set((respostas ?? []).map((r) => r.atividade_id).filter((id) => atividades.has(id)));
   const novas = atividades.size - comecadas.size;
@@ -89,13 +95,13 @@ export default async function MinhaConta() {
   const proxima =
     aulaMarcada && (!semanalData || aulaMarcada.data <= semanalData)
       ? {
-          quando: aulaMarcada.data === hoje ? "Hoje" : formatarData(aulaMarcada.data),
-          oque: `${tituloAula(aulaMarcada)} · ${nomeTurma.get(aulaMarcada.turma_id) ?? ""}`,
+          quando: aulaMarcada.data === hoje ? d.datas.hoje : formatarData(aulaMarcada.data, locale),
+          oque: `${tituloAula(aulaMarcada, d.datas, locale)} · ${nomeTurma.get(aulaMarcada.turma_id) ?? ""}`,
         }
       : semanal
         ? {
-            quando: `${formatoDia.format(new Date(Date.UTC(semanal.ano, semanal.mes - 1, semanal.dia)))} às ${semanal.horario.hora_inicio.slice(0, 5)}`,
-            oque: nomeTurma.get((semanal.horario as Horario & { turma_id: string }).turma_id) ?? "Aula da turma",
+            quando: fmt(d.datas.as, { data: formatoDia.format(new Date(Date.UTC(semanal.ano, semanal.mes - 1, semanal.dia))), hora: semanal.horario.hora_inicio.slice(0, 5) }),
+            oque: nomeTurma.get((semanal.horario as Horario & { turma_id: string }).turma_id) ?? d.datas.aulaDaTurma,
           }
         : null;
 
@@ -108,6 +114,7 @@ export default async function MinhaConta() {
     enviadas: new Set((envios ?? []).map((e) => e.atividade_id as string)),
     compromissos: (compromissosDb ?? []) as (CompromissoAluno & { hora: string | null })[],
     datasTurma: (datasDb ?? []) as DataTurma[],
+    t: d.datas,
   });
 
   const continuar = continuarDeOndeParou(
@@ -120,23 +127,23 @@ export default async function MinhaConta() {
   const atalhos = [
     {
       href: "/aluno/atividades",
-      titulo: "Atividades",
+      titulo: tx.atividades,
       numero: atividades.size,
-      detalhe: atividades.size === 0 ? "Nenhuma ainda" : novas > 0 ? `${novas} ${novas === 1 ? "nova" : "novas"}` : "Todas começadas",
+      detalhe: atividades.size === 0 ? tx.nenhumaAinda : novas > 0 ? (novas === 1 ? tx.nova1 : fmt(tx.novasN, { n: novas })) : tx.todasComecadas,
     },
     {
       href: "/aluno/cursos",
-      titulo: "Cursos",
+      titulo: tx.cursos,
       numero: (materias ?? []).length,
-      detalhe: `${resumos.length} ${resumos.length === 1 ? "resumo" : "resumos"} · ${mapas.length} ${mapas.length === 1 ? "mapa" : "mapas"}`,
+      detalhe: `${resumos.length === 1 ? tx.resumos1 : fmt(tx.resumosN, { n: resumos.length })} · ${mapas.length === 1 ? tx.mapas1 : fmt(tx.mapasN, { n: mapas.length })}`,
     },
   ];
 
   return (
-    <LayoutConta titulo={`Olá${perfil.nome ? `, ${perfil.nome}` : ""}!`} descricao="Tudo do seu estudo num lugar só.">
+    <LayoutConta titulo={perfil.nome ? fmt(tx.olaNome, { nome: perfil.nome }) : tx.ola} descricao={tx.descricao}>
       {continuar.length > 0 && (
-        <section aria-label="Continuar de onde parou" className="mt-8">
-          <h2 className="text-sm font-bold tracking-wide text-tinta-suave uppercase">Continuar de onde parou</h2>
+        <section aria-label={tx.continuar} className="mt-8">
+          <h2 className="text-sm font-bold tracking-wide text-tinta-suave uppercase">{tx.continuar}</h2>
           <ul className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {continuar.map((c) => (
               <li key={c.href}>
@@ -145,11 +152,11 @@ export default async function MinhaConta() {
                   className="flex items-center justify-between gap-3 rounded-2xl border-2 border-linha p-4 transition-colors hover:border-primaria"
                 >
                   <span className="min-w-0">
-                    <span className="block text-xs font-bold text-primaria">{c.tipo}</span>
+                    <span className="block text-xs font-bold text-primaria">{c.tipo === "Atividade" ? d.datas.atividade : d.datas.resumo}</span>
                     <span className="block truncate font-extrabold">{c.titulo}</span>
                   </span>
                   <span className="shrink-0 rounded-full bg-primaria px-3.5 py-1 text-sm font-bold text-white" aria-hidden>
-                    {c.tipo === "Atividade" ? "Continuar" : "Abrir"}
+                    {c.tipo === "Atividade" ? tx.botaoContinuar : tx.abrir}
                   </span>
                 </Link>
               </li>
@@ -170,17 +177,17 @@ export default async function MinhaConta() {
 
       {paraFazer.length > 0 && (
         <section className="mt-6 rounded-2xl border border-linha p-5 sm:p-6">
-          <h2 className="text-lg font-bold">Para fazer</h2>
+          <h2 className="text-lg font-bold">{tx.paraFazer}</h2>
           <ul className="mt-2 divide-y divide-linha">
             {paraFazer.slice(0, 6).map((p) => {
-              const prazo = rotuloPrazo(p.data, hoje);
+              const prazo = rotuloPrazo(p.data, hoje, d.datas);
               return (
                 <li key={p.chave}>
                   <Link href={p.href} className="flex items-baseline justify-between gap-4 py-2.5 hover:text-primaria">
                     <span className="min-w-0">
                       <span className="block font-semibold">{p.titulo}</span>
                       <span className="block text-sm text-tinta-suave">
-                        {p.origem === "atividade" ? "Atividade" : "Compromisso"}
+                        {p.origem === "atividade" ? d.datas.atividade : d.datas.compromisso}
                         {p.detalhe ? ` · ${p.detalhe}` : ""}
                       </span>
                     </span>
@@ -196,7 +203,7 @@ export default async function MinhaConta() {
               );
             })}
           </ul>
-          {paraFazer.length > 6 && <p className="mt-2 text-sm text-tinta-suave">E mais {paraFazer.length - 6}.</p>}
+          {paraFazer.length > 6 && <p className="mt-2 text-sm text-tinta-suave">{fmt(tx.eMais, { n: paraFazer.length - 6 })}</p>}
         </section>
       )}
 
@@ -206,12 +213,12 @@ export default async function MinhaConta() {
           className="mt-6 flex items-center justify-between gap-4 rounded-2xl border-2 border-primaria p-4 transition-colors hover:bg-primaria-suave"
         >
           <span>
-            <span className="block font-extrabold">Repasar meus erros</span>
+            <span className="block font-extrabold">{tx.repasarErros}</span>
             <span className="block text-sm text-tinta-suave">
-              {paraRepassar} {paraRepassar === 1 ? "item que você errou volta" : "itens que você errou voltam"} hoje. Leva poucos minutos.
+              {paraRepassar === 1 ? tx.voltam1 : fmt(tx.voltamN, { n: paraRepassar ?? 0 })}
             </span>
           </span>
-          <span className="shrink-0 rounded-full bg-primaria px-4 py-1.5 text-sm font-bold text-white">Começar</span>
+          <span className="shrink-0 rounded-full bg-primaria px-4 py-1.5 text-sm font-bold text-white">{tx.comecar}</span>
         </Link>
       )}
 
@@ -230,9 +237,9 @@ export default async function MinhaConta() {
       {(materias ?? []).length > 0 && (
         <section className="mt-8">
           <div className="flex items-baseline justify-between">
-            <h2 className="text-lg font-bold">Meus cursos</h2>
+            <h2 className="text-lg font-bold">{tx.meusCursos}</h2>
             <Link href="/aluno/cursos" className="text-sm font-bold text-primaria hover:underline">
-              Ver todos
+              {tx.verTodos}
             </Link>
           </div>
           <ul className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -254,7 +261,7 @@ export default async function MinhaConta() {
               <li>
                 <CartaoCurso
                   href={`/aluno/cursos/${SEM_CURSO}`}
-                  nome="Sem curso"
+                  nome={tx.semCurso}
                   materias={meusCursos.semCurso.length}
                   resumos={meusCursos.resumosSemCurso}
                   coresMaterias={meusCursos.semCurso.map((m) => m.cor)}
@@ -269,9 +276,9 @@ export default async function MinhaConta() {
       {resumos.length > 0 && (
         <section className="mt-8">
           <div className="flex items-baseline justify-between">
-            <h2 className="text-lg font-bold">Resumos recentes</h2>
+            <h2 className="text-lg font-bold">{tx.resumosRecentes}</h2>
             <Link href="/aluno/cursos" className="text-sm font-bold text-primaria hover:underline">
-              Ver todos
+              {tx.verTodos}
             </Link>
           </div>
           <ul className="mt-3 flex flex-wrap gap-2">
@@ -291,14 +298,14 @@ export default async function MinhaConta() {
 
       {(materias ?? []).length === 0 && (turmas ?? []).length === 0 && (
         <div className="mt-8 rounded-2xl border border-dashed border-linha p-6 text-center">
-          <p className="font-semibold">Comece criando um curso.</p>
-          <p className="mt-1 text-sm text-tinta-suave">Dentro dele ficam as matérias, com seus resumos e mapas mentais. Se tiver professor, peça o convite da turma.</p>
+          <p className="font-semibold">{tx.comeceCurso}</p>
+          <p className="mt-1 text-sm text-tinta-suave">{tx.comeceCursoTexto}</p>
           <div className="mt-3 flex flex-wrap justify-center gap-4">
             <Link href="/aluno/cursos" className="text-sm font-bold text-primaria hover:underline">
-              Criar curso
+              {tx.criarCurso}
             </Link>
             <Link href="/experimente" className="text-sm font-bold text-primaria hover:underline">
-              Experimentar a aula de demonstração
+              {tx.experimentarDemo}
             </Link>
           </div>
         </div>
