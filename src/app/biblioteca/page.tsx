@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { fmt, NOME_NATIVO } from "@/i18n/config";
+import { obterDicionario, obterIdioma } from "@/i18n/servidor";
 import Link from "next/link";
 import { duplicarAtividade } from "@/app/professor/atividades/actions";
 import { AbasBiblioteca } from "@/components/AbasBiblioteca";
@@ -19,12 +21,14 @@ export default async function Biblioteca({ searchParams }: { searchParams: Promi
   const { busca, materia, nivel, tema } = lerFiltros(await searchParams);
 
   const supabase = await criarClienteServidor();
-  const perfil = await obterPerfil();
+  const [perfil, idioma] = await Promise.all([obterPerfil(), obterIdioma()]);
   let consulta = supabase
     .from("atividade")
     .select("id, titulo, nivel, categoria, materia, idioma_ensinado, etapa, temas, professor_id, exercicio(count)")
     .eq("publicada", true)
     .eq("publica", true)
+    // Só o que está no idioma de quem visita (0041).
+    .eq("idioma", idioma)
     .order("atualizada_em", { ascending: false })
     .limit(60);
   if (busca) {
@@ -40,7 +44,7 @@ export default async function Biblioteca({ searchParams }: { searchParams: Promi
   const [{ data: atividades }, { data: todas }] = await Promise.all([
     consulta,
     // Só para montar o filtro "Matéria" com o que existe na biblioteca.
-    supabase.from("atividade").select("materia, idioma_ensinado").eq("publicada", true).eq("publica", true).limit(2000),
+    supabase.from("atividade").select("materia, idioma_ensinado").eq("publicada", true).eq("publica", true).eq("idioma", idioma).limit(2000),
   ]);
   const opcoes = opcoesDeMateria(todas ?? []);
   if (materia?.tipo === "materia" && !opcoes.materias.some((m) => m.toLocaleLowerCase("pt-BR") === materia.nome.toLocaleLowerCase("pt-BR"))) {
@@ -182,6 +186,7 @@ export default async function Biblioteca({ searchParams }: { searchParams: Promi
             <p className="mt-1 text-sm text-tinta-suave">
               {busca || materia || nivel || tema ? "Tente outros filtros." : "Quando os professores marcarem atividades como públicas, elas aparecem aqui."}
             </p>
+            <p className="mt-2 text-sm text-tinta-suave">{fmt((await obterDicionario()).biblioteca.soIdioma, { idioma: NOME_NATIVO[idioma] })}</p>
           </div>
         )}
       </main>

@@ -1,5 +1,6 @@
 "use server";
 
+import { obterIdioma } from "@/i18n/servidor";
 import { textosDoObjeto } from "@/lib/palavroes";
 import { avisoPalavrao } from "@/lib/palavroes/servidor";
 import { revalidatePath } from "next/cache";
@@ -40,6 +41,8 @@ export async function criarAtividade() {
     .from("atividade")
     .insert({
       professor_id: professor.id,
+      // Idioma em que a atividade é escrita (0041); nas de idioma, o banco usa o idioma das explicações.
+      idioma: await obterIdioma(),
       // Segue a primeira turma (a matéria ou os idiomas dela). Sem turma, nasce como matéria "Geral",
       // que o professor troca no editor; antes nascia como Espanhol, herança da Repasa só de idiomas.
       ...(turma?.idioma_ensinado && turma.idioma_instrucao && !turma.materia?.trim()
