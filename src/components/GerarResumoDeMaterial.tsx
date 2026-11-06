@@ -1,5 +1,6 @@
 "use client";
 
+import { useDicionario } from "@/i18n/cliente";
 import { useRef, useState, useTransition } from "react";
 import { Mascote } from "@/components/Mascote";
 import { Icone } from "@/components/jogos/Icones";
@@ -31,13 +32,14 @@ export function GerarResumoDeMaterial({ aoGerar, aberto = false }: Props) {
   const [, iniciar] = useTransition();
   const entrada = useRef<HTMLInputElement>(null);
   const ocupado = etapa !== "";
+  const tx = useDicionario().gerarResumo;
 
   function escolher(f: File | null | undefined) {
     setErro("");
     setAviso("");
     if (!f) return;
     if (f.size > 50 * MB) {
-      setErro("Esse arquivo passa de 50 MB. Tente um arquivo menor.");
+      setErro(tx.grande);
       return;
     }
     setArquivo(f);
@@ -51,7 +53,7 @@ export function GerarResumoDeMaterial({ aoGerar, aberto = false }: Props) {
         let pedido: Parameters<typeof gerarResumoDeMaterial>[0];
         if (modo === "arquivo") {
           if (!arquivo) {
-            setErro("Escolha um arquivo primeiro.");
+            setErro(tx.escolhaArquivo);
             return;
           }
           setEtapa("lendo");
@@ -66,7 +68,7 @@ export function GerarResumoDeMaterial({ aoGerar, aberto = false }: Props) {
               ? { texto: material.texto, cortado: material.cortado, nomeArquivo: arquivo.name, tamanho }
               : { pdfBase64: material.base64, nomeArquivo: arquivo.name, tamanho };
           if (material.tipo === "texto" && material.cortado) {
-            setAviso("O material é muito longo, então o resumo cobre só a primeira parte. Para o resto, envie outra parte depois.");
+            setAviso(tx.longo);
           }
         } else {
           pedido = { texto, tamanho, cortado: texto.length > LIMITE_MATERIAL };
@@ -78,10 +80,10 @@ export function GerarResumoDeMaterial({ aoGerar, aberto = false }: Props) {
           return;
         }
         if (aoGerar(r.titulo, r.conteudo)) {
-          setAviso("Pronto! O resumo está no editor abaixo. Revise, ajuste o que quiser e salve.");
+          setAviso(tx.pronto);
         }
       } catch {
-        setErro("Não foi possível gerar agora. Confira sua internet e tente de novo.");
+        setErro(tx.falhou);
       } finally {
         setEtapa("");
       }
@@ -108,24 +110,23 @@ export function GerarResumoDeMaterial({ aoGerar, aberto = false }: Props) {
     <details open={aberto} className="group rounded-2xl border-2 border-primaria/25 bg-primaria-suave p-5">
       <summary className="flex cursor-pointer list-none items-center gap-2 text-lg font-bold">
         <Icone nome="brilho" className="size-5 text-primaria" />
-        Gerar resumo de um PDF, slides ou texto
+        {tx.titulo}
         <span aria-hidden className="ml-auto text-primaria transition-transform group-open:rotate-90">›</span>
       </summary>
       <p className="mt-1 text-sm text-tinta-suave">
-        Envie o material da aula e a IA escreve um resumo organizado, com termos em negrito que viram cartões de estudo.
-        Você revisa antes de salvar.
+        {tx.texto}
       </p>
 
       {ocupado && etapa === "escrevendo" ? (
         <div role="status" aria-live="polite" className="flex flex-col items-center gap-3 py-8 text-center">
           <Mascote pose="lendo" tamanho={96} animado />
-          <p className="text-sm font-semibold text-tinta-suave">Escrevendo o resumo. Isso pode levar até um minuto.</p>
+          <p className="text-sm font-semibold text-tinta-suave">{tx.escrevendo}</p>
         </div>
       ) : (
         <>
-          <div role="tablist" aria-label="De onde vem o material" className="mt-4 flex flex-wrap gap-1.5">
-            {aba("arquivo", "Enviar arquivo", "arquivo")}
-            {aba("texto", "Colar texto", "colar")}
+          <div role="tablist" aria-label={tx.deOnde} className="mt-4 flex flex-wrap gap-1.5">
+            {aba("arquivo", tx.enviar, "arquivo")}
+            {aba("texto", tx.colar, "colar")}
           </div>
 
           {modo === "arquivo" ? (
@@ -148,7 +149,7 @@ export function GerarResumoDeMaterial({ aoGerar, aberto = false }: Props) {
               {arquivo ? (
                 <p className="max-w-full truncate text-sm font-bold">{arquivo.name}</p>
               ) : (
-                <p className="text-sm font-bold">Arraste o arquivo para cá</p>
+                <p className="text-sm font-bold">{tx.arraste}</p>
               )}
               <button
                 type="button"
@@ -156,16 +157,16 @@ export function GerarResumoDeMaterial({ aoGerar, aberto = false }: Props) {
                 disabled={ocupado}
                 className="text-sm font-bold text-primaria underline-offset-4 hover:underline"
               >
-                {arquivo ? "Trocar arquivo" : "ou escolha no aparelho"}
+                {arquivo ? tx.trocar : tx.escolher}
               </button>
-              <p className="text-xs text-tinta-suave">PDF, PowerPoint (.pptx), Word (.docx) ou .txt</p>
+              <p className="text-xs text-tinta-suave">{tx.formatos}</p>
               <input
                 ref={entrada}
                 type="file"
                 accept={aceitos}
                 className="sr-only"
                 tabIndex={-1}
-                aria-label="Arquivo do material"
+                aria-label={tx.arquivo}
                 onChange={(e) => {
                   escolher(e.target.files?.[0]);
                   e.target.value = "";
@@ -177,16 +178,16 @@ export function GerarResumoDeMaterial({ aoGerar, aberto = false }: Props) {
               value={texto}
               onChange={(e) => setTexto(e.target.value)}
               rows={8}
-              placeholder="Cole aqui o texto da apostila, do artigo ou das suas anotações."
-              aria-label="Texto do material"
+              placeholder={tx.colarAqui}
+              aria-label={tx.textoMaterial}
               className={`${campo} mt-3 resize-y`}
             />
           )}
 
           <fieldset className="mt-4">
-            <legend className="mb-1.5 text-sm font-bold">Tamanho do resumo</legend>
+            <legend className="mb-1.5 text-sm font-bold">{tx.tamanho}</legend>
             <div className="flex flex-wrap gap-2">
-              {(Object.entries(TAMANHOS) as [Tamanho, (typeof TAMANHOS)[Tamanho]][]).map(([t, info]) => (
+              {(Object.entries(TAMANHOS) as [Tamanho, (typeof TAMANHOS)[Tamanho]][]).map(([t]) => (
                 <label
                   key={t}
                   className={`cursor-pointer rounded-xl border-2 px-3.5 py-2 text-sm transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-primaria ${
@@ -194,8 +195,8 @@ export function GerarResumoDeMaterial({ aoGerar, aberto = false }: Props) {
                   }`}
                 >
                   <input type="radio" name="tamanho_ia" value={t} checked={tamanho === t} onChange={() => setTamanho(t)} className="sr-only" />
-                  <span className="block font-bold">{info.nome}</span>
-                  <span className="block text-xs text-tinta-suave">{info.dica}</span>
+                  <span className="block font-bold">{tx.tamanhos[t].nome}</span>
+                  <span className="block text-xs text-tinta-suave">{tx.tamanhos[t].dica}</span>
                 </label>
               ))}
             </div>
@@ -204,9 +205,9 @@ export function GerarResumoDeMaterial({ aoGerar, aberto = false }: Props) {
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <button type="button" onClick={gerar} disabled={ocupado} className={`${botaoPrimario} flex items-center gap-2`}>
               <Icone nome="brilho" className="size-4" />
-              {etapa === "lendo" ? "Lendo o arquivo..." : "Gerar resumo"}
+              {etapa === "lendo" ? tx.lendo : tx.gerar}
             </button>
-            <p className="text-xs text-tinta-suave">O texto do material é enviado para a IA só quando você clica.</p>
+            <p className="text-xs text-tinta-suave">{tx.privacidade}</p>
           </div>
         </>
       )}

@@ -1,3 +1,4 @@
+import { obterDicionario } from "@/i18n/servidor";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Cabecalho } from "@/components/Cabecalho";
@@ -13,6 +14,7 @@ export const maxDuration = 120;
 export default async function NovoResumoAluno({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   await exigirPapel("aluno");
+  const tx = (await obterDicionario()).resumo;
   const supabase = await criarClienteServidor();
   const { data: materia } = await supabase.from("materia").select("id, nome").eq("id", id).maybeSingle();
   if (!materia) notFound();
@@ -24,7 +26,7 @@ export default async function NovoResumoAluno({ params }: { params: Promise<{ id
         <Link href={`/aluno/materias/${materia.id}`} className="text-sm font-bold text-primaria hover:underline">
           ← {materia.nome}
         </Link>
-        <h1 className="mt-3 mb-6 text-3xl font-extrabold tracking-tight">Novo resumo</h1>
+        <h1 className="mt-3 mb-6 text-3xl font-extrabold tracking-tight">{tx.novoResumo}</h1>
         <EditorResumo salvar={salvarResumoAluno} ocultos={{ materia_id: materia.id }} comIa={iaConfigurada()} />
       </main>
     </>

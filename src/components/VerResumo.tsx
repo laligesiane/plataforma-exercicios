@@ -1,3 +1,4 @@
+import { obterDicionario } from "@/i18n/servidor";
 import { Documento } from "@/components/Documento";
 import { MapaMental } from "@/components/MapaMental";
 import { MapaTelaCheia } from "@/components/MapaTelaCheia";
@@ -11,7 +12,8 @@ import { validarMapa } from "@/lib/mapas";
 import { documentoDoResumo, tituloResumo, type Resumo } from "@/lib/resumos";
 
 /** Resumo como página: sumário fixo ao lado (no celular, numa faixa presa no topo), o texto formatado e, se houver, o mapa mental. */
-export function VerResumo({ resumo, subtitulo, idiomaDoCurso }: { resumo: Resumo; subtitulo?: string; idiomaDoCurso?: string | null }) {
+export async function VerResumo({ resumo, subtitulo, idiomaDoCurso }: { resumo: Resumo; subtitulo?: string; idiomaDoCurso?: string | null }) {
+  const tx = (await obterDicionario()).resumo;
   const mapa = validarMapa(resumo.mapa);
   const temMapa = mapa && (mapa.centro || mapa.ramos.length > 0);
   const doc = documentoDoResumo(resumo);
@@ -58,7 +60,7 @@ export function VerResumo({ resumo, subtitulo, idiomaDoCurso }: { resumo: Resumo
 
       {temMapa && (
         <section className="mt-10">
-          <h2 className="mb-3 text-sm font-bold tracking-wide text-tinta-suave uppercase">Mapa mental</h2>
+          <h2 className="mb-3 text-sm font-bold tracking-wide text-tinta-suave uppercase">{tx.mapaMental}</h2>
           <MapaTelaCheia titulo={tituloResumo(resumo)}>
             <MapaMental mapa={mapa} titulo={tituloResumo(resumo)} />
           </MapaTelaCheia>

@@ -1,5 +1,7 @@
 "use client";
 
+import type { Dicionario } from "@/i18n/dicionarios";
+import { useDicionario } from "@/i18n/cliente";
 import Highlight from "@tiptap/extension-highlight";
 import Placeholder from "@tiptap/extension-placeholder";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
@@ -35,46 +37,47 @@ function alternarNota(e: Editor) {
   e.chain().focus().wrapIn("blockquote").run();
 }
 
-const botoes: (Botao | "separador")[] = [
+function montarBotoes(t: Dicionario["editorDoc"]): (Botao | "separador")[] {
+  return [
   {
-    rotulo: "Texto",
-    dica: "Texto normal",
-    conteudo: "Texto",
+    rotulo: t.texto,
+    dica: t.textoDica,
+    conteudo: t.texto,
     ativo: (e) => e.isActive("paragraph") && !e.isActive("blockquote"),
     acao: (e) => e.chain().focus().setParagraph().run(),
   },
   {
-    rotulo: "Título",
-    dica: "Título de seção",
-    conteudo: <span className="font-extrabold">Título</span>,
+    rotulo: t.titulo,
+    dica: t.tituloDica,
+    conteudo: <span className="font-extrabold">{t.titulo}</span>,
     ativo: (e) => e.isActive("heading", { level: 2 }),
     acao: (e) => e.chain().focus().toggleHeading({ level: 2 }).run(),
   },
   {
-    rotulo: "Subtítulo",
-    dica: "Subtítulo (subseção)",
-    conteudo: <span className="font-bold text-primaria">Subtítulo</span>,
+    rotulo: t.subtitulo,
+    dica: t.subtituloDica,
+    conteudo: <span className="font-bold text-primaria">{t.subtitulo}</span>,
     ativo: (e) => e.isActive("heading", { level: 3 }),
     acao: (e) => e.chain().focus().toggleHeading({ level: 3 }).run(),
   },
   "separador",
   {
-    rotulo: "Negrito",
-    dica: "Negrito (Ctrl+B)",
-    conteudo: <span className="font-extrabold">N</span>,
+    rotulo: t.negrito,
+    dica: t.negritoDica,
+    conteudo: <span className="font-extrabold">{t.negritoLetra}</span>,
     ativo: (e) => e.isActive("bold"),
     acao: (e) => e.chain().focus().toggleBold().run(),
   },
   {
-    rotulo: "Itálico",
-    dica: "Itálico (Ctrl+I)",
+    rotulo: t.italico,
+    dica: t.italicoDica,
     conteudo: <span className="font-serif italic">I</span>,
     ativo: (e) => e.isActive("italic"),
     acao: (e) => e.chain().focus().toggleItalic().run(),
   },
   {
-    rotulo: "Marca-texto",
-    dica: "Marca-texto (Ctrl+Shift+H)",
+    rotulo: t.marca,
+    dica: t.marcaDica,
     conteudo: (
       <span className="rounded px-1" style={{ background: "var(--marca)" }}>
         ab
@@ -85,22 +88,22 @@ const botoes: (Botao | "separador")[] = [
   },
   "separador",
   {
-    rotulo: "Lista",
-    dica: "Lista com marcadores",
-    conteudo: "• Lista",
+    rotulo: t.lista,
+    dica: t.listaDica,
+    conteudo: `• ${t.lista}`,
     ativo: (e) => e.isActive("bulletList"),
     acao: (e) => e.chain().focus().toggleBulletList().run(),
   },
   {
-    rotulo: "Lista numerada",
-    dica: "Lista numerada",
-    conteudo: "1. Lista",
+    rotulo: t.numerada,
+    dica: t.numerada,
+    conteudo: `1. ${t.lista}`,
     ativo: (e) => e.isActive("orderedList"),
     acao: (e) => e.chain().focus().toggleOrderedList().run(),
   },
   {
-    rotulo: "Nota",
-    dica: "Nota em destaque",
+    rotulo: t.nota,
+    dica: t.notaDica,
     conteudo: (
       <span className="inline-flex items-center gap-1">
         <svg
@@ -116,26 +119,27 @@ const botoes: (Botao | "separador")[] = [
           <path d="M12 20h9" />
           <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
         </svg>
-        Nota
+        {t.nota}
       </span>
     ),
     ativo: (e) => e.isActive("blockquote"),
     acao: alternarNota,
   },
   {
-    rotulo: "Divisória",
-    dica: "Linha para separar partes",
+    rotulo: t.divisoria,
+    dica: t.divisoriaDica,
     conteudo: "—",
     ativo: () => false,
     acao: (e) => e.chain().focus().setHorizontalRule().run(),
   },
-];
+  ];
+}
 
 /** Editor simples de página: títulos, negrito, itálico, marca-texto, listas e notas. */
 export function EditorDocumento({
   nome,
   inicial,
-  placeholder = "Escreva o resumo aqui. Use Título e Subtítulo para separar as partes.",
+  placeholder,
   aoMudar,
 }: {
   nome: string;
@@ -143,6 +147,8 @@ export function EditorDocumento({
   placeholder?: string;
   aoMudar?: (doc: Documento) => void;
 }) {
+  const tx = useDicionario().editorDoc;
+  const botoes = montarBotoes(tx);
   const [json, setJson] = useState(() => JSON.stringify(inicial));
   const [, forcarAtualizacao] = useState(0);
 
@@ -151,10 +157,10 @@ export function EditorDocumento({
     extensions: [
       StarterKit.configure({ heading: { levels: [2, 3] }, code: false, codeBlock: false, strike: false }),
       Highlight,
-      Placeholder.configure({ placeholder, emptyEditorClass: "vazio" }),
+      Placeholder.configure({ placeholder: placeholder ?? tx.placeholder, emptyEditorClass: "vazio" }),
     ],
     content: inicial,
-    editorProps: { attributes: { "aria-label": "Resumo", class: "px-5 py-4" } },
+    editorProps: { attributes: { "aria-label": tx.resumo, class: "px-5 py-4" } },
     onUpdate: ({ editor }) => {
       const doc = editor.getJSON() as Documento;
       setJson(JSON.stringify(doc));
@@ -169,7 +175,7 @@ export function EditorDocumento({
       <input type="hidden" name={nome} value={json} />
       <div
         role="toolbar"
-        aria-label="Formatação"
+        aria-label={tx.formatacao}
         className="sticky top-0 z-20 flex flex-wrap items-center gap-1 rounded-t-[14px] border-b border-linha bg-suave px-2 py-1.5 shadow-[0_1px_0_var(--linha)]"
       >
         {botoes.map((b, i) =>
