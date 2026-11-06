@@ -1,5 +1,6 @@
 "use client";
 
+import { useDicionario } from "@/i18n/cliente";
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import { Icone } from "@/components/jogos/Icones";
@@ -62,6 +63,7 @@ export function AcoesResumo({
   const [aviso, setAviso] = useState("");
   const [gerando, iniciar] = useTransition();
   const caixa = useRef<HTMLDivElement>(null);
+  const tx = useDicionario().resumo;
 
   useEffect(() => {
     if (!aberto) return;
@@ -76,19 +78,19 @@ export function AcoesResumo({
   }, [aberto]);
 
   const pdfs = [
-    temTexto && temMapa && { incluir: "tudo", rotulo: "Resumo e mapa mental" },
-    temTexto && { incluir: "resumo", rotulo: "Só o resumo" },
-    temMapa && { incluir: "mapa", rotulo: "Só o mapa mental" },
+    temTexto && temMapa && { incluir: "tudo", rotulo: tx.pdfTudo },
+    temTexto && { incluir: "resumo", rotulo: tx.pdfResumo },
+    temMapa && { incluir: "mapa", rotulo: tx.pdfMapa },
   ].filter(Boolean) as Pdf[];
   const podeGerar = Boolean(gerarMapa && materiaId && temTexto);
   const temMenu = pdfs.length > 0 || podeGerar || Boolean(excluir && materiaId);
 
   function gerar() {
     setAberto(false);
-    if (temMapa && !window.confirm("Trocar o mapa mental atual pelo mapa gerado a partir do resumo?")) return;
+    if (temMapa && !window.confirm(tx.trocarMapa)) return;
     iniciar(async () => {
       const r = await gerarMapa!();
-      setAviso(r?.erro ?? "Mapa gerado. Ele aparece no fim do resumo.");
+      setAviso(r?.erro ?? tx.mapaGerado);
     });
   }
 
@@ -98,14 +100,14 @@ export function AcoesResumo({
         {temTexto && (
           <Link href={`/aluno/resumos/${id}/jogar`} className={`${pilula} esconder-no-foco border-primaria-suave bg-primaria-suave text-primaria hover:border-primaria`}>
             <Icone nome="jogos" className="size-4.5" />
-            Cartões e jogos
+            {tx.cartoesJogos}
           </Link>
         )}
         {materiaId && (
           <Link href={`/aluno/materias/${materiaId}/resumos/${id}`} className={`${pilula} esconder-no-foco border-linha px-2 text-tinta hover:border-primaria hover:text-primaria sm:px-3.5`}>
             {lapis}
-            <span className="hidden sm:inline">Editar</span>
-            <span className="sr-only sm:hidden">Editar</span>
+            <span className="hidden sm:inline">{tx.editar}</span>
+            <span className="sr-only sm:hidden">{tx.editar}</span>
           </Link>
         )}
         {temMenu && (
@@ -115,8 +117,8 @@ export function AcoesResumo({
               onClick={() => setAberto((v) => !v)}
               aria-expanded={aberto}
               aria-haspopup="menu"
-              aria-label="Mais ações do resumo"
-              title="Mais ações"
+              aria-label={tx.maisAcoes}
+              title={tx.maisAcoesCurto}
               className={`flex size-9 items-center justify-center rounded-full border-2 transition-colors ${
                 aberto ? "border-primaria text-primaria" : "border-linha text-tinta-suave hover:border-primaria hover:text-primaria"
               }`}
@@ -128,12 +130,12 @@ export function AcoesResumo({
                 {podeGerar && (
                   <button type="button" role="menuitem" onClick={gerar} disabled={gerando} className={`${itemMenu} esconder-no-foco`}>
                     <Icone nome="brilho" className="size-4.5 text-primaria" />
-                    {gerando ? "Gerando..." : temMapa ? "Gerar o mapa de novo" : "Gerar mapa mental"}
+                    {gerando ? tx.gerando : temMapa ? tx.gerarDeNovo : tx.gerarMapa}
                   </button>
                 )}
                 {pdfs.length > 0 && (
                   <>
-                    <p className="px-3 pt-2 pb-1 text-xs font-bold tracking-wide text-tinta-suave uppercase">Baixar em PDF</p>
+                    <p className="px-3 pt-2 pb-1 text-xs font-bold tracking-wide text-tinta-suave uppercase">{tx.baixarPdf}</p>
                     {pdfs.map((p) => (
                       <a
                         key={p.incluir}
@@ -154,7 +156,7 @@ export function AcoesResumo({
                   <form
                     action={excluir}
                     onSubmit={(e) => {
-                      if (!window.confirm("Excluir este resumo e o mapa mental dele? Não dá para desfazer.")) e.preventDefault();
+                      if (!window.confirm(tx.excluirResumoPergunta)) e.preventDefault();
                     }}
                     className="esconder-no-foco mt-1 border-t border-linha pt-1"
                   >
@@ -162,7 +164,7 @@ export function AcoesResumo({
                     <input type="hidden" name="materia_id" value={materiaId} />
                     <button type="submit" role="menuitem" className={`${itemMenu} text-erro hover:bg-erro-fundo`}>
                       {lixeira}
-                      Excluir resumo
+                      {tx.excluirResumo}
                     </button>
                   </form>
                 )}
@@ -173,7 +175,7 @@ export function AcoesResumo({
       </div>
       {(aviso || gerando) && (
         <p role="status" className="text-sm text-tinta-suave">
-          {gerando ? "Gerando o mapa..." : aviso}
+          {gerando ? tx.gerandoMapa : aviso}
         </p>
       )}
     </div>

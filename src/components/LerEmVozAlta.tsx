@@ -1,5 +1,7 @@
 "use client";
 
+import { fmt } from "@/i18n/config";
+import { useDicionario } from "@/i18n/cliente";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { opcoesDeVoz, partesDaFala, VELOCIDADES, type OpcaoVoz } from "@/lib/fala";
 import { nomeIdioma } from "@/lib/idiomas";
@@ -100,6 +102,7 @@ function Leitor({
   idiomaDoCurso?: string | null;
   assinaturas?: Record<string, string>;
 }) {
+  const tx = useDicionario().ouvirResumo;
   const vozes = useVozes();
   // Se a voz natural falhar (cota do mês acabou, sem internet), some da lista e a leitura segue com a do aparelho.
   const [naturalFalhou, setNaturalFalhou] = useState(false);
@@ -334,7 +337,7 @@ function Leitor({
               </>
             )}
           </svg>
-          {estado === "lendo" ? "Pausar leitura" : estado === "pausado" ? "Continuar" : "Ouvir o resumo"}
+          {estado === "lendo" ? tx.pausar : estado === "pausado" ? tx.continuar : tx.ouvir}
         </button>
         {!ativo && (
           <button
@@ -343,7 +346,7 @@ function Leitor({
             aria-expanded={painel}
             className="text-sm font-bold text-tinta-suave hover:text-tinta"
           >
-            Voz: {opcao?.rotulo ?? "padrão"} · {formatarVelocidade(pref.velocidade)} {painel ? "▴" : "▾"}
+            {fmt(tx.voz, { voz: opcao?.rotulo ?? tx.padrao, velocidade: formatarVelocidade(pref.velocidade) })} {painel ? "▴" : "▾"}
           </button>
         )}
       </span>
@@ -358,7 +361,7 @@ function Leitor({
         <>
           <div
             role="region"
-            aria-label="Leitura em voz alta"
+            aria-label={tx.regiao}
             className="fixed inset-x-0 bottom-[var(--altura-barra,0px)] z-40 border-t border-linha bg-fundo/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur sm:inset-x-auto sm:bottom-4 sm:left-1/2 sm:w-[32rem] sm:-translate-x-1/2 sm:rounded-2xl sm:border"
           >
             {painel && (
@@ -377,7 +380,7 @@ function Leitor({
                 type="button"
                 onClick={() => falarDe(Math.max(0, posicao.current.indice - 1))}
                 disabled={indice <= 0}
-                aria-label="Trecho anterior"
+                aria-label={tx.anterior}
                 className={botao}
               >
                 <Icone d="M19 20 9 12l10-8v16zM5 19V5" />
@@ -385,7 +388,7 @@ function Leitor({
               <button
                 type="button"
                 onClick={() => (estado === "lendo" ? pausar() : continuar())}
-                aria-label={estado === "lendo" ? "Pausar" : "Continuar"}
+                aria-label={estado === "lendo" ? tx.pausarCurto : tx.continuar}
                 className="inline-flex size-12 shrink-0 items-center justify-center rounded-full bg-primaria text-white transition-opacity hover:opacity-90"
               >
                 {estado === "lendo" ? <Icone d="M8 5v14M16 5v14" grossa /> : <Icone d="M7 4v16l13-8z" cheia />}
@@ -394,17 +397,17 @@ function Leitor({
                 type="button"
                 onClick={() => falarDe(posicao.current.indice + 1)}
                 disabled={indice >= trechos.length - 1}
-                aria-label="Próximo trecho"
+                aria-label={tx.proximo}
                 className={botao}
               >
                 <Icone d="m5 4 10 8-10 8V4zM19 5v14" />
               </button>
 
               <div className="min-w-0 flex-1 px-1">
-                <p className="truncate text-sm font-bold">{estado === "pausado" ? "Pausado" : "Lendo o resumo"}</p>
+                <p className="truncate text-sm font-bold">{estado === "pausado" ? tx.pausado : tx.lendo}</p>
                 <p className="text-xs text-tinta-suave" aria-live="polite">
-                  {indice < 0 ? "Título" : `Trecho ${indice + 1} de ${trechos.length}`}
-                  <span className="hidden sm:inline"> · toque num parágrafo para ler dele</span>
+                  {indice < 0 ? tx.titulo : fmt(tx.trecho, { n: indice + 1, total: trechos.length })}
+                  <span className="hidden sm:inline">{tx.toque}</span>
                 </p>
               </div>
 
@@ -414,9 +417,9 @@ function Leitor({
                 aria-expanded={painel}
                 className="shrink-0 rounded-full px-3 py-2 text-sm font-bold text-primaria hover:bg-suave"
               >
-                {formatarVelocidade(pref.velocidade)} · Voz
+                {fmt(tx.vozVelocidade, { velocidade: formatarVelocidade(pref.velocidade) })}
               </button>
-              <button type="button" onClick={parar} aria-label="Parar leitura" className={botao}>
+              <button type="button" onClick={parar} aria-label={tx.parar} className={botao}>
                 <Icone d="M6 6l12 12M18 6 6 18" />
               </button>
             </div>
@@ -442,6 +445,7 @@ function EscolhaDeVoz({
   amostra?: boolean;
   naturalFalhou?: boolean;
 }) {
+  const tx = useDicionario().ouvirResumo;
   const chip = (ativo: boolean) =>
     `rounded-full border px-3 py-1.5 text-sm font-bold transition-colors ${
       ativo ? "border-primaria bg-primaria-suave text-primaria" : "border-linha text-tinta hover:bg-suave"
@@ -449,7 +453,7 @@ function EscolhaDeVoz({
   return (
     <div className="space-y-4">
       <fieldset>
-        <legend className="text-xs font-bold tracking-wide text-tinta-suave uppercase">Voz</legend>
+        <legend className="text-xs font-bold tracking-wide text-tinta-suave uppercase">{tx.vozLegenda}</legend>
         <div className="mt-2 flex flex-wrap gap-2">
           {opcoes.map((o) => (
             <button
@@ -464,10 +468,10 @@ function EscolhaDeVoz({
             </button>
           ))}
         </div>
-        {amostra && <p className="mt-2 text-xs text-tinta-suave">Toque numa voz para ouvir como ela soa.</p>}
+        {amostra && <p className="mt-2 text-xs text-tinta-suave">{tx.amostra}</p>}
       </fieldset>
       <fieldset>
-        <legend className="text-xs font-bold tracking-wide text-tinta-suave uppercase">Velocidade</legend>
+        <legend className="text-xs font-bold tracking-wide text-tinta-suave uppercase">{tx.velocidade}</legend>
         <div className="mt-2 flex flex-wrap gap-2">
           {VELOCIDADES.map((v) => (
             <button
@@ -484,11 +488,11 @@ function EscolhaDeVoz({
       </fieldset>
       <p className="text-xs text-tinta-suave">
         {naturalFalhou
-          ? "As vozes naturais não estão disponíveis agora (o limite grátis do mês pode ter acabado). Por enquanto a leitura usa as vozes do seu aparelho. "
+          ? tx.naturalFalhou
           : opcoes.some((o) => o.natural)
-            ? "Estas vozes soam iguais em qualquer celular ou computador. "
-            : "As vozes são as do seu aparelho, então mudam de um celular ou navegador para outro. "}
-        A escolha fica guardada aqui.
+            ? tx.naturais
+            : tx.doAparelho}
+        {tx.guardada}
       </p>
     </div>
   );

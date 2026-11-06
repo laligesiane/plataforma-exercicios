@@ -1,5 +1,7 @@
 "use client";
 
+import { fmt } from "@/i18n/config";
+import { useDicionario } from "@/i18n/cliente";
 import { useActionState, useRef, useState } from "react";
 import { EditorDocumento } from "@/components/EditorDocumento";
 import { GerarResumoDeMaterial } from "@/components/GerarResumoDeMaterial";
@@ -51,6 +53,7 @@ function EditorNo({
   cor: Cor;
   aoMudar: (caminho: number[], mudar: (n: No) => No | null) => void;
 }) {
+  const tx = useDicionario().editorResumo;
   const podeFilho = nivel < LIMITES.profundidade && no.filhos.length < LIMITES.filhos;
   return (
     <li>
@@ -60,15 +63,15 @@ function EditorNo({
           value={no.texto}
           maxLength={LIMITES.texto}
           onChange={(e) => aoMudar(caminho, (n) => ({ ...n, texto: e.target.value }))}
-          placeholder={nivel === 1 ? "Ramo" : "Detalhe"}
-          aria-label={nivel === 1 ? "Texto do ramo" : "Texto do detalhe"}
+          placeholder={nivel === 1 ? tx.ramo : tx.detalhe}
+          aria-label={nivel === 1 ? tx.textoRamo : tx.textoDetalhe}
           className={`${campo} py-1.5`}
         />
         {podeFilho && (
           <button
             type="button"
-            title="Adicionar detalhe"
-            aria-label="Adicionar detalhe"
+            title={tx.adicionarDetalhe}
+            aria-label={tx.adicionarDetalhe}
             className={botaoIcone}
             onClick={() =>
               aoMudar(caminho, (n) => ({ ...n, filhos: [...n.filhos, { id: novoId(), texto: "", filhos: [] }] }))
@@ -79,8 +82,8 @@ function EditorNo({
         )}
         <button
           type="button"
-          title="Remover"
-          aria-label="Remover"
+          title={tx.remover}
+          aria-label={tx.remover}
           className={botaoIcone}
           onClick={() => aoMudar(caminho, () => null)}
         >
@@ -119,6 +122,8 @@ export function EditorResumo({
   comIa?: boolean;
 }) {
   const [estado, acao, enviando] = useActionState(salvar, null);
+  const d = useDicionario();
+  const tx = d.editorResumo;
   const [mapa, setMapa] = useState<Mapa>(resumo?.mapa ?? { centro: "", ramos: [] });
   const [mapaAberto, setMapaAberto] = useState(!!(resumo?.mapa?.centro || resumo?.mapa?.ramos?.length));
   const [docInicial, setDocInicial] = useState(() => documentoDoResumo(resumo ?? { conteudo: null, texto: "" }));
@@ -135,20 +140,20 @@ export function EditorResumo({
     const doc = validarDocumento(docAtual.current);
     const novo = doc ? mapaDoDocumento(doc, titulo) : null;
     if (!novo || novo.ramos.length === 0) {
-      setAviso("Escreva o resumo com títulos, subtítulos ou listas para gerar o mapa.");
+      setAviso(tx.escrevaComTitulos);
       return;
     }
     const temAlgo = mapa.centro || mapa.ramos.length > 0;
-    if (temAlgo && !window.confirm("Trocar o mapa mental atual pelo mapa gerado a partir do resumo?")) return;
+    if (temAlgo && !window.confirm(d.resumo.trocarMapa)) return;
     setMapa(novo);
     setMapaAberto(true);
-    setAviso("Mapa gerado. Ajuste o que quiser e salve.");
+    setAviso(tx.mapaGeradoAjuste);
   };
 
   const usarGerado = (novoTitulo: string, conteudo: Documento) => {
     if (
       documentoTemConteudo(validarDocumento(docAtual.current)) &&
-      !window.confirm("Trocar o texto que já está no editor pelo resumo gerado?")
+      !window.confirm(tx.trocarTexto)
     ) {
       return false;
     }
@@ -185,13 +190,13 @@ export function EditorResumo({
   const jaPublicado = !!resumo && resumo.publicado !== false;
   const rotuloSalvar = !publicacao
     ? resumo
-      ? "Salvar resumo"
-      : "Criar resumo"
+      ? tx.salvarResumo
+      : tx.criarResumo
     : visibilidade === "rascunho"
-      ? "Salvar rascunho"
+      ? tx.salvarRascunho
       : jaPublicado
-        ? "Salvar resumo"
-        : "Publicar resumo";
+        ? tx.salvarResumo
+        : tx.publicarResumo;
 
   return (
     <form action={acao} className="space-y-6">
@@ -207,7 +212,7 @@ export function EditorResumo({
       <div className={`grid gap-4 ${aulas ? "sm:grid-cols-2" : ""}`}>
         <div>
           <label htmlFor="titulo" className={rotulo}>
-            Título
+            {tx.titulo}
           </label>
           <input
             id="titulo"
@@ -221,10 +226,10 @@ export function EditorResumo({
         {aulas && (
         <div>
           <label htmlFor="aula_id" className={rotulo}>
-            Aula
+            {tx.aula}
           </label>
           <select id="aula_id" name="aula_id" defaultValue={resumo?.aula_id ?? aulaInicial ?? ""} className={campo}>
-            <option value="">Sem aula específica</option>
+            <option value="">{tx.semAula}</option>
             {aulas.map((a) => (
               <option key={a.id} value={a.id}>
                 {a.rotulo}
@@ -238,16 +243,16 @@ export function EditorResumo({
 
       <div data-cor={cor}>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className={rotulo}>Resumo</p>
+          <p className={rotulo}>{tx.resumo}</p>
           <fieldset className="mb-1.5 flex items-center gap-1.5">
-            <legend className="sr-only">Cor dos destaques</legend>
-            <span aria-hidden className="mr-1 text-sm text-tinta-suave">Cor dos destaques</span>
+            <legend className="sr-only">{tx.corDestaques}</legend>
+            <span aria-hidden className="mr-1 text-sm text-tinta-suave">{tx.corDestaques}</span>
             {(Object.entries(coresResumo) as [CorResumo, (typeof coresResumo)[CorResumo]][]).map(([c, info]) => (
               <button
                 key={c}
                 type="button"
-                title={info.nome}
-                aria-label={`Destaques em ${info.nome.toLowerCase()}`}
+                title={tx.cores[c]}
+                aria-label={fmt(tx.destaquesEm, { cor: tx.cores[c].toLowerCase() })}
                 aria-pressed={cor === c}
                 onClick={() => setCor(c)}
                 className={`size-6 rounded-full outline-offset-2 ${cor === c ? "outline-2 outline-tinta" : ""}`}
@@ -259,7 +264,7 @@ export function EditorResumo({
         <EditorDocumento key={versaoDoc} nome="conteudo" inicial={docInicial} aoMudar={(d) => (docAtual.current = d)} />
         <div className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
           <button type="button" onClick={gerarMapa} className={botaoTexto}>
-            ✦ Gerar mapa mental a partir do resumo
+            {tx.gerarMapa}
           </button>
           {aviso && (
             <span role="status" className="text-sm text-tinta-suave">
@@ -276,22 +281,21 @@ export function EditorResumo({
       >
         <summary className="cursor-pointer list-none text-lg font-bold">
           <span className="mr-2 inline-block text-primaria transition-transform group-open:rotate-90">›</span>
-          Mapa mental <span className="text-sm font-normal text-tinta-suave">(opcional)</span>
+          {tx.mapaMental} <span className="text-sm font-normal text-tinta-suave">{d.comum.opcional}</span>
         </summary>
         <p className="mt-1 text-sm text-tinta-suave">
-          Escreva o tema no centro e os ramos ao redor. Use + para acrescentar detalhes a um ramo. A Repasa desenha o
-          mapa sozinha.
+          {tx.mapaTexto}
         </p>
         <div className="mt-4">
           <label htmlFor="centro" className={rotulo}>
-            Tema central
+            {tx.temaCentral}
           </label>
           <input
             id="centro"
             value={mapa.centro}
             maxLength={LIMITES.texto}
             onChange={(e) => setMapa((m) => ({ ...m, centro: e.target.value }))}
-            placeholder="Ex.: Revolução Francesa"
+            placeholder={tx.temaExemplo}
             className={campo}
           />
         </div>
@@ -299,13 +303,13 @@ export function EditorResumo({
           {mapa.ramos.map((r, i) => (
             <li key={r.id} className="rounded-xl bg-suave p-3">
               <fieldset className="mb-2 flex flex-wrap items-center gap-1.5">
-                <legend className="sr-only">Cor do ramo</legend>
+                <legend className="sr-only">{tx.corRamo}</legend>
                 {ordemCores.map((c) => (
                   <button
                     key={c}
                     type="button"
                     title={cores[c].nome}
-                    aria-label={`Cor ${cores[c].nome}`}
+                    aria-label={fmt(d.cursos.corNome, { cor: cores[c].nome })}
                     aria-pressed={r.cor === c}
                     onClick={() => trocarCor(i, c)}
                     className={`size-5 rounded-full outline-offset-2 ${r.cor === c ? "outline-2 outline-tinta" : ""}`}
@@ -322,26 +326,26 @@ export function EditorResumo({
         <div className="mt-4 flex flex-wrap items-baseline gap-x-6 gap-y-2">
           {mapa.ramos.length < LIMITES.ramos && (
             <button type="button" onClick={adicionarRamo} className={botaoTexto}>
-              + Adicionar ramo
+              {tx.adicionarRamo}
             </button>
           )}
           {(mapa.centro || mapa.ramos.length > 0) && (
             <button
               type="button"
               onClick={() => {
-                if (window.confirm("Excluir o mapa mental deste resumo? O texto continua. Salve para confirmar.")) {
+                if (window.confirm(tx.excluirMapaPergunta)) {
                   setMapa({ centro: "", ramos: [] });
                 }
               }}
               className="text-sm font-bold text-erro underline-offset-4 hover:underline"
             >
-              Excluir mapa mental
+              {tx.excluirMapa}
             </button>
           )}
         </div>
         {(previa.centro || previa.ramos.length > 0) && (
           <div className="mt-6">
-            <p className="mb-2 text-sm font-bold text-tinta-suave">{aulas ? "Como os alunos vão ver" : "Pré-visualização"}</p>
+            <p className="mb-2 text-sm font-bold text-tinta-suave">{aulas ? tx.comoAlunosVeem : tx.previa}</p>
             <MapaMental mapa={previa} />
           </div>
         )}
@@ -349,11 +353,11 @@ export function EditorResumo({
 
       {publicacao && (
         <section className="space-y-4 rounded-2xl border border-linha p-5 sm:p-6">
-          <h2 className="text-lg font-bold">Quem vê</h2>
+          <h2 className="text-lg font-bold">{tx.quemVe}</h2>
           <fieldset className="space-y-2">
-            <legend className="sr-only">Quem vê este resumo</legend>
+            <legend className="sr-only">{tx.quemVeLegenda}</legend>
             {(Object.entries(visibilidadesResumo) as [VisibilidadeResumo, (typeof visibilidadesResumo)[VisibilidadeResumo]][]).map(
-              ([valor, info]) => (
+              ([valor]) => (
                 <label key={valor} className="flex cursor-pointer items-start gap-2.5 rounded-xl bg-suave px-3.5 py-3 text-sm">
                   <input
                     type="radio"
@@ -364,7 +368,7 @@ export function EditorResumo({
                     className={`${caixaMarcar} mt-0.5`}
                   />
                   <span>
-                    <strong className="font-bold">{info.nome}.</strong> <span className="text-tinta-suave">{info.explicacao}</span>
+                    <strong className="font-bold">{tx.visibilidades[valor].nome}.</strong> <span className="text-tinta-suave">{tx.visibilidades[valor].explicacao}</span>
                   </span>
                 </label>
               ),
@@ -372,24 +376,24 @@ export function EditorResumo({
           </fieldset>
           <div>
             <label htmlFor="temas" className={rotulo}>
-              Temas <span className="font-normal text-tinta-suave">(opcional)</span>
+              {tx.temas} <span className="font-normal text-tinta-suave">{d.comum.opcional}</span>
             </label>
             <input
               id="temas"
               name="temas"
               defaultValue={(resumo?.temas ?? []).join(", ")}
               maxLength={300}
-              placeholder="Ex.: revolução francesa, iluminismo"
+              placeholder={tx.temasExemplo}
               aria-describedby="temas-ajuda"
               className={campo}
             />
             <p id="temas-ajuda" className="mt-1 text-xs text-tinta-suave">
-              Separe por vírgula, até {LIMITE_TEMAS}. A matéria vem da turma. Os dois servem de filtro na Biblioteca de resumos.
+              {fmt(tx.temasAjuda, { n: LIMITE_TEMAS })}
             </p>
           </div>
           {jaPublicado && resumo?.publico && visibilidade === "publico" && (
             <p className="text-sm">
-              Link:{" "}
+              {tx.link}{" "}
               <a href={`/resumos/${resumo.id}`} className="font-bold break-all text-primaria hover:underline">
                 repasa.com.br/resumos/{resumo.id}
               </a>
@@ -400,7 +404,7 @@ export function EditorResumo({
 
       <Mensagem estado={estado} />
       <button type="submit" disabled={enviando} className={botaoPrimario}>
-        {enviando ? "Salvando..." : rotuloSalvar}
+        {enviando ? d.comum.salvando : rotuloSalvar}
       </button>
     </form>
   );

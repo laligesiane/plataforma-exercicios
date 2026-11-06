@@ -1,5 +1,6 @@
 "use client";
 
+import { useDicionario } from "@/i18n/cliente";
 import { useState, useTransition } from "react";
 import { botaoTexto } from "@/components/ui/estilos";
 
@@ -13,6 +14,7 @@ export function BotaoGerarMapa({
 }) {
   const [pendente, iniciar] = useTransition();
   const [aviso, setAviso] = useState("");
+  const tx = useDicionario().resumo;
 
   return (
     <span className="inline-flex flex-wrap items-baseline gap-x-3">
@@ -21,14 +23,14 @@ export function BotaoGerarMapa({
         disabled={pendente}
         className={`${botaoTexto} disabled:opacity-60`}
         onClick={() => {
-          if (temMapa && !window.confirm("Trocar o mapa mental atual pelo mapa gerado a partir do resumo?")) return;
+          if (temMapa && !window.confirm(tx.trocarMapa)) return;
           iniciar(async () => {
             const r = await acao();
-            setAviso(r?.erro ?? "Mapa gerado. Ele aparece no fim do resumo.");
+            setAviso(r?.erro ?? tx.mapaGerado);
           });
         }}
       >
-        {pendente ? "Gerando..." : temMapa ? "✦ Gerar o mapa de novo" : "✦ Gerar mapa mental"}
+        {pendente ? tx.gerando : `✦ ${temMapa ? tx.gerarDeNovo : tx.gerarMapa}`}
       </button>
       {aviso && (
         <span role="status" className="text-sm text-tinta-suave">
