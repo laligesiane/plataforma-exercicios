@@ -1,5 +1,7 @@
 "use client";
 
+import { fmt } from "@/i18n/config";
+import { useDicionario } from "@/i18n/cliente";
 import { useState } from "react";
 import { botaoPrimario, botaoTexto } from "@/components/ui/estilos";
 import type { Pergunta } from "@/lib/documento/jogos";
@@ -26,12 +28,13 @@ export function JogoPerguntas({
   const [acertosDePrimeira, setAcertosDePrimeira] = useState(0);
   const [sequencia, setSequencia] = useState(0);
   const atual = perguntas[indice];
+  const t = useDicionario().jogos;
 
   if (!atual) {
     return (
       <FimDeJogo
-        titulo={incentivo(acertosDePrimeira, perguntas.length)}
-        texto={`Você acertou ${acertosDePrimeira} de ${perguntas.length} de primeira.`}
+        titulo={incentivo(acertosDePrimeira, perguntas.length, t)}
+        texto={fmt(t.acertouPrimeira, { n: acertosDePrimeira, total: perguntas.length })}
         acoes={acoes}
       />
     );
@@ -64,7 +67,7 @@ export function JogoPerguntas({
       <Progresso
         feitos={indice}
         total={perguntas.length}
-        extra={sequencia >= 2 ? <span className="inline-flex items-center gap-1 font-bold text-primaria"><Icone nome="fogo" className="size-4" /> {sequencia} seguidas</span> : undefined}
+        extra={sequencia >= 2 ? <span className="inline-flex items-center gap-1 font-bold text-primaria"><Icone nome="fogo" className="size-4" /> {fmt(t.seguidas, { n: sequencia })}</span> : undefined}
       />
       <p className="mt-5 text-xs font-bold tracking-wide text-tinta-suave uppercase">{instrucao}</p>
       <p className="mt-2 rounded-2xl border-2 border-linha bg-fundo p-5 text-lg leading-relaxed whitespace-pre-line">{atual.enunciado}</p>
@@ -98,18 +101,18 @@ export function JogoPerguntas({
         {resolvida ? (
           <div className="rounded-2xl bg-suave p-4">
             <p className={`font-bold ${resolvida === "acertou" ? "text-certo" : "text-tinta"}`}>
-              {resolvida === "acertou" ? (erradas.length ? "Isso, agora foi!" : "Acertou!") : `A resposta é "${atual.certa}".`}
+              {resolvida === "acertou" ? (erradas.length ? t.agoraFoi : t.acertou) : fmt(t.respostaE, { resposta: atual.certa })}
             </p>
             <p className="mt-1 text-sm whitespace-pre-line text-tinta-suave">{atual.explicacao}</p>
             <button type="button" onClick={proxima} className={`${botaoPrimario} mt-3`} autoFocus>
-              {indice + 1 < perguntas.length ? "Próxima" : "Ver resultado"}
+              {indice + 1 < perguntas.length ? t.proxima : t.verResultado}
             </button>
           </div>
         ) : erradas.length > 0 ? (
           <p className="text-sm text-tinta-suave">
-            Não é essa. Tente outra ou{" "}
+            {t.naoEssa}{" "}
             <button type="button" onClick={() => setResolvida("viu")} className={botaoTexto}>
-              ver a resposta
+              {t.verResposta}
             </button>
             .
           </p>

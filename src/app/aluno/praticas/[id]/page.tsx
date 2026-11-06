@@ -1,3 +1,4 @@
+import { obterDicionario } from "@/i18n/servidor";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Cabecalho } from "@/components/Cabecalho";
@@ -14,6 +15,7 @@ export default async function FazerPratica({ params }: { params: Promise<{ id: s
   if (!ehUuid(id)) notFound();
   const pratica = await carregarPratica(id);
   if (!pratica) notFound();
+  const d = await obterDicionario();
 
   return (
     <>
@@ -24,27 +26,27 @@ export default async function FazerPratica({ params }: { params: Promise<{ id: s
             href={pratica.resumo_id ? `/aluno/resumos/${pratica.resumo_id}` : "/aluno/atividades"}
             className="text-sm font-bold text-primaria hover:underline"
           >
-            ← {pratica.resumo_id ? "Voltar ao resumo" : "Minhas atividades"}
+            ← {pratica.resumo_id ? d.resumo.voltarResumo : d.minhasAtividades.titulo}
           </Link>
           <span className="flex items-baseline gap-4">
             <Link href={`/aluno/praticas/${id}/editar`} className="text-sm font-bold text-primaria hover:underline">
-              Editar
+              {d.praticas.editar}
             </Link>
             <BotaoExcluir
               acao={apagarPratica}
               campos={{ id }}
-              pergunta="Excluir esta prática? Não dá para desfazer."
+              pergunta={d.praticas.excluirPergunta}
               discreto
             />
           </span>
         </div>
         <h1 className="mt-3 text-3xl font-extrabold tracking-tight">{pratica.titulo}</h1>
-        <p className="mt-2 text-sm text-tinta-suave">Atividade só sua, feita dos seus resumos. Pode refazer quantas vezes quiser.</p>
+        <p className="mt-2 text-sm text-tinta-suave">{d.praticas.soSua}</p>
         <div className="mt-6">
           {pratica.exercicios.length > 0 ? (
             <AulaAtividade exercicios={pratica.exercicios} />
           ) : (
-            <p className="text-tinta-suave">Esta prática está sem exercícios.</p>
+            <p className="text-tinta-suave">{d.praticas.semExercicios}</p>
           )}
         </div>
       </main>

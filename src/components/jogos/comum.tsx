@@ -1,5 +1,8 @@
 "use client";
 
+import type { Dicionario } from "@/i18n/dicionarios";
+import { fmt } from "@/i18n/config";
+import { useDicionario } from "@/i18n/cliente";
 import Link from "next/link";
 import { useEffect, type ReactNode } from "react";
 import { Mascote } from "@/components/Mascote";
@@ -7,10 +10,11 @@ import { botaoPrimario, botaoSecundario } from "@/components/ui/estilos";
 
 /** Barrinha de "3 de 10" no alto de cada jogo. */
 export function Progresso({ feitos, total, extra }: { feitos: number; total: number; extra?: ReactNode }) {
+  const t = useDicionario().jogos;
   return (
     <div className="flex items-center gap-3 text-sm font-semibold text-tinta-suave">
       <span className="tabular-nums">
-        {feitos} de {total}
+        {fmt(t.progresso, { n: feitos, total })}
       </span>
       <div className="h-2 flex-1 overflow-hidden rounded-full bg-suave">
         <div
@@ -37,6 +41,7 @@ export type AcoesFim = {
 /** Tela de fim de rodada, igual em todos os jogos. */
 export function FimDeJogo({ titulo, texto, acoes }: { titulo: string; texto: ReactNode; acoes: AcoesFim }) {
   const { aoTerminar } = acoes;
+  const t = useDicionario().jogos;
   // Cada rodada monta uma tela de fim nova (o jogo recomeça pela chave), então isto roda uma vez por rodada.
   useEffect(() => {
     aoTerminar?.();
@@ -49,27 +54,27 @@ export function FimDeJogo({ titulo, texto, acoes }: { titulo: string; texto: Rea
       <p className="mt-1 text-tinta-suave">{texto}</p>
       <div className="mt-5 flex flex-wrap justify-center gap-3">
         <button type="button" onClick={acoes.deNovo} className={botaoPrimario}>
-          Jogar de novo
+          {t.jogarDeNovo}
         </button>
         {acoes.outrosCartoes && (
           <button type="button" onClick={acoes.outrosCartoes} className={botaoSecundario}>
-            Outros 10 cartões
+            {t.outros10}
           </button>
         )}
       </div>
       <Link href={acoes.hrefJogos} className="mt-4 text-sm font-bold text-primaria hover:underline">
-        Escolher outro jogo
+        {t.escolherOutro}
       </Link>
     </div>
   );
 }
 
 /** Frase de incentivo conforme o desempenho. Nada de nota. */
-export function incentivo(acertos: number, total: number): string {
-  if (total === 0) return "Pronto!";
+export function incentivo(acertos: number, total: number, t: Dicionario["jogos"]): string {
+  if (total === 0) return t.pronto;
   const parte = acertos / total;
-  if (parte === 1) return "Mandou muito bem!";
-  if (parte >= 0.7) return "Muito bom!";
-  if (parte >= 0.4) return "Está pegando o jeito!";
-  return "Cada rodada fixa mais um pouco.";
+  if (parte === 1) return t.muitoBem;
+  if (parte >= 0.7) return t.muitoBom;
+  if (parte >= 0.4) return t.pegando;
+  return t.cadaRodada;
 }

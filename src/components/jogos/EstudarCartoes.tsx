@@ -1,5 +1,7 @@
 "use client";
 
+import { fmt } from "@/i18n/config";
+import { useDicionario } from "@/i18n/cliente";
 import { useRef, useState } from "react";
 import { botaoPrimario, botaoSecundario } from "@/components/ui/estilos";
 import { esconderTermo, type Cartao } from "@/lib/documento/cartoes";
@@ -22,6 +24,7 @@ export function EstudarCartoes({ cartoes, acoes }: { cartoes: Cartao[]; acoes: A
   const inicio = useRef<number | null>(null);
   const arrastou = useRef(false);
   const [arrastando, setArrastando] = useState(false);
+  const t = useDicionario().jogos;
 
   function responder(acertou: boolean) {
     if (!atual) return;
@@ -39,8 +42,8 @@ export function EstudarCartoes({ cartoes, acoes }: { cartoes: Cartao[]; acoes: A
   if (!atual) {
     return (
       <FimDeJogo
-        titulo="Rodada concluída!"
-        texto={`Você sabia ${sabia} de ${cartoes.length} de primeira.${repetidos.size > 0 ? ` ${repetidos.size} precisaram de mais uma volta.` : ""}`}
+        titulo={t.rodadaConcluida}
+        texto={`${fmt(t.sabiaTexto, { n: sabia, total: cartoes.length })}${repetidos.size === 1 ? t.repetido1 : repetidos.size > 1 ? fmt(t.repetidosN, { n: repetidos.size }) : ""}`}
         acoes={acoes}
       />
     );
@@ -85,7 +88,7 @@ export function EstudarCartoes({ cartoes, acoes }: { cartoes: Cartao[]; acoes: A
           setArraste(0);
         }}
         style={arraste ? { transform: `translateX(${arraste}px) rotate(${arraste / 25}deg)` } : undefined}
-        aria-label={virado ? "Mostrar a frente do cartão" : "Virar o cartão"}
+        aria-label={virado ? t.mostrarFrente : t.virar}
         className={`mt-5 flex min-h-64 w-full touch-pan-y flex-col items-center justify-center rounded-3xl border-2 p-8 text-center select-none ${
           !arrastando ? "transition-[transform,colors] duration-200 motion-reduce:transition-none" : ""
         } ${
@@ -101,7 +104,7 @@ export function EstudarCartoes({ cartoes, acoes }: { cartoes: Cartao[]; acoes: A
         {atual.tipo === "lacuna" ? (
           // Negrito no meio da frase: a frente é a frase com a lacuna e o verso, a palavra que falta.
           <>
-            <span className="text-xs font-bold tracking-wide text-tinta-suave uppercase">{virado ? "Resposta" : "Complete a frase"}</span>
+            <span className="text-xs font-bold tracking-wide text-tinta-suave uppercase">{virado ? t.resposta : t.completeFrase}</span>
             {virado ? (
               <span className="mt-3 text-2xl font-extrabold">{atual.frente}</span>
             ) : (
@@ -110,7 +113,7 @@ export function EstudarCartoes({ cartoes, acoes }: { cartoes: Cartao[]; acoes: A
           </>
         ) : (
           <>
-            <span className="text-xs font-bold tracking-wide text-tinta-suave uppercase">{virado ? "Explicação" : "Termo"}</span>
+            <span className="text-xs font-bold tracking-wide text-tinta-suave uppercase">{virado ? t.explicacao : t.termo}</span>
             {virado ? (
               <span className="mt-3 text-lg whitespace-pre-line">{atual.verso}</span>
             ) : (
@@ -118,19 +121,19 @@ export function EstudarCartoes({ cartoes, acoes }: { cartoes: Cartao[]; acoes: A
             )}
           </>
         )}
-        {!virado && <span className="mt-4 text-sm text-tinta-suave">Pense na resposta e toque para virar.</span>}
+        {!virado && <span className="mt-4 text-sm text-tinta-suave">{t.pense}</span>}
       </button>
 
       {virado && (
-        <p className="mt-3 text-center text-xs text-tinta-suave">Deslize para a direita se sabia e para a esquerda se ainda não.</p>
+        <p className="mt-3 text-center text-xs text-tinta-suave">{t.deslize}</p>
       )}
       {virado && (
         <div className="mt-3 flex justify-center gap-3">
           <button type="button" onClick={() => responder(false)} className={botaoSecundario}>
-            Ainda não sabia
+            {t.aindaNao}
           </button>
           <button type="button" onClick={() => responder(true)} className={botaoPrimario}>
-            Sabia!
+            {t.sabia}
           </button>
         </div>
       )}

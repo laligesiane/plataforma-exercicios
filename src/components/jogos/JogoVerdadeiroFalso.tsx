@@ -1,5 +1,7 @@
 "use client";
 
+import { fmt } from "@/i18n/config";
+import { useDicionario } from "@/i18n/cliente";
 import { useState } from "react";
 import { botaoPrimario } from "@/components/ui/estilos";
 import type { Afirmacao } from "@/lib/documento/jogos";
@@ -14,12 +16,13 @@ export function JogoVerdadeiroFalso({ afirmacoes, acoes }: { afirmacoes: Afirmac
   const [acertos, setAcertos] = useState(0);
   const [sequencia, setSequencia] = useState(0);
   const atual = afirmacoes[indice];
+  const t = useDicionario().jogos;
 
   if (!atual) {
     return (
       <FimDeJogo
-        titulo={incentivo(acertos, afirmacoes.length)}
-        texto={`Você acertou ${acertos} de ${afirmacoes.length}.`}
+        titulo={incentivo(acertos, afirmacoes.length, t)}
+        texto={fmt(t.acertouDe, { n: acertos, total: afirmacoes.length })}
         acoes={acoes}
       />
     );
@@ -41,16 +44,16 @@ export function JogoVerdadeiroFalso({ afirmacoes, acoes }: { afirmacoes: Afirmac
       <Progresso
         feitos={indice}
         total={afirmacoes.length}
-        extra={sequencia >= 2 ? <span className="inline-flex items-center gap-1 font-bold text-primaria"><Icone nome="fogo" className="size-4" /> {sequencia} seguidas</span> : undefined}
+        extra={sequencia >= 2 ? <span className="inline-flex items-center gap-1 font-bold text-primaria"><Icone nome="fogo" className="size-4" /> {fmt(t.seguidas, { n: sequencia })}</span> : undefined}
       />
-      <p className="mt-5 text-center text-sm font-bold text-tinta-suave">Esta explicação é do termo? Verdadeiro ou falso?</p>
+      <p className="mt-5 text-center text-sm font-bold text-tinta-suave">{t.vfPergunta}</p>
       <div className="mt-2 overflow-hidden rounded-3xl border-2 border-linha bg-fundo">
         <div className="border-b-2 border-linha bg-primaria-suave px-5 py-4 text-center">
-          <p className="text-xs font-bold tracking-wide text-tinta-suave uppercase">Termo</p>
+          <p className="text-xs font-bold tracking-wide text-tinta-suave uppercase">{t.termo}</p>
           <p className="mt-1 text-2xl font-extrabold">{atual.termo}</p>
         </div>
         <div className="px-5 py-4">
-          <p className="text-xs font-bold tracking-wide text-tinta-suave uppercase">Explicação</p>
+          <p className="text-xs font-bold tracking-wide text-tinta-suave uppercase">{t.explicacao}</p>
           <p className="mt-1 text-lg leading-relaxed whitespace-pre-line">{atual.explicacao}</p>
         </div>
       </div>
@@ -62,24 +65,24 @@ export function JogoVerdadeiroFalso({ afirmacoes, acoes }: { afirmacoes: Afirmac
             onClick={() => responder(false)}
             className="rounded-2xl border-2 border-erro bg-erro-fundo py-4 text-lg font-extrabold text-erro transition-transform active:scale-95"
           >
-            <span className="inline-flex items-center justify-center gap-2"><Icone nome="errado" /> Falso</span>
+            <span className="inline-flex items-center justify-center gap-2"><Icone nome="errado" /> {t.falso}</span>
           </button>
           <button
             type="button"
             onClick={() => responder(true)}
             className="rounded-2xl border-2 border-certo bg-certo-fundo py-4 text-lg font-extrabold text-certo transition-transform active:scale-95"
           >
-            <span className="inline-flex items-center justify-center gap-2"><Icone nome="certo" /> Verdadeiro</span>
+            <span className="inline-flex items-center justify-center gap-2"><Icone nome="certo" /> {t.verdadeiro}</span>
           </button>
         </div>
       ) : (
         <div aria-live="polite" className="mt-4 rounded-2xl bg-suave p-4">
           <p className={`font-bold ${acertou ? "text-certo" : "text-erro"}`}>
-            {acertou ? "Acertou!" : "Não foi dessa vez."} {atual.verdadeira ? "Era verdadeiro." : "Era falso: essa explicação é de outro termo."}
+            {acertou ? t.acertou : t.naoFoi} {atual.verdadeira ? t.eraVerdadeiro : t.eraFalso}
           </p>
           {!atual.verdadeira && (
             <p className="mt-1 text-sm text-tinta-suave">
-              A explicação de <strong>{atual.termo}</strong> é: {atual.explicacaoCerta}
+              {t.explicacaoDe} <strong>{atual.termo}</strong> {t.eh} {atual.explicacaoCerta}
             </p>
           )}
           <button
@@ -91,7 +94,7 @@ export function JogoVerdadeiroFalso({ afirmacoes, acoes }: { afirmacoes: Afirmac
             className={`${botaoPrimario} mt-3`}
             autoFocus
           >
-            {indice + 1 < afirmacoes.length ? "Próxima" : "Ver resultado"}
+            {indice + 1 < afirmacoes.length ? t.proxima : t.verResultado}
           </button>
         </div>
       )}

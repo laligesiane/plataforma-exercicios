@@ -1,5 +1,7 @@
 "use client";
 
+import { fmt } from "@/i18n/config";
+import { useDicionario } from "@/i18n/cliente";
 import { useEffect, useState } from "react";
 import type { TelaLigar } from "@/lib/documento/jogos";
 import { tocarResultado } from "@/lib/som";
@@ -20,8 +22,9 @@ export function JogoLigar({ telas, acoes }: { telas: TelaLigar[]; acoes: AcoesFi
   const [erros, setErros] = useState(0);
   const [segundos, setSegundos] = useState(0);
   const atual = telas[tela];
-  const total = telas.reduce((n, t) => n + t.termos.length, 0);
-  const feitos = telas.slice(0, tela).reduce((n, t) => n + t.termos.length, 0) + ligados.size;
+  const t = useDicionario().jogos;
+  const total = telas.reduce((n, x) => n + x.termos.length, 0);
+  const feitos = telas.slice(0, tela).reduce((n, x) => n + x.termos.length, 0) + ligados.size;
 
   useEffect(() => {
     if (!atual) return;
@@ -38,8 +41,8 @@ export function JogoLigar({ telas, acoes }: { telas: TelaLigar[]; acoes: AcoesFi
   if (!atual) {
     return (
       <FimDeJogo
-        titulo={erros === 0 ? "Sem nenhum erro!" : "Todos ligados!"}
-        texto={`${total} pares em ${formatarTempo(segundos)}${erros ? `, com ${erros} ${erros === 1 ? "erro" : "erros"}` : ""}. Jogue de novo para bater seu tempo.`}
+        titulo={erros === 0 ? t.semErro : t.todosLigados}
+        texto={`${fmt(t.paresEm, { total, tempo: formatarTempo(segundos) })}${erros ? (erros === 1 ? t.comErro1 : fmt(t.comErrosN, { n: erros })) : ""}${t.bater}`}
         acoes={acoes}
       />
     );
@@ -69,27 +72,27 @@ export function JogoLigar({ telas, acoes }: { telas: TelaLigar[]; acoes: AcoesFi
   return (
     <div>
       <Progresso feitos={feitos} total={total} extra={<span className="inline-flex items-center gap-1 tabular-nums"><Icone nome="relogio" className="size-4" /> {formatarTempo(segundos)}</span>} />
-      <p className="mt-3 text-sm text-tinta-suave">Toque num termo e depois na explicação dele.</p>
+      <p className="mt-3 text-sm text-tinta-suave">{t.toqueTermo}</p>
       <div className="mt-4 grid grid-cols-[2fr_3fr] gap-2 sm:gap-3">
         <ul className="space-y-2">
-          {atual.termos.map((t) => {
-            const feito = ligados.has(t.id);
+          {atual.termos.map((tm) => {
+            const feito = ligados.has(tm.id);
             return (
-              <li key={t.id}>
+              <li key={tm.id}>
                 <button
                   type="button"
-                  onClick={() => setTermo(t.id)}
+                  onClick={() => setTermo(tm.id)}
                   disabled={feito}
-                  aria-pressed={termo === t.id}
+                  aria-pressed={termo === tm.id}
                   className={`${base} text-sm font-extrabold ${
                     feito
                       ? "border-certo bg-certo-fundo text-certo opacity-60"
-                      : termo === t.id
+                      : termo === tm.id
                         ? "border-primaria bg-primaria text-white"
                         : "border-linha bg-fundo hover:border-primaria"
                   }`}
                 >
-                  {t.texto}
+                  {tm.texto}
                 </button>
               </li>
             );
