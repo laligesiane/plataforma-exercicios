@@ -2,7 +2,9 @@
 // Junta aulas marcadas, aulas semanais da turma, atividades com prazo, compromissos pessoais e
 // datas do calendário da turma. Funções puras, sem depender do fuso do servidor.
 
-import { rotuloTipoImportado, type TipoImportado } from "../importar-calendario";
+import { fmt } from "../../i18n/config";
+import { datasPt, type TextosDatas } from "../../i18n/dicionarios/datasPt";
+import type { TipoImportado } from "../importar-calendario";
 
 export type TipoItemHoje = "aula" | "atividade" | "compromisso" | "calendario";
 
@@ -25,10 +27,11 @@ export type EntradaHoje = {
   atividades: { id: string; titulo: string; prazo: string | null; turma: string }[];
   enviadas: Set<string>;
   compromissos: { id: string; titulo: string; data: string; hora: string | null; feito: boolean; tipo: string; materia: string }[];
+  /** Textos no idioma de quem vê (padrão: português). */
+  t?: TextosDatas;
   datasTurma: { id: string; turma_id: string; tipo: TipoImportado; titulo: string; data: string; ate: string | null; hora: string | null }[];
 };
 
-const rotuloCompromisso: Record<string, string> = { tarefa: "Tarefa", prova: "Prova", aula: "Aula", outro: "Compromisso" };
 
 function diaDaSemana(data: string) {
   const [a, m, d] = data.split("-").map(Number);
@@ -45,7 +48,7 @@ function hhmm(hora: string | null) {
  * Aulas e datas do calendário que já passaram não voltam.
  */
 export function agendaDeHoje(e: EntradaHoje): ItemHoje[] {
-  const { hoje, nomeTurma } = e;
+  const { hoje, nomeTurma, t = datasPt } = e;
   const itens: ItemHoje[] = [];
 
   const aulaHoje = new Set<string>();
@@ -74,7 +77,7 @@ export function agendaDeHoje(e: EntradaHoje): ItemHoje[] {
     itens.push({
       chave: `semanal-${h.turma_id}-${h.hora_inicio}`,
       tipo: "aula",
-      titulo: "Aula da turma",
+      titulo: t.aulaDaTurma,
       detalhe: nomeTurma.get(h.turma_id) ?? "",
       data: hoje,
       hora: hhmm(h.hora_inicio),
@@ -89,7 +92,7 @@ export function agendaDeHoje(e: EntradaHoje): ItemHoje[] {
       chave: `atividade-${a.id}`,
       tipo: "atividade",
       titulo: a.titulo,
-      detalhe: a.turma ? `Atividade · ${a.turma}` : "Atividade",
+      detalhe: a.turma ? `${t.atividade} · ${a.turma}` : t.atividade,
       data: a.prazo,
       hora: null,
       atrasado: a.prazo < hoje,
@@ -99,7 +102,7 @@ export function agendaDeHoje(e: EntradaHoje): ItemHoje[] {
 
   for (const c of e.compromissos) {
     if (c.feito || c.data > hoje) continue;
-    const tipo = rotuloCompromisso[c.tipo] ?? "Compromisso";
+    const tipo = (t.tiposCompromisso as Record<string, string>)[c.tipo] ?? t.compromisso;
     itens.push({
       chave: `compromisso-${c.id}`,
       tipo: "compromisso",
@@ -119,7 +122,7 @@ export function agendaDeHoje(e: EntradaHoje): ItemHoje[] {
       chave: `calendario-${d.id}`,
       tipo: "calendario",
       titulo: d.titulo,
-      detalhe: turma ? `${rotuloTipoImportado[d.tipo]} · ${turma}` : rotuloTipoImportado[d.tipo],
+      detalhe: turma ? `${t.tiposCalendario[d.tipo]} · ${turma}` : t.tiposCalendario[d.tipo],
       data: hoje,
       hora: d.data === hoje ? hhmm(d.hora) : null,
       atrasado: false,
@@ -138,10 +141,10 @@ export function agendaDeHoje(e: EntradaHoje): ItemHoje[] {
 }
 
 /** "Atrasado · 03/11", "19:00" ou "Hoje". */
-export function quandoItem(i: Pick<ItemHoje, "data" | "hora" | "atrasado">) {
+export function quandoItem(i: Pick<ItemHoje, "data" | "hora" | "atrasado">, t: TextosDatas = datasPt) {
   if (i.atrasado) {
     const [, m, d] = i.data.split("-");
-    return `Atrasado · ${d}/${m}`;
+    return fmt(t.atrasadoData, { data: `${d}/${m}` });
   }
-  return i.hora ?? "Hoje";
+  return i.hora ?? t.hoje;
 }

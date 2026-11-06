@@ -1,3 +1,5 @@
+import { fmt } from "../../i18n/config";
+import { datasPt, type TextosDatas } from "../../i18n/dicionarios/datasPt";
 import { hojeNoFuso } from "../aulas";
 import { somarDias } from "../revisao";
 
@@ -32,9 +34,9 @@ export function semanaAtual(dias: Set<string>, hoje: string) {
 }
 
 /** Frase do Brotinho conforme a semana. */
-export function fraseDoBrotinho(diasNaSemana: number, sequencia: number, estudouHoje: boolean) {
-  if (diasNaSemana >= META_SEMANA) return sequencia >= 5 ? `${sequencia} dias seguidos! Estou virando árvore.` : "Meta da semana cumprida! Cresci mais um pouco.";
-  if (estudouHoje) return `Hoje já contou. Faltam ${META_SEMANA - diasNaSemana} ${META_SEMANA - diasNaSemana === 1 ? "dia" : "dias"} para a meta da semana.`;
-  if (sequencia > 0) return `Sequência de ${sequencia} ${sequencia === 1 ? "dia" : "dias"}. Estude hoje para continuar.`;
-  return "Que tal estudar um pouquinho hoje? Eu cresço junto com você.";
+export function fraseDoBrotinho(diasNaSemana: number, sequencia: number, estudouHoje: boolean, t: TextosDatas["brotinho"] = datasPt.brotinho) {
+  if (diasNaSemana >= META_SEMANA) return sequencia >= 5 ? fmt(t.arvore, { n: sequencia }) : t.meta;
+  if (estudouHoje) return META_SEMANA - diasNaSemana === 1 ? t.jaContou1 : fmt(t.jaContouN, { n: META_SEMANA - diasNaSemana });
+  if (sequencia > 0) return sequencia === 1 ? t.sequencia1 : fmt(t.sequenciaN, { n: sequencia });
+  return t.convite;
 }

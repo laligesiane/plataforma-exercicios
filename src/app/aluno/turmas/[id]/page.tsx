@@ -1,3 +1,4 @@
+import { obterDicionario } from "@/i18n/servidor";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Cabecalho } from "@/components/Cabecalho";
@@ -11,6 +12,8 @@ import { criarClienteServidor } from "@/lib/supabase/servidor";
 export default async function AulasDaTurma({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   await exigirPapel("aluno");
+  const d = await obterDicionario();
+  const tx = d.turma;
   const supabase = await criarClienteServidor();
 
   const [{ data: turma }, { data: aulasDb }, { data: resumosDb }] = await Promise.all([
@@ -29,17 +32,17 @@ export default async function AulasDaTurma({ params }: { params: Promise<{ id: s
       <Cabecalho />
       <main className="mx-auto w-full max-w-7xl px-4 pt-8 pb-16 sm:px-6 lg:px-8">
         <Link href="/aluno/atividades" className="text-sm font-bold text-primaria hover:underline">
-          ← Minhas atividades
+          ← {tx.voltar}
         </Link>
         <h1 className="mt-3 text-3xl font-extrabold tracking-tight">{turma.nome}</h1>
-        <p className="mt-2 text-tinta-suave">Todas as aulas, da mais recente para a mais antiga.</p>
+        <p className="mt-2 text-tinta-suave">{tx.todasAulas}</p>
         {aulas.length > 0 ? (
           <div className="mt-6 space-y-4">
             {aulas.map((a, i) => (
               <CartaoAula
                 key={a.id}
                 aula={a}
-                destaque={i === 0 ? "Última aula" : undefined}
+                destaque={i === 0 ? d.minhasAtividades.ultimaAula : undefined}
                 resumos={resumos
                   .filter((r) => r.aula_id === a.id)
                   .map((r) => ({ id: r.id, titulo: tituloResumo(r), href: `/aluno/resumos/${r.id}` }))}
@@ -48,7 +51,7 @@ export default async function AulasDaTurma({ params }: { params: Promise<{ id: s
           </div>
         ) : (
           <p className="mt-6 rounded-2xl border border-dashed border-linha p-5 text-sm text-tinta-suave">
-            O professor ainda não registrou nenhuma aula.
+            {tx.nenhumaAula}
           </p>
         )}
       </main>

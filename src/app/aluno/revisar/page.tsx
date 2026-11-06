@@ -1,3 +1,5 @@
+import { fmt } from "@/i18n/config";
+import { obterDicionario } from "@/i18n/servidor";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Mascote } from "@/components/Mascote";
@@ -8,7 +10,9 @@ import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { LayoutConta } from "../LayoutConta";
 import { SessaoRevisao, type GrupoRevisao } from "./SessaoRevisao";
 
-export const metadata: Metadata = { title: "Repasar meus erros · Repasa" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: `${(await obterDicionario()).repasar.titulo} · Repasa` };
+}
 
 /** Itens por sessão, para a revisão caber em poucos minutos. */
 const LIMITE = 30;
@@ -19,6 +23,8 @@ export default async function Revisar() {
   const perfil = await exigirPapel("aluno");
   const supabase = await criarClienteServidor();
   const hoje = hojeNoFuso();
+  const d = await obterDicionario();
+  const tx = d.repasar;
 
   const [{ data: devidas }, { count: depois }, { count: dominados }] = await Promise.all([
     supabase
@@ -38,29 +44,29 @@ export default async function Revisar() {
     supabase.from("revisao").select("id", { count: "exact", head: true }).eq("aluno_id", perfil.id).not("concluida_em", "is", null),
   ]);
 
-  const grupos = await montarGrupos((devidas ?? []) as Linha[]);
+  const grupos = await montarGrupos((devidas ?? []) as Linha[], d.datas.atividade);
   const total = grupos.reduce((soma, g) => soma + g.exercicio.itens.length, 0);
 
   return (
     <LayoutConta
-      titulo="Repasar meus erros"
-      voltar={{ href: "/aluno/atividades", rotulo: "Atividades" }}
-      descricao="Os itens que você errou voltam depois de 1, 3 e 7 dias. Acertou de primeira nas três vezes, o item está dominado."
+      titulo={tx.titulo}
+      voltar={{ href: "/aluno/atividades", rotulo: d.aluno.atividades }}
+      descricao={tx.descricao}
     >
       <p className="mt-6 text-sm font-semibold text-tinta-suave">
-        {total} para hoje · {depois ?? 0} para os próximos dias · {dominados ?? 0} dominados
+        {fmt(tx.contagem, { hoje: total, depois: depois ?? 0, dominados: dominados ?? 0 })}
       </p>
       {total === 0 ? (
         <div className="mt-6 flex flex-col items-center rounded-2xl bg-suave p-8 text-center">
           <Mascote tamanho={96} animado />
-          <p className="mt-3 text-lg font-extrabold">Nada para repassar hoje.</p>
+          <p className="mt-3 text-lg font-extrabold">{tx.nadaHoje}</p>
           <p className="mt-1 text-sm text-tinta-suave">
             {(depois ?? 0) > 0
-              ? "Os próximos itens voltam nos próximos dias."
-              : "Quando você errar um item numa atividade, ele aparece aqui para você repassar."}
+              ? tx.proximos
+              : tx.quandoErrar}
           </p>
           <Link href="/aluno/atividades" className="mt-4 text-sm font-bold text-primaria hover:underline">
-            Ver atividades
+            {tx.verAtividades}
           </Link>
         </div>
       ) : (
@@ -73,7 +79,7 @@ export default async function Revisar() {
 }
 
 /** Junta os itens devidos por exercício, com o título da atividade. Itens apagados pelo professor ficam de fora. */
-async function montarGrupos(linhas: Linha[]): Promise<GrupoRevisao[]> {
+async function montarGrupos(linhas: Linha[], semTitulo: string): Promise<GrupoRevisao[]> {
   if (linhas.length === 0) return [];
   const supabase = await criarClienteServidor();
   const exercicioIds = [...new Set(linhas.map((l) => l.exercicio_id))];
@@ -95,7 +101,7 @@ async function montarGrupos(linhas: Linha[]): Promise<GrupoRevisao[]> {
     if (itens.length === 0) continue;
     grupos.push({
       atividadeId: atividade_id,
-      atividadeTitulo: tituloAtividade.get(atividade_id) ?? "Atividade",
+      atividadeTitulo: tituloAtividade.get(atividade_id) ?? semTitulo,
       exercicio: { ...exercicio, itens } as Exercicio,
       revisaoPorItem: Object.fromEntries(ids),
     });

@@ -1,3 +1,5 @@
+import { fmt } from "@/i18n/config";
+import { obterDicionario } from "@/i18n/servidor";
 import Link from "next/link";
 import { icones } from "@/components/navegacao";
 import { hojeNoFuso } from "@/lib/aulas";
@@ -10,6 +12,8 @@ import { criarClienteServidor } from "@/lib/supabase/servidor";
 export async function CartaoRepasar({ alunoId }: { alunoId: string }) {
   const supabase = await criarClienteServidor();
   const hoje = hojeNoFuso();
+  const d = await obterDicionario();
+  const tx = d.repasar;
   const [{ count: paraHoje }, { count: depois }] = await Promise.all([
     supabase
       .from("revisao")
@@ -38,19 +42,23 @@ export async function CartaoRepasar({ alunoId }: { alunoId: string }) {
         {icones.repasar}
       </span>
       <span className="min-w-0 grow">
-        <span className="block font-extrabold">Repasar meus erros</span>
+        <span className="block font-extrabold">{tx.titulo}</span>
         <span className="block text-sm text-tinta-suave">
           {hojeN > 0
-            ? `${hojeN} ${hojeN === 1 ? "item que você errou volta" : "itens que você errou voltam"} hoje. Leva poucos minutos.`
+            ? hojeN === 1
+              ? d.aluno.voltam1
+              : fmt(d.aluno.voltamN, { n: hojeN })
             : depoisN > 0
-              ? `Nada para hoje. ${depoisN} ${depoisN === 1 ? "item volta" : "itens voltam"} nos próximos dias.`
-              : "Os itens que você errar nas atividades voltam aqui para você repassar."}
+              ? depoisN === 1
+                ? tx.depois1
+                : fmt(tx.depoisN, { n: depoisN })
+              : tx.vazio}
         </span>
       </span>
       <span
         className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-bold ${hojeN > 0 ? "bg-primaria text-white" : "bg-suave text-tinta-suave"}`}
       >
-        {hojeN > 0 ? "Começar" : "Abrir"}
+        {hojeN > 0 ? d.aluno.comecar : d.aluno.abrir}
       </span>
     </Link>
   );

@@ -1,3 +1,5 @@
+import { fmt } from "@/i18n/config";
+import { obterDicionario } from "@/i18n/servidor";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { quandoItem, type ItemHoje, type TipoItemHoje } from "@/lib/hoje";
@@ -50,7 +52,7 @@ function Icone({ nome, className = "size-4" }: { nome: keyof typeof caminhos; cl
 
 const MAX = 5;
 
-export function AgendaHoje({
+export async function AgendaHoje({
   itens,
   proxima,
   pedidosAguardando,
@@ -63,6 +65,8 @@ export function AgendaHoje({
   podeMarcar: boolean;
   className?: string;
 }) {
+  const d = await obterDicionario();
+  const tx = d.agendaHoje;
   const atrasados = itens.filter((i) => i.atrasado).length;
   const deHoje = itens.length - atrasados;
   const visiveis = itens.slice(0, MAX);
@@ -71,31 +75,31 @@ export function AgendaHoje({
     <section aria-labelledby="agenda-hoje" className={`rounded-2xl bg-primaria-suave p-5 sm:p-6 ${className}`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 id="agenda-hoje" className="text-sm font-bold tracking-wide text-primaria uppercase">
-          Agenda de hoje
+          {tx.titulo}
         </h2>
         {atrasados > 0 && (
           <span className="inline-flex items-center gap-1 rounded-full bg-erro-fundo px-2.5 py-0.5 text-xs font-bold text-erro">
             <Icone nome="atraso" className="size-3.5" />
-            {atrasados} {atrasados === 1 ? "atrasado" : "atrasados"}
+            {atrasados === 1 ? tx.atrasados1 : fmt(tx.atrasadosN, { n: atrasados })}
           </span>
         )}
       </div>
 
       {itens.length === 0 ? (
         <>
-          <p className="mt-2 text-xl font-extrabold">Nada para hoje</p>
+          <p className="mt-2 text-xl font-extrabold">{tx.nada}</p>
           {proxima ? (
             <p className="mt-0.5 text-tinta-suave">
-              Próxima aula: <span className="inline-block first-letter:uppercase">{proxima.quando}</span> · {proxima.oque}
+              {tx.proximaAula} <span className="inline-block first-letter:uppercase">{proxima.quando}</span> · {proxima.oque}
             </p>
           ) : (
-            <p className="mt-0.5 text-tinta-suave">Nenhuma aula marcada.</p>
+            <p className="mt-0.5 text-tinta-suave">{tx.nenhumaAula}</p>
           )}
         </>
       ) : (
         <>
           <p className="mt-2 text-xl font-extrabold">
-            {deHoje > 0 ? `${deHoje} ${deHoje === 1 ? "coisa" : "coisas"} para hoje` : "Nada novo para hoje"}
+            {deHoje > 0 ? (deHoje === 1 ? tx.coisas1 : fmt(tx.coisasN, { n: deHoje })) : tx.nadaNovo}
           </p>
           <ul className="mt-3 flex flex-col gap-2">
             {visiveis.map((i) => (
@@ -122,28 +126,28 @@ export function AgendaHoje({
                       i.atrasado ? "bg-erro-fundo text-erro" : "bg-suave text-tinta-suave"
                     }`}
                   >
-                    {quandoItem(i)}
+                    {quandoItem(i, d.datas)}
                   </span>
                 </Link>
               </li>
             ))}
           </ul>
-          {itens.length > MAX && <p className="mt-2 text-sm text-tinta-suave">E mais {itens.length - MAX} na agenda.</p>}
+          {itens.length > MAX && <p className="mt-2 text-sm text-tinta-suave">{fmt(tx.eMais, { n: itens.length - MAX })}</p>}
         </>
       )}
 
       {pedidosAguardando > 0 && (
         <p className="mt-2 text-sm font-semibold text-tinta-suave">
-          {pedidosAguardando} {pedidosAguardando === 1 ? "pedido de aula aguardando" : "pedidos de aula aguardando"} o professor
+          {pedidosAguardando === 1 ? tx.pedidos1 : fmt(tx.pedidosN, { n: pedidosAguardando })}
         </p>
       )}
       <div className="mt-4 flex flex-wrap gap-4">
         <Link href="/aluno/agenda" className="text-sm font-bold text-primaria hover:underline">
-          Ver agenda
+          {tx.verAgenda}
         </Link>
         {podeMarcar && (
           <Link href="/aluno/agenda#marcar" className="text-sm font-bold text-primaria hover:underline">
-            Marcar uma aula
+            {tx.marcarAula}
           </Link>
         )}
       </div>

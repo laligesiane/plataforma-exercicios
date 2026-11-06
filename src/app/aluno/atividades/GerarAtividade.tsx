@@ -1,5 +1,7 @@
 "use client";
 
+import { fmt } from "@/i18n/config";
+import { useDicionario } from "@/i18n/cliente";
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { Icone } from "@/components/jogos/Icones";
@@ -21,6 +23,8 @@ export function GerarAtividade({ resumos, materias, cursos }: Props) {
   const [tipos, setTipos] = useState<TipoSemIa[]>(["quiz", "verdadeiro-falso"]);
   const [quantidade, setQuantidade] = useState<number>(5);
   const [fonte, setFonte] = useState("");
+  const d = useDicionario();
+  const tx = d.gerarAtividade;
   const comResumo = materias.filter((m) => m.resumos > 0);
 
   return (
@@ -31,32 +35,32 @@ export function GerarAtividade({ resumos, materias, cursos }: Props) {
         </span>
         <div>
           <h2 id="titulo-gerar" className="text-lg font-bold">
-            Criar atividade com seus resumos
+            {tx.titulo}
           </h2>
           <p className="mt-0.5 text-sm text-tinta-suave">
-            As perguntas saem dos títulos e dos trechos em negrito. Errou? A correção explica o porquê.
+            {tx.texto}
           </p>
         </div>
       </div>
 
       {resumos.length === 0 ? (
         <p className="mt-4 text-sm text-tinta-suave">
-          Você ainda não tem resumos.{" "}
+          {tx.semResumos}{" "}
           <Link href="/aluno/cursos" className="font-bold text-primaria hover:underline">
-            Escrever o primeiro
+            {tx.escreverPrimeiro}
           </Link>
         </p>
       ) : (
         <form action={acao} className="mt-5">
           <label htmlFor="fonte" className={rotulo}>
-            De onde vêm as perguntas?
+            {tx.deOnde}
           </label>
           <select id="fonte" name="fonte" required value={fonte} onChange={(e) => setFonte(e.target.value)} className={campo}>
             <option value="" disabled>
-              Escolha um resumo, uma matéria ou um curso
+              {tx.escolha}
             </option>
             {cursos.length > 0 && (
-              <optgroup label="Curso inteiro">
+              <optgroup label={tx.cursoInteiro}>
                 {cursos.map((c) => (
                   <option key={c.id} value={`curso:${c.id}`}>
                     {c.nome}
@@ -65,15 +69,15 @@ export function GerarAtividade({ resumos, materias, cursos }: Props) {
               </optgroup>
             )}
             {comResumo.length > 0 && (
-              <optgroup label="Matéria inteira">
+              <optgroup label={tx.materiaInteira}>
                 {comResumo.map((m) => (
                   <option key={m.id} value={`materia:${m.id}`}>
-                    {m.nome} ({m.resumos} {m.resumos === 1 ? "resumo" : "resumos"})
+                    {m.nome} ({m.resumos === 1 ? d.aluno.resumos1 : fmt(d.aluno.resumosN, { n: m.resumos })})
                   </option>
                 ))}
               </optgroup>
             )}
-            <optgroup label="Um resumo">
+            <optgroup label={tx.umResumo}>
               {resumos.map((r) => (
                 <option key={r.id} value={`resumo:${r.id}`}>
                   {r.origem ? `${r.nome} · ${r.origem}` : r.nome}
@@ -83,7 +87,7 @@ export function GerarAtividade({ resumos, materias, cursos }: Props) {
           </select>
 
           <fieldset className="mt-5">
-            <legend className={rotulo}>Tipos de pergunta</legend>
+            <legend className={rotulo}>{tx.tipos}</legend>
             <div className="grid gap-2 sm:grid-cols-2">
               {(Object.entries(tiposSemIa) as [TipoSemIa, (typeof tiposSemIa)[TipoSemIa]][]).map(([tipo, info]) => {
                 const marcado = tipos.includes(tipo);
@@ -116,7 +120,7 @@ export function GerarAtividade({ resumos, materias, cursos }: Props) {
           </fieldset>
 
           <fieldset className="mt-5">
-            <legend className={rotulo}>Perguntas de cada tipo</legend>
+            <legend className={rotulo}>{tx.quantas}</legend>
             <div className="flex gap-2">
               {QUANTIDADES_SEM_IA.map((q) => (
                 <label
@@ -146,7 +150,7 @@ export function GerarAtividade({ resumos, materias, cursos }: Props) {
           )}
 
           <button type="submit" disabled={criando || tipos.length === 0} className={`${botaoPrimario} mt-5`}>
-            {criando ? "Criando…" : "Criar atividade"}
+            {criando ? tx.criando : tx.criar}
           </button>
         </form>
       )}

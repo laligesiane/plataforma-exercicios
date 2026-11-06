@@ -92,7 +92,7 @@ export function linkGoogleAgenda(h: Horario, titulo: string, detalhes: string, a
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
-export function descreverHorario(h: Horario) {
+export function descreverHorario(h: Horario, dias: readonly string[] = diasDaSemana) {
   const fim = minutosDe(h.hora_inicio) + h.duracao_min;
-  return `${diasDaSemana[h.dia_semana]}, ${formatarHora(h.hora_inicio)}–${dois(Math.floor(fim / 60) % 24)}:${dois(fim % 60)}`;
+  return `${dias[h.dia_semana]}, ${formatarHora(h.hora_inicio)}–${dois(Math.floor(fim / 60) % 24)}:${dois(fim % 60)}`;
 }
