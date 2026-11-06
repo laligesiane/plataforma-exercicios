@@ -3,10 +3,13 @@
 import { headers } from "next/headers";
 import type { EstadoFormulario } from "@/components/ui/Mensagem";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
+import { fmt } from "@/i18n/config";
+import { obterDicionario } from "@/i18n/servidor";
 
 export async function pedirNovaSenha(_estado: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  if (!email) return { erro: "Digite seu e-mail." };
+  const d = await obterDicionario();
+  if (!email) return { erro: d.esqueci.erroDigiteEmail };
 
   const origem = (await headers()).get("origin") ?? "";
   const supabase = await criarClienteServidor();
@@ -14,8 +17,8 @@ export async function pedirNovaSenha(_estado: EstadoFormulario, formData: FormDa
     redirectTo: `${origem}/auth/confirmar?next=/definir-senha`,
   });
 
-  if (error?.status === 429) return { erro: "Muitos pedidos seguidos. Espere alguns minutos e tente de novo." };
+  if (error?.status === 429) return { erro: d.esqueci.erroMuitos };
 
   // A mesma resposta para qualquer e-mail, para não revelar quem tem conta.
-  return { sucesso: `Se ${email} tiver conta na Repasa, enviamos um link para criar uma nova senha. Confira também o spam.` };
+  return { sucesso: fmt(d.esqueci.sucesso, { email }) };
 }

@@ -7,7 +7,10 @@ import { FocoProvider } from "@/components/foco/FocoProvider";
 import { CelebracaoArvore } from "@/components/foco/CelebracaoArvore";
 import { MiniBrotinho } from "@/components/foco/MiniBrotinho";
 import { CHAVE_SESSAO } from "@/lib/foco";
-import { DESCRICAO_SITE, URL_SITE } from "@/lib/seo/site";
+import { IdiomaProvider } from "@/i18n/cliente";
+import { LANG_HTML, LOCALE_OG } from "@/i18n/config";
+import { obterDicionario, obterIdioma } from "@/i18n/servidor";
+import { URL_SITE } from "@/lib/seo/site";
 import "./globals.css";
 
 const figtree = Figtree({
@@ -23,25 +26,28 @@ const atkinson = Atkinson_Hyperlegible({
   preload: false,
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(URL_SITE),
-  title: "Repasa: seu melhor amigo na hora de aprender",
-  description: DESCRICAO_SITE,
-  applicationName: "Repasa",
-  keywords: ["resumos", "mapa mental", "exercícios online", "estudar", "plataforma para professores", "atividades para alunos", "flashcards"],
-  openGraph: {
-    type: "website",
-    siteName: "Repasa",
-    locale: "pt_BR",
-    url: "/",
-    title: "Repasa: seu melhor amigo na hora de aprender",
-    description: DESCRICAO_SITE,
-  },
-  twitter: { card: "summary_large_image" },
-  // Google Search Console pela meta tag (opcional: a verificação pelo DNS dispensa isto).
-  verification: process.env.NEXT_PUBLIC_GOOGLE_VERIFICACAO ? { google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICACAO } : undefined,
-  appleWebApp: { capable: true, title: "Repasa", statusBarStyle: "default" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const [idioma, d] = await Promise.all([obterIdioma(), obterDicionario()]);
+  return {
+    metadataBase: new URL(URL_SITE),
+    title: d.site.titulo,
+    description: d.site.descricao,
+    applicationName: "Repasa",
+    keywords: ["resumos", "mapa mental", "exercícios online", "estudar", "plataforma para professores", "atividades para alunos", "flashcards"],
+    openGraph: {
+      type: "website",
+      siteName: "Repasa",
+      locale: LOCALE_OG[idioma],
+      url: "/",
+      title: d.site.titulo,
+      description: d.site.descricao,
+    },
+    twitter: { card: "summary_large_image" },
+    // Google Search Console pela meta tag (opcional: a verificação pelo DNS dispensa isto).
+    verification: process.env.NEXT_PUBLIC_GOOGLE_VERIFICACAO ? { google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICACAO } : undefined,
+    appleWebApp: { capable: true, title: "Repasa", statusBarStyle: "default" },
+  };
+}
 
 export const viewport: Viewport = {
   // viewport-fit=cover libera o env(safe-area-inset-bottom) das barras presas no rodapé (iPhone).
@@ -52,13 +58,14 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [idioma, dicionario] = await Promise.all([obterIdioma(), obterDicionario()]);
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html lang={LANG_HTML[idioma]} suppressHydrationWarning>
       <head>
         {/* Marca o foco antes de pintar a página, para o menu não piscar ao recarregar. */}
         <script
@@ -70,12 +77,14 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: scriptTema }} />
       </head>
       <body className={`${figtree.variable} ${atkinson.variable} antialiased`}>
-        <FocoProvider>
-          {children}
-          <MiniBrotinho />
-          <CelebracaoArvore />
-          <Analytics />
-        </FocoProvider>
+        <IdiomaProvider idioma={idioma} dicionario={dicionario}>
+          <FocoProvider>
+            {children}
+            <MiniBrotinho />
+            <CelebracaoArvore />
+            <Analytics />
+          </FocoProvider>
+        </IdiomaProvider>
       </body>
     </html>
   );

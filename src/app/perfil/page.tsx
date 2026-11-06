@@ -1,5 +1,7 @@
 import { PainelLeitura } from "@/components/PreferenciasLeitura";
 import { EscolherTema } from "@/components/Tema";
+import { PainelIdioma } from "@/components/EscolherIdioma";
+import { obterDicionario } from "@/i18n/servidor";
 import type { Metadata } from "next";
 import { sair } from "@/app/entrar/actions";
 import { Cabecalho } from "@/components/Cabecalho";
@@ -85,6 +87,10 @@ export default async function PaginaPerfil() {
 
         <Secao titulo="Cor da sua Repasa">
           <EscolherTema inicial={perfil.tema} />
+        </Secao>
+
+        <Secao titulo={(await obterDicionario()).idioma.rotulo}>
+          <PainelIdioma />
         </Secao>
 
         <Secao titulo="Leitura">

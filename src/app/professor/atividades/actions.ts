@@ -1,5 +1,7 @@
 "use server";
 
+import { textosDoObjeto } from "@/lib/palavroes";
+import { avisoPalavrao } from "@/lib/palavroes/servidor";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
@@ -99,6 +101,9 @@ export async function salvarAtividade(dados: DadosAtividade): Promise<ResultadoS
     }
   }
 
+  const palavrao = await avisoPalavrao(titulo, materia, atividade.explicacao, temas.join(" "), textosDoObjeto(exercicios));
+  if (palavrao) return { ok: false, erro: palavrao };
+
   const supabase = await criarClienteServidor();
 
   // O RLS garante que só o dono altera; se nada voltar, a atividade não é dele.
@@ -192,6 +197,8 @@ export async function corrigirProducao(c: NovaCorrecao): Promise<{ ok: true; cor
   }
   if (c.avaliacao !== "muito_bem" && c.avaliacao !== "refazer") return { ok: false, erro: "Escolha uma avaliação." };
   const comentario = typeof c.comentario === "string" ? c.comentario.trim().slice(0, 3000) : "";
+  const palavrao = await avisoPalavrao(comentario);
+  if (palavrao) return { ok: false, erro: palavrao };
 
   const supabase = await criarClienteServidor();
   const corrigidaEm = new Date().toISOString();
@@ -258,6 +265,8 @@ export async function responderDuvida(_estado: { erro?: string; ok?: boolean } |
   const resposta = String(formData.get("resposta") ?? "").trim().slice(0, 2000);
   if (!Number.isSafeInteger(id) || !ehUuid(atividadeId)) return { erro: "Recarregue a página." };
   if (!resposta) return { erro: "Escreva a resposta." };
+  const palavrao = await avisoPalavrao(resposta);
+  if (palavrao) return { erro: palavrao };
 
   const supabase = await criarClienteServidor();
   const { data, error } = await supabase

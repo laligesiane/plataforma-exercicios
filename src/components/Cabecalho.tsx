@@ -9,29 +9,35 @@ import { BarraInferior } from "@/components/BarraInferior";
 import { MenuConta, MenuPrincipal } from "@/components/MenuTopo";
 import { SincronizarTema } from "@/components/Tema";
 import { urlDaFoto } from "@/lib/foto";
+import { EscolherIdioma, SincronizarIdioma } from "@/components/EscolherIdioma";
+import { ehIdiomaSite } from "@/i18n/config";
+import { obterDicionario, obterIdioma } from "@/i18n/servidor";
 
 /** semMenu: só a marca (ex.: na verificação em duas etapas, antes de liberar a conta). */
 export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {}) {
   const perfil = semMenu ? null : await obterPerfil();
+  const [d, idioma] = await Promise.all([obterDicionario(), obterIdioma()]);
+  const idiomaConta = ehIdiomaSite(perfil?.idioma) ? perfil.idioma : null;
   // Logado, o logo leva ao painel; sem login, à página inicial do site.
   const inicio = perfil ? (perfil.papel_escolhido ? paginaInicial(perfil.papel) : "/bem-vindo") : "/";
 
   return (
     <header className="border-b border-linha">
       {!semMenu && <SincronizarTema tema={perfil?.tema ?? null} />}
+      {idiomaConta && idiomaConta !== idioma && <SincronizarIdioma idioma={idiomaConta} />}
       {/* Largura toda: logo à esquerda, abas no centro, leitura e conta à direita. */}
       <div className="flex items-center gap-4 px-4 py-3 sm:px-6 lg:px-10">
         <div className="flex flex-1 basis-0 items-center">
-          <Link href={inicio} className="flex items-center gap-2.5" aria-label={perfil ? "Repasa, ir para o meu painel" : "Repasa, página inicial"}>
+          <Link href={inicio} className="flex items-center gap-2.5" aria-label={perfil ? d.cabecalho.irParaPainel : d.cabecalho.paginaInicial}>
             <IconeLogo />
             <span className="text-[17px] font-extrabold tracking-tight">Repasa</span>
           </Link>
           {/* A Repasa acabou de abrir para o público: o selo avisa que ela ainda está mudando. */}
           <span
             className="ml-2 rounded-full bg-primaria-suave px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-primaria"
-            title="A Repasa é nova e está em construção: algumas coisas ainda podem mudar."
+            title={d.cabecalho.betaDica}
           >
-            Beta
+            {d.cabecalho.beta}
           </span>
         </div>
         {!semMenu && perfil && perfil.papel_escolhido && (
@@ -41,6 +47,10 @@ export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {})
         )}
         {!semMenu && (
           <div className="flex flex-1 basis-0 items-center justify-end gap-2 text-sm font-semibold text-tinta-suave">
+            {/* Sem login o globo aparece também no celular: é a primeira coisa que um visitante de fora procura. */}
+            <span className={`esconder-no-foco ${perfil?.papel_escolhido ? "hidden sm:block" : ""}`}>
+              <EscolherIdioma />
+            </span>
             <span className="esconder-no-foco hidden sm:block">
               <PreferenciasLeitura />
             </span>
@@ -51,16 +61,16 @@ export async function Cabecalho({ semMenu = false }: { semMenu?: boolean } = {})
                 </div>
               ) : (
                 <form action={sair}>
-                  <button className="rounded-full border-2 border-linha px-4 py-1 font-bold text-tinta hover:border-tinta">Sair</button>
+                  <button className="rounded-full border-2 border-linha px-4 py-1 font-bold text-tinta hover:border-tinta">{d.menu.sair}</button>
                 </form>
               )
             ) : (
               <nav className="esconder-no-foco flex items-center gap-3 sm:gap-4">
                 <Link href="/cadastro" className="hidden hover:text-tinta sm:inline">
-                  Criar conta
+                  {d.cabecalho.criarConta}
                 </Link>
                 <Link href="/entrar" className="rounded-full bg-tinta px-4 py-1.5 font-bold text-fundo">
-                  Entrar
+                  {d.cabecalho.entrar}
                 </Link>
               </nav>
             )}
